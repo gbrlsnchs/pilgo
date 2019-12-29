@@ -37,6 +37,29 @@ func testParserParse(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", "bar"},
+						Link:   parser.File{"test", "bar"},
+					},
+					{
+						Target: parser.File{"", "foo"},
+						Link:   parser.File{"test", "foo"},
+					},
+				}},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {

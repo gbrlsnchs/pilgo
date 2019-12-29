@@ -1,6 +1,10 @@
 package parser
 
-import "gsr.dev/pilgrim"
+import (
+	"sort"
+
+	"gsr.dev/pilgrim"
+)
 
 // Parser is a configuration parser.
 type Parser struct{}
@@ -24,6 +28,7 @@ func parseChildren(baseDir string, c pilgrim.Config) []*Node {
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
+		sort.Strings(c.Targets)
 		children = make([]*Node, tglen)
 		for i, tg := range c.Targets {
 			children[i] = parseTarget(baseDir, tg, c.Options[tg])
