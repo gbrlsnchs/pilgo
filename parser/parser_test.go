@@ -30,8 +30,8 @@ func testParserParse(t *testing.T) {
 			tr: &parser.Tree{
 				Root: &parser.Node{Children: []*parser.Node{
 					{
-						Target: parser.File{"", "foo"},
-						Link:   parser.File{"test", "foo"},
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
 					},
 				}},
 			},
@@ -49,12 +49,12 @@ func testParserParse(t *testing.T) {
 			tr: &parser.Tree{
 				Root: &parser.Node{Children: []*parser.Node{
 					{
-						Target: parser.File{"", "bar"},
-						Link:   parser.File{"test", "bar"},
+						Target: parser.File{"", []string{"bar"}},
+						Link:   parser.File{"test", []string{"bar"}},
 					},
 					{
-						Target: parser.File{"", "foo"},
-						Link:   parser.File{"test", "foo"},
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
 					},
 				}},
 			},
@@ -74,8 +74,64 @@ func testParserParse(t *testing.T) {
 			tr: &parser.Tree{
 				Root: &parser.Node{Children: []*parser.Node{
 					{
-						Target: parser.File{"", "foo"},
-						Link:   parser.File{"test", "bar"},
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"bar"}},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+				},
+				Options: map[string]pilgrim.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+						Options: map[string]pilgrim.Config{
+							"bar": pilgrim.Config{
+								Targets: []string{
+									"baz",
+								},
+							},
+						},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
+						Children: []*parser.Node{
+							{
+								Target: parser.File{
+									"",
+									[]string{"foo", "bar"},
+								},
+								Link: parser.File{
+									"test",
+									[]string{"foo", "bar"},
+								},
+								Children: []*parser.Node{
+									{
+										Target: parser.File{
+											"",
+											[]string{"foo", "bar", "baz"},
+										},
+										Link: parser.File{
+											"test",
+											[]string{"foo", "bar", "baz"},
+										},
+									},
+								},
+							},
+						},
 					},
 				}},
 			},
