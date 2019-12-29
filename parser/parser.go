@@ -20,7 +20,11 @@ func parseTarget(baseDir, target string, c pilgrim.Config) *Node {
 	if c.BaseDir != "" {
 		baseDir = c.BaseDir
 	}
-	n.Link = File{baseDir, target}
+	link := target
+	if c.Link != nil {
+		link = *c.Link
+	}
+	n.Link = File{baseDir, link}
 	return n
 }
 
