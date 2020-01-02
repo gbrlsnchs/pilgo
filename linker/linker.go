@@ -16,12 +16,17 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		n.Status = parser.StatusSkip
 		return nil
 	}
-	link, err := ln.fs.Info(n.Link.FullPath())
+	lnpath := n.Link.FullPath()
+	link, err := ln.fs.Info(lnpath)
 	if err != nil {
 		return err
 	}
 	if !link.Exists() {
 		n.Status = parser.StatusReady
+		return nil
+	}
+	if link.Linkname() == lnpath {
+		n.Status = parser.StatusDone
 	}
 	return nil
 }

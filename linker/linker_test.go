@@ -115,6 +115,43 @@ func testResolve(t *testing.T) {
 				Status: parser.StatusSkip,
 			},
 		},
+		{
+			fs: testFileSystem{
+				info: map[string]infoReturn{
+					filepath.Join("test", "foo"): {
+						returnValue: testFileInfo{
+							exists:   true,
+							linkname: filepath.Join("test", "foo"),
+						},
+						err: nil,
+					},
+				},
+			},
+			n: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+			},
+			err: nil,
+			want: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+				Status:   parser.StatusDone,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
