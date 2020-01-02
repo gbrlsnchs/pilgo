@@ -5,4 +5,5 @@ type Node struct {
 	Target   File
 	Link     File
 	Children []*Node
+	Status   Status
 }
