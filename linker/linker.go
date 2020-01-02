@@ -25,8 +25,12 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		n.Status = parser.StatusReady
 		return nil
 	}
-	if link.Linkname() == lnpath {
-		n.Status = parser.StatusDone
+	if linkname := link.Linkname(); linkname != "" {
+		if linkname == lnpath {
+			n.Status = parser.StatusDone
+			return nil
+		}
+		n.Status = parser.StatusConflict
 	}
 	return nil
 }
