@@ -32,5 +32,8 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		}
 		n.Status = parser.StatusConflict
 	}
+	if !link.IsDir() {
+		n.Status = parser.StatusConflict
+	}
 	return nil
 }
