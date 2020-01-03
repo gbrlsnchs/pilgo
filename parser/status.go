@@ -15,6 +15,8 @@ const (
 	StatusDone
 	// StatusConflict means a symlink already exists but points to a different target.
 	StatusConflict
+	// StatusError means the target doesn't exist.
+	StatusError
 )
 
 func (s Status) String() string { return strings.ToUpper(s.str()) }
@@ -29,6 +31,8 @@ func (s Status) str() string {
 		return "done"
 	case StatusConflict:
 		return "conflict"
+	case StatusError:
+		return "error"
 	default:
 		return "undefined"
 	}
