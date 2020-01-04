@@ -17,6 +17,10 @@ const (
 	StatusConflict
 	// StatusError means the target doesn't exist.
 	StatusError
+	// StatusExpand means a symlink already exists but since it's a directory
+	// and the target is also a directory, it gets expanded in order to have
+	// the target's inner files symlinked inside it.
+	StatusExpand
 )
 
 func (s Status) String() string { return strings.ToUpper(s.str()) }
@@ -33,6 +37,8 @@ func (s Status) str() string {
 		return "conflict"
 	case StatusError:
 		return "error"
+	case StatusExpand:
+		return "expand"
 	default:
 		return "undefined"
 	}
