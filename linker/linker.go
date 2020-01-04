@@ -12,6 +12,14 @@ func New(fs FileSystem) *Linker { return &Linker{fs} }
 
 // Resolve checks and resolves nodes in a parsed tree.
 func (ln *Linker) Resolve(n *parser.Node) error {
+	target, err := ln.fs.Info(n.Target.FullPath())
+	if err != nil {
+		return err
+	}
+	if !target.Exists() {
+		n.Status = parser.StatusError
+		return nil
+	}
 	if len(n.Children) > 0 {
 		n.Status = parser.StatusSkip
 		return nil

@@ -24,6 +24,12 @@ func testResolve(t *testing.T) {
 		{
 			fs: testFileSystem{
 				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+						},
+						err: nil,
+					},
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists: false,
@@ -60,6 +66,12 @@ func testResolve(t *testing.T) {
 		{
 			fs: testFileSystem{
 				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+						},
+						err: nil,
+					},
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists: true,
@@ -118,6 +130,12 @@ func testResolve(t *testing.T) {
 		{
 			fs: testFileSystem{
 				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+						},
+						err: nil,
+					},
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists:   true,
@@ -155,6 +173,12 @@ func testResolve(t *testing.T) {
 		{
 			fs: testFileSystem{
 				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+						},
+						err: nil,
+					},
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists:   true,
@@ -192,6 +216,12 @@ func testResolve(t *testing.T) {
 		{
 			fs: testFileSystem{
 				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+						},
+						err: nil,
+					},
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists: true,
@@ -224,6 +254,48 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 				Status:   parser.StatusConflict,
+			},
+		},
+		{
+			fs: testFileSystem{
+				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: false,
+						},
+						err: nil,
+					},
+					filepath.Join("test", "foo"): {
+						returnValue: testFileInfo{
+							exists: false,
+						},
+						err: nil,
+					},
+				},
+			},
+			n: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+			},
+			err: nil,
+			want: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+				Status:   parser.StatusError,
 			},
 		},
 	}
