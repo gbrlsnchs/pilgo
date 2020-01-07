@@ -39,9 +39,37 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 			return nil
 		}
 		n.Status = parser.StatusConflict
+		return nil
 	}
-	if !link.IsDir() {
+	if !target.IsDir() || !link.IsDir() {
 		n.Status = parser.StatusConflict
+		return nil
 	}
+	children, err := target.List()
+	if err != nil {
+		return err
+	}
+	expand(n, children)
+	n.Status = parser.StatusExpand
 	return nil
+}
+
+func expand(n *parser.Node, children []string) {
+	if len(children) <= 0 {
+		return
+	}
+	n.Children = make([]*parser.Node, len(children))
+	for i, c := range children {
+		n.Children[i] = &parser.Node{
+			Target: parser.File{
+				BaseDir: n.Target.BaseDir,
+				Path:    append(n.Target.Path, c),
+			},
+			Link: parser.File{
+				BaseDir: n.Link.BaseDir,
+				Path:    append(n.Link.Path, c),
+			},
+			Children: nil,
+		}
+	}
 }

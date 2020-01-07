@@ -298,6 +298,154 @@ func testResolve(t *testing.T) {
 				Status:   parser.StatusError,
 			},
 		},
+		{
+			fs: testFileSystem{
+				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+							isDir:  true,
+							list: listReturn{
+								returnValue: []string{
+									"bar",
+									"baz",
+									"qux",
+								},
+								err: nil,
+							},
+						},
+						err: nil,
+					},
+					filepath.Join("test", "foo"): {
+						returnValue: testFileInfo{
+							exists: true,
+							isDir:  true,
+						},
+						err: nil,
+					},
+				},
+			},
+			n: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+			},
+			err: nil,
+			want: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: []*parser.Node{
+					{
+						Target: parser.File{
+							BaseDir: "",
+							Path: []string{
+								"foo",
+								"bar",
+							},
+						},
+						Link: parser.File{
+							BaseDir: "test",
+							Path: []string{
+								"foo",
+								"bar",
+							},
+						},
+						Children: nil,
+					},
+					{
+						Target: parser.File{
+							BaseDir: "",
+							Path: []string{
+								"foo",
+								"baz",
+							},
+						},
+						Link: parser.File{
+							BaseDir: "test",
+							Path: []string{
+								"foo",
+								"baz",
+							},
+						},
+						Children: nil,
+					},
+					{
+						Target: parser.File{
+							BaseDir: "",
+							Path: []string{
+								"foo",
+								"qux",
+							},
+						},
+						Link: parser.File{
+							BaseDir: "test",
+							Path: []string{
+								"foo",
+								"qux",
+							},
+						},
+						Children: nil,
+					},
+				},
+				Status: parser.StatusExpand,
+			},
+		},
+		{
+			fs: testFileSystem{
+				info: map[string]infoReturn{
+					"foo": {
+						returnValue: testFileInfo{
+							exists: true,
+							isDir:  false,
+						},
+						err: nil,
+					},
+					filepath.Join("test", "foo"): {
+						returnValue: testFileInfo{
+							exists: true,
+							isDir:  true,
+						},
+						err: nil,
+					},
+				},
+			},
+			n: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+			},
+			err: nil,
+			want: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+				Status:   parser.StatusConflict,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {

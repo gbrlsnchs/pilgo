@@ -5,4 +5,5 @@ type FileInfo interface {
 	Exists() bool
 	IsDir() bool
 	Linkname() string
+	List() ([]string, error)
 }
