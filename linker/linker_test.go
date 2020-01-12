@@ -305,14 +305,6 @@ func testResolve(t *testing.T) {
 						returnValue: testFileInfo{
 							exists: true,
 							isDir:  true,
-							list: listReturn{
-								returnValue: []string{
-									"bar",
-									"baz",
-									"qux",
-								},
-								err: nil,
-							},
 						},
 						err: nil,
 					},
@@ -320,6 +312,16 @@ func testResolve(t *testing.T) {
 						returnValue: testFileInfo{
 							exists: true,
 							isDir:  true,
+						},
+						err: nil,
+					},
+				},
+				readDir: map[string]readDirReturn{
+					"foo": readDirReturn{
+						returnValue: []string{
+							"bar",
+							"baz",
+							"qux",
 						},
 						err: nil,
 					},

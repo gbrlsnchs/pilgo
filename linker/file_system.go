@@ -4,4 +4,5 @@ package linker
 // a file's metadata and create a symlink.
 type FileSystem interface {
 	Info(filename string) (FileInfo, error)
+	ReadDir(dirname string) ([]string, error)
 }
