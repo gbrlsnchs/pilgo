@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/osfs"
 )
 
 func TestFileSystem(t *testing.T) {
 	t.Run("Info", testFileSystemInfo)
+	t.Run("ReadDir", testFileSystemReadDir)
 }
 
 func testFileSystemInfo(t *testing.T) {
@@ -74,6 +76,43 @@ func testFileSystemInfo(t *testing.T) {
 					t.Fatalf("want %q, got %q", want, got)
 				}
 			})
+		})
+	}
+}
+
+func testFileSystemReadDir(t *testing.T) {
+	testCases := []struct {
+		filename string
+		want     []string
+		err      error
+	}{
+		{
+			filename: "directory",
+			want:     []string{"bar", "foo"},
+			err:      nil,
+		},
+		{
+			filename: "symlink",
+			want:     []string{"bar", "foo"},
+			err:      nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.filename, func(t *testing.T) {
+			var (
+				fs       osfs.FileSystem
+				filename = filepath.Join("testdata", t.Name())
+			)
+			files, err := fs.ReadDir(filename)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			if want, got := tc.want, files; !cmp.Equal(got, want) {
+				t.Errorf(
+					"(*FileSystem).ReadDir mismatch (-want +got):\n%s",
+					cmp.Diff(want, got),
+				)
+			}
 		})
 	}
 }

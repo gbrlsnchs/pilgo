@@ -1,6 +1,7 @@
 package osfs
 
 import (
+	"io/ioutil"
 	"os"
 
 	"gsr.dev/pilgrim/linker"
@@ -8,6 +9,8 @@ import (
 
 // FileSystem is a OS file system that does real syscalls in order to work.
 type FileSystem struct{}
+
+var _ linker.FileSystem = new(FileSystem)
 
 // Info returns real information about a file.
 func (FileSystem) Info(filename string) (linker.FileInfo, error) {
@@ -27,6 +30,19 @@ func (FileSystem) Info(filename string) (linker.FileInfo, error) {
 		}
 	}
 	return info, nil
+}
+
+// ReadDir lists names of files from dirname.
+func (FileSystem) ReadDir(dirname string) ([]string, error) {
+	files, err := ioutil.ReadDir(dirname)
+	if err != nil {
+		return nil, err
+	}
+	names := make([]string, len(files))
+	for i, f := range files {
+		names[i] = f.Name()
+	}
+	return names, nil
 }
 
 type fileInfo struct {

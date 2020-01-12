@@ -12,6 +12,7 @@ func TestMain(m *testing.M) {
 	// on Windows, this creates them only for that platform.
 	testdirs := []string{
 		"Info",
+		"ReadDir",
 	}
 	for _, dir := range testdirs {
 		symlink := filepath.Join("testdata", "TestFileSystem", dir, "symlink")
