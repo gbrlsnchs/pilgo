@@ -16,3 +16,5 @@ func (f File) FullPath() string {
 	)
 	return filepath.Join(append(fullPath, f.Path...)...)
 }
+
+func (f File) base() string { return f.Path[len(f.Path)-1] }

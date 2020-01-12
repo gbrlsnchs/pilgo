@@ -7,7 +7,7 @@ type Status uint8
 
 const (
 	// StatusReady means the node is ready to be symlinked.
-	StatusReady Status = iota + 1
+	StatusReady Status = 1 << iota
 	// StatusSkip means the node has children and thus might be skipped.
 	StatusSkip
 	// StatusDone means the symlink already exists and is pointing exactly
