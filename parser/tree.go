@@ -17,7 +17,7 @@ func (tr *Tree) String() string {
 	var (
 		bd strings.Builder
 		w  = tabwriter.NewWriter(&bd, 0, 0, 1, ' ', 0)
-		tw = treewriter.NewWriter(w, tr.Root)
+		tw = treewriter.NewWriter(w, (*printableNode)(tr.Root))
 	)
 	tw.Write(nil)
 	w.Flush()

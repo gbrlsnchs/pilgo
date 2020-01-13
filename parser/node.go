@@ -17,13 +17,15 @@ type Node struct {
 	Status   Status
 }
 
+type printableNode Node
+
 // At returns a child node at index i.
-func (n *Node) At(i int) treewriter.Node { return n.Children[i] }
+func (n *printableNode) At(i int) treewriter.Node { return (*printableNode)(n.Children[i]) }
 
 // Len returns the number of children of n.
-func (n *Node) Len() int { return len(n.Children) }
+func (n *printableNode) Len() int { return len(n.Children) }
 
-func (n *Node) String() string {
+func (n *printableNode) String() string {
 	if len(n.Target.Path) == 0 {
 		return ""
 	}
