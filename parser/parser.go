@@ -43,3 +43,6 @@ func parseChildren(baseDir string, parentTarget []string, c pilgrim.Config) []*N
 	}
 	return children
 }
+
+// ParseOption is a funcional option that intend to modify a Parser.
+type ParseOption func(*Parser) error
