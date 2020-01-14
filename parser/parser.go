@@ -8,7 +8,8 @@ import (
 
 // Parser is a configuration parser.
 type Parser struct {
-	cwd string
+	cwd     string
+	baseDir string
 }
 
 // Parse parses a configuration file and returns its tree representation.
@@ -18,7 +19,10 @@ func (p *Parser) Parse(c pilgrim.Config, opts ...ParseOption) (*Tree, error) {
 			return nil, err
 		}
 	}
-	root := &Node{Children: p.parseChildren(c.BaseDir, nil, c)}
+	if p.baseDir == "" {
+		p.baseDir = c.BaseDir
+	}
+	root := &Node{Children: p.parseChildren(p.baseDir, nil, c)}
 	return &Tree{root}, nil
 }
 
@@ -53,6 +57,14 @@ func (p *Parser) parseChildren(baseDir string, parentTarget []string, c pilgrim.
 
 // ParseOption is a funcional option that intend to modify a Parser.
 type ParseOption func(*Parser) error
+
+// BaseDir sets the default base directory when none is provided.
+func BaseDir(dirname string) ParseOption {
+	return func(p *Parser) error {
+		p.baseDir = dirname
+		return nil
+	}
+}
 
 // Cwd sets a common cwd for targets.
 func Cwd(dirname string) ParseOption {
