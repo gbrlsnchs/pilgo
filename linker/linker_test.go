@@ -139,7 +139,7 @@ func testResolve(t *testing.T) {
 					filepath.Join("test", "foo"): {
 						returnValue: testFileInfo{
 							exists:   true,
-							linkname: filepath.Join("test", "foo"),
+							linkname: filepath.Join("", "foo"),
 						},
 						err: nil,
 					},

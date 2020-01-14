@@ -35,7 +35,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		return nil
 	}
 	if linkname := link.Linkname(); linkname != "" {
-		if linkname == lnpath {
+		if linkname == tgpath {
 			n.Status = parser.StatusDone
 			return nil
 		}
