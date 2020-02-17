@@ -10,8 +10,6 @@ import (
 // FileSystem is a OS file system that does real syscalls in order to work.
 type FileSystem struct{}
 
-var _ linker.FileSystem = new(FileSystem)
-
 // Info returns real information about a file.
 func (FileSystem) Info(filename string) (linker.FileInfo, error) {
 	var info fileInfo

@@ -6,8 +6,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"gsr.dev/pilgrim/linker"
 	"gsr.dev/pilgrim/osfs"
 )
+
+var _ linker.FileSystem = new(osfs.FileSystem)
 
 func TestFileSystem(t *testing.T) {
 	t.Run("Info", testFileSystemInfo)
