@@ -76,8 +76,9 @@ func (spy *ifaceSpy) SetFlags(f *flag.FlagSet) {
 func testCommandExecute(t *testing.T) {
 	var (
 		bd          strings.Builder
+		stderr strings.Builder
 		spy         = &ifaceSpy{&bd, "foobar", nil, nil}
-		c           = command.New(spy)
+		c           = command.New(spy, command.Stderr(&stderr))
 		ctx, cancel = context.WithCancel(context.Background())
 		status      = c.Execute(ctx, nil)
 	)
@@ -87,17 +88,28 @@ func testCommandExecute(t *testing.T) {
 	if want, got := "foobar", bd.String(); got != want {
 		t.Errorf("want %q, got %q", want, got)
 	}
+	if want, got := "", stderr.String(); got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
 	bd.Reset()
+	stderr.Reset()
 	spy.err = errors.New("oops")
 	status = c.Execute(ctx, nil)
 	if want, got := subcommands.ExitFailure, status; got != want {
 		t.Errorf("want %d, got %d", want, got)
 	}
+	if want, got := "command: oops\n", stderr.String(); got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
 	bd.Reset()
+	stderr.Reset()
 	spy.err = nil
 	cancel()
 	status = c.Execute(ctx, nil)
 	if want, got := subcommands.ExitFailure, status; got != want {
 		t.Errorf("want %d, got %d", want, got)
+	}
+	if want, got := fmt.Sprintf("command: %v\n", context.Canceled), stderr.String(); got != want {
+		t.Errorf("want %q, got %q", want, got)
 	}
 }

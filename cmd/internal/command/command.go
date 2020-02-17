@@ -3,6 +3,9 @@ package command
 import (
 	"context"
 	"flag"
+	"fmt"
+	"io"
+	"io/ioutil"
 
 	"github.com/google/subcommands"
 )
@@ -13,11 +16,12 @@ type Command struct {
 	name     string
 	synopsis string
 	usage    string
+	errout   io.Writer
 }
 
 // New creates a new command.
 func New(cmd Interface, opts ...func(*Command)) *Command {
-	c := &Command{cmd: cmd}
+	c := &Command{cmd: cmd, errout: ioutil.Discard}
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -48,6 +52,7 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 		err = c.cmd.Execute()
 	}
 	if err != nil {
+		fmt.Fprintf(c.errout, "command: %v\n", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -71,6 +76,14 @@ func Synopsis(s string) func(*Command) {
 func Usage(s string) func(*Command) {
 	return func(c *Command) {
 		c.usage = s
+	}
+}
+
+// Stderr sets an output for errors returned when the command is executed.
+// The default value is ioutil.Discard.
+func Stderr(w io.Writer) func(c *Command) {
+	return func(c *Command) {
+		c.errout = w
 	}
 }
 
