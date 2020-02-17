@@ -58,14 +58,13 @@ func testCommandSetFlags(t *testing.T) {
 }
 
 type ifaceSpy struct {
-	w    io.Writer
 	txt  string
 	err  error
 	fset *flag.FlagSet
 }
 
-func (spy *ifaceSpy) Execute() error {
-	fmt.Fprintf(spy.w, "%s", spy.txt)
+func (spy *ifaceSpy) Execute(w io.Writer) error {
+	fmt.Fprintf(w, "%s", spy.txt)
 	return spy.err
 }
 
@@ -77,34 +76,34 @@ func testCommandExecute(t *testing.T) {
 	testCases := []struct {
 		wantStatus subcommands.ExitStatus
 		out        string
-		wantOut    string
+		wantStdout string
 		err        error
 		cancel     bool
-		wantErrMsg string
+		wantStderr string
 	}{
 		{
 			wantStatus: subcommands.ExitSuccess,
 			out:        "test",
-			wantOut:    "test",
+			wantStdout: "test",
 			err:        nil,
 			cancel:     false,
-			wantErrMsg: "",
+			wantStderr: "",
 		},
 		{
 			wantStatus: subcommands.ExitFailure,
 			out:        "test",
-			wantOut:    "test",
+			wantStdout: "test",
 			err:        errors.New("oops"),
 			cancel:     false,
-			wantErrMsg: "command: oops\n",
+			wantStderr: "command: oops\n",
 		},
 		{
 			wantStatus: subcommands.ExitFailure,
 			out:        "test",
-			wantOut:    "", // context is checked before execution
+			wantStdout: "", // context is checked before execution
 			err:        nil,
 			cancel:     true,
-			wantErrMsg: fmt.Sprintf("command: %v\n", context.Canceled),
+			wantStderr: fmt.Sprintf("command: %v\n", context.Canceled),
 		},
 	}
 	for _, tc := range testCases {
@@ -115,19 +114,22 @@ func testCommandExecute(t *testing.T) {
 				cancel()
 			}
 			var (
-				bd     strings.Builder
-				stderr strings.Builder
-				spy    = &ifaceSpy{&bd, tc.out, tc.err, nil}
-				c      = command.New(spy, command.Stderr(&stderr))
+				stdout, stderr strings.Builder
+				spy            = &ifaceSpy{tc.out, tc.err, nil}
+				c              = command.New(
+					spy,
+					command.Stdout(&stdout),
+					command.Stderr(&stderr),
+				)
 				status = c.Execute(ctx, nil)
 			)
 			if want, got := tc.wantStatus, status; got != want {
 				t.Errorf("want %d, got %d", want, got)
 			}
-			if want, got := tc.wantOut, bd.String(); got != want {
+			if want, got := tc.wantStdout, stdout.String(); got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
-			if want, got := tc.wantErrMsg, stderr.String(); got != want {
+			if want, got := tc.wantStderr, stderr.String(); got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
 		})

@@ -16,12 +16,17 @@ type Command struct {
 	name     string
 	synopsis string
 	usage    string
-	errout   io.Writer
+
+	stdout, stderr io.Writer
 }
 
 // New creates a new command.
 func New(cmd Interface, opts ...func(*Command)) *Command {
-	c := &Command{cmd: cmd, errout: ioutil.Discard}
+	c := &Command{
+		cmd:    cmd,
+		stdout: ioutil.Discard,
+		stderr: ioutil.Discard,
+	}
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -49,10 +54,10 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 	case <-ctx.Done():
 		err = ctx.Err()
 	default:
-		err = c.cmd.Execute()
+		err = c.cmd.Execute(c.stdout)
 	}
 	if err != nil {
-		fmt.Fprintf(c.errout, "command: %v\n", err)
+		fmt.Fprintf(c.stderr, "command: %v\n", err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
@@ -79,16 +84,24 @@ func Usage(s string) func(*Command) {
 	}
 }
 
+// Stdout sets a standard output the command when it is executed.
+// The default value is ioutil.Discard.
+func Stdout(w io.Writer) func(c *Command) {
+	return func(c *Command) {
+		c.stdout = w
+	}
+}
+
 // Stderr sets an output for errors returned when the command is executed.
 // The default value is ioutil.Discard.
 func Stderr(w io.Writer) func(c *Command) {
 	return func(c *Command) {
-		c.errout = w
+		c.stderr = w
 	}
 }
 
 // Interface is a command to be wrapped by Command.
 type Interface interface {
-	Execute() error
+	Execute(io.Writer) error
 	SetFlags(*flag.FlagSet)
 }
