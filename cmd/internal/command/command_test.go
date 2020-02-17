@@ -74,42 +74,62 @@ func (spy *ifaceSpy) SetFlags(f *flag.FlagSet) {
 }
 
 func testCommandExecute(t *testing.T) {
-	var (
-		bd          strings.Builder
-		stderr strings.Builder
-		spy         = &ifaceSpy{&bd, "foobar", nil, nil}
-		c           = command.New(spy, command.Stderr(&stderr))
-		ctx, cancel = context.WithCancel(context.Background())
-		status      = c.Execute(ctx, nil)
-	)
-	if want, got := subcommands.ExitSuccess, status; got != want {
-		t.Errorf("want %d, got %d", want, got)
+	testCases := []struct {
+		wantStatus subcommands.ExitStatus
+		out        string
+		wantOut    string
+		err        error
+		cancel     bool
+		wantErrMsg string
+	}{
+		{
+			wantStatus: subcommands.ExitSuccess,
+			out:        "test",
+			wantOut:    "test",
+			err:        nil,
+			cancel:     false,
+			wantErrMsg: "",
+		},
+		{
+			wantStatus: subcommands.ExitFailure,
+			out:        "test",
+			wantOut:    "test",
+			err:        errors.New("oops"),
+			cancel:     false,
+			wantErrMsg: "command: oops\n",
+		},
+		{
+			wantStatus: subcommands.ExitFailure,
+			out:        "test",
+			wantOut:    "", // context is checked before execution
+			err:        nil,
+			cancel:     true,
+			wantErrMsg: fmt.Sprintf("command: %v\n", context.Canceled),
+		},
 	}
-	if want, got := "foobar", bd.String(); got != want {
-		t.Errorf("want %q, got %q", want, got)
-	}
-	if want, got := "", stderr.String(); got != want {
-		t.Errorf("want %q, got %q", want, got)
-	}
-	bd.Reset()
-	stderr.Reset()
-	spy.err = errors.New("oops")
-	status = c.Execute(ctx, nil)
-	if want, got := subcommands.ExitFailure, status; got != want {
-		t.Errorf("want %d, got %d", want, got)
-	}
-	if want, got := "command: oops\n", stderr.String(); got != want {
-		t.Errorf("want %q, got %q", want, got)
-	}
-	bd.Reset()
-	stderr.Reset()
-	spy.err = nil
-	cancel()
-	status = c.Execute(ctx, nil)
-	if want, got := subcommands.ExitFailure, status; got != want {
-		t.Errorf("want %d, got %d", want, got)
-	}
-	if want, got := fmt.Sprintf("command: %v\n", context.Canceled), stderr.String(); got != want {
-		t.Errorf("want %q, got %q", want, got)
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			if tc.cancel {
+				cancel()
+			}
+			var (
+				bd     strings.Builder
+				stderr strings.Builder
+				spy    = &ifaceSpy{&bd, tc.out, tc.err, nil}
+				c      = command.New(spy, command.Stderr(&stderr))
+				status = c.Execute(ctx, nil)
+			)
+			if want, got := tc.wantStatus, status; got != want {
+				t.Errorf("want %d, got %d", want, got)
+			}
+			if want, got := tc.wantOut, bd.String(); got != want {
+				t.Errorf("want %q, got %q", want, got)
+			}
+			if want, got := tc.wantErrMsg, stderr.String(); got != want {
+				t.Errorf("want %q, got %q", want, got)
+			}
+		})
 	}
 }
