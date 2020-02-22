@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"errors"
+	"flag"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -11,10 +13,15 @@ import (
 	"github.com/andybalholm/crlf"
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/text/transform"
+	"gsr.dev/pilgrim/cmd/internal/command"
 )
+
+var _ command.Interface = new(listCmd)
+var allowUnexported = cmp.AllowUnexported(listCmd{})
 
 func TestList(t *testing.T) {
 	t.Run("Execute", testListExecute)
+	t.Run("SetFlags", testListSetFlags)
 }
 
 func testListExecute(t *testing.T) {
@@ -72,6 +79,59 @@ func testListExecute(t *testing.T) {
 			// This guarantees the config file has only been read, not written.
 			if want, got := before, after; bytes.Compare(got, want) != 0 {
 				t.Errorf("%s has been modified after listing", tc.cmd.config)
+			}
+		})
+	}
+}
+
+func testListSetFlags(t *testing.T) {
+	testCases := []struct {
+		flags map[string]string
+		want  listCmd
+	}{
+		{
+			flags: nil,
+			want: listCmd{
+				check: false,
+			},
+		},
+		{
+			flags: map[string]string{
+				"check": "false",
+			},
+			want: listCmd{
+				check: false,
+			},
+		},
+		{
+			flags: map[string]string{
+				"check": "true",
+			},
+			want: listCmd{
+				check: true,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			var (
+				cmd  listCmd
+				fset = flag.NewFlagSet("list", flag.PanicOnError)
+				args = make([]string, 0, len(tc.flags))
+			)
+			for name, value := range tc.flags {
+				args = append(args, fmt.Sprintf("-%s=%s", name, value))
+			}
+			cmd.SetFlags(fset)
+			t.Logf("args: %v", args)
+			if err := fset.Parse(args); err != nil {
+				t.Fatal(err)
+			}
+			if want, got := tc.want, cmd; !cmp.Equal(got, want, allowUnexported) {
+				t.Errorf(
+					"(*listCmd).SetFlags mismatch (-want +got):\n%s",
+					cmp.Diff(want, got, allowUnexported),
+				)
 			}
 		})
 	}

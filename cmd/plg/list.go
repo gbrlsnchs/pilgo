@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -45,4 +46,9 @@ func (cmd listCmd) Execute(stdout io.Writer) error {
 	// TODO(gbrlsnchs): print errors' details
 	fmt.Fprint(stdout, tr)
 	return nil
+}
+
+// SetFlags resolves flags.
+func (cmd *listCmd) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&cmd.check, "check", false, "check all files")
 }
