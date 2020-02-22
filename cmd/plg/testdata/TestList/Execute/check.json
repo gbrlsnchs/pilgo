@@ -1,0 +1,6 @@
+{
+  "BaseDir": "/tmp",
+  "targets": [
+    "test"
+  ]
+}
