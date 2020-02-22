@@ -1,0 +1,9 @@
+$ cp pilgrim.json
+$ plg list
+.
+└── test <- /tmp/test
+
+$ cp test
+$ plg list -check
+.
+└── test <- /tmp/test (READY)
