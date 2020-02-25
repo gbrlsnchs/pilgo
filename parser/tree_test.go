@@ -122,11 +122,34 @@ func testTreeString(t *testing.T) {
 └── corge   <- test/corge   (ERROR)
 `,
 		},
+		{
+
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{}},
+						Children: []*parser.Node{
+							{
+								Target:   parser.File{"", []string{"foo", "bar"}},
+								Link:     parser.File{"home", []string{"bar"}},
+								Children: nil,
+							},
+						},
+					},
+				}},
+			},
+			want: `.
+└── foo     
+    └── bar <- home/bar
+`,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			if want, got := filepath.FromSlash(tc.want), tc.tr.String(); got != want {
-				t.Errorf("want\n%s\ngot\n%s", want, got)
+				t.Errorf("\nwant\n%s\ngot\n%s", want, got)
+				t.Logf("\ndiff (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
 	}

@@ -33,14 +33,13 @@ func (n *printableNode) String() string {
 		bd     strings.Builder
 		symbol = "<-"
 	)
-	if n.Status&dullStatus != 0 {
+	printLink := n.Status&dullStatus == 0 && len(n.Link.Path) > 0
+	if !printLink {
 		symbol = ""
 	}
 	fmt.Fprintf(&bd, "%s\t%s", n.Target.base(), symbol)
-	if n.Status&dullStatus == 0 {
-		if fullPath := n.Link.FullPath(); fullPath != "" {
-			fmt.Fprintf(&bd, " %s", fullPath)
-		}
+	if printLink {
+		fmt.Fprintf(&bd, " %s", n.Link.FullPath())
 	}
 	if n.Status > 0 {
 		fmt.Fprintf(&bd, "\t(%s)", n.Status)
