@@ -22,37 +22,44 @@ func (p *Parser) Parse(c pilgrim.Config, opts ...ParseOption) (*Tree, error) {
 	if p.baseDir == "" {
 		p.baseDir = c.BaseDir
 	}
-	root := &Node{Children: p.parseChildren(p.baseDir, nil, c)}
+	root := &Node{Children: p.parseChildren(p.baseDir, nil, nil, c)}
 	return &Tree{root}, nil
 }
 
-func (p *Parser) parseTarget(baseDir string, target []string, c pilgrim.Config) *Node {
-	n := &Node{Target: File{p.cwd, target}}
-	if c.BaseDir != "" {
-		baseDir = c.BaseDir
-	}
-	tglen := len(target)
-	link := make([]string, tglen)
-	copy(link, target)
-	if c.Link != nil {
-		link[tglen-1] = *c.Link
-	}
-	n.Link = File{baseDir, link}
-	n.Children = p.parseChildren(baseDir, target, c)
-	return n
-}
-
-func (p *Parser) parseChildren(baseDir string, parentTarget []string, c pilgrim.Config) []*Node {
+func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string, c pilgrim.Config) []*Node {
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
 		sort.Strings(c.Targets)
 		children = make([]*Node, tglen)
 		for i, tg := range c.Targets {
-			children[i] = p.parseTarget(baseDir, append(parentTarget, tg), c.Options[tg])
+			children[i] = p.parseTarget(
+				baseDir,
+				append(parentTarget, tg),
+				append(parentLink, tg),
+				c.Options[tg],
+			)
 		}
 	}
 	return children
+}
+
+func (p *Parser) parseTarget(baseDir string, target, link []string, c pilgrim.Config) *Node {
+	n := &Node{Target: File{p.cwd, target}}
+	if c.BaseDir != "" {
+		baseDir = c.BaseDir
+	}
+	if c.Link != nil {
+		lnlen := len(link)
+		linkname := *c.Link
+		link[lnlen-1] = linkname
+		if linkname == "" {
+			link = link[:lnlen-1]
+		}
+	}
+	n.Link = File{baseDir, link}
+	n.Children = p.parseChildren(baseDir, target, link, c)
+	return n
 }
 
 // ParseOption is a funcional option that intend to modify a Parser.

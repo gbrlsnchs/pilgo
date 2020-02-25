@@ -185,6 +185,74 @@ func testParserParse(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+				},
+				Options: map[string]pilgrim.Config{
+					"foo": {
+						BaseDir: "home",
+						Link:    newString(""),
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{}},
+						Children: []*parser.Node{
+							{
+								Target:   parser.File{"", []string{"foo", "bar"}},
+								Link:     parser.File{"home", []string{"bar"}},
+								Children: nil,
+							},
+						},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+				},
+				Options: map[string]pilgrim.Config{
+					"foo": {
+						BaseDir: "home",
+						Link:    newString("golang"),
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{"golang"}},
+						Children: []*parser.Node{
+							{
+								Target:   parser.File{"", []string{"foo", "bar"}},
+								Link:     parser.File{"home", []string{"golang", "bar"}},
+								Children: nil,
+							},
+						},
+					},
+				}},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
