@@ -164,7 +164,7 @@ func testParserParse(t *testing.T) {
 		},
 		{
 			c: pilgrim.Config{
-				Link:    nil,
+				Link: nil,
 				Targets: []string{
 					"foo",
 					"bar",
