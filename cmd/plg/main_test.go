@@ -9,7 +9,9 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/andybalholm/crlf"
 	cmdtest "github.com/google/go-cmdtest"
+	"golang.org/x/text/transform"
 )
 
 const failureStatus = 0xDEADC0DE // 3735929054
@@ -64,4 +66,20 @@ func cpCmd(pwd string) func() int {
 		return 0
 	}
 
+}
+
+// misc
+func readFile(t *testing.T, name string) string {
+	golden, err := ioutil.ReadFile(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	goldenlf, _, err := transform.String(
+		new(crlf.Normalize),
+		filepath.FromSlash(string(golden)),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return goldenlf
 }

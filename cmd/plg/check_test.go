@@ -14,23 +14,23 @@ import (
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
-var _ command.Interface = new(showCmd)
+var _ command.Interface = new(checkCmd)
 
-func TestShow(t *testing.T) {
-	t.Run("Execute", testShowExecute)
-	t.Run("SetFlags", testShowSetFlags)
+func TestCheck(t *testing.T) {
+	t.Run("Execute", testCheckExecute)
+	t.Run("SetFlags", testCheckSetFlags)
 }
 
-func testShowExecute(t *testing.T) {
+func testCheckExecute(t *testing.T) {
 	testCases := []struct {
 		name string
-		cmd  showCmd
+		cmd  checkCmd
 		want string
 		err  error
 	}{
 		{
-			name: "show",
-			cmd:  showCmd{},
+			name: "check",
+			cmd:  checkCmd{},
 			err:  nil,
 		},
 	}
@@ -66,21 +66,21 @@ func testShowExecute(t *testing.T) {
 	}
 }
 
-func testShowSetFlags(t *testing.T) {
-	allowUnexported := cmp.AllowUnexported(showCmd{})
+func testCheckSetFlags(t *testing.T) {
+	allowUnexported := cmp.AllowUnexported(checkCmd{})
 	testCases := []struct {
 		flags map[string]string
-		want  showCmd
+		want  checkCmd
 	}{
 		{
 			flags: nil,
-			want:  showCmd{},
+			want:  checkCmd{},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			var (
-				cmd  showCmd
+				cmd  checkCmd
 				fset = flag.NewFlagSet("show", flag.PanicOnError)
 				args = make([]string, 0, len(tc.flags))
 			)

@@ -2,8 +2,3 @@ $ cp pilgrim.json
 $ plg show
 .
 └── test <- \tmp\test
-
-$ cp test
-$ plg show -check
-.
-└── test <- \tmp\test (READY)
