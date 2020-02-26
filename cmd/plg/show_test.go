@@ -16,29 +16,29 @@ import (
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
-var _ command.Interface = new(listCmd)
-var allowUnexported = cmp.AllowUnexported(listCmd{})
+var _ command.Interface = new(showCmd)
+var allowUnexported = cmp.AllowUnexported(showCmd{})
 
-func TestList(t *testing.T) {
-	t.Run("Execute", testListExecute)
-	t.Run("SetFlags", testListSetFlags)
+func TestShow(t *testing.T) {
+	t.Run("Execute", testShowExecute)
+	t.Run("SetFlags", testShowSetFlags)
 }
 
-func testListExecute(t *testing.T) {
+func testShowExecute(t *testing.T) {
 	testCases := []struct {
 		name string
-		cmd  listCmd
+		cmd  showCmd
 		want string
 		err  error
 	}{
 		{
 			name: "default",
-			cmd:  listCmd{},
+			cmd:  showCmd{},
 			err:  nil,
 		},
 		{
 			name: "check",
-			cmd:  listCmd{check: true},
+			cmd:  showCmd{check: true},
 			err:  nil,
 		},
 	}
@@ -68,7 +68,7 @@ func testListExecute(t *testing.T) {
 			}
 			if want, got := goldenlf, bd.String(); got != want {
 				t.Errorf(
-					"Command list output mismatch (-want +got):\n%s",
+					`"show" command output mismatch (-want +got):\n%s`,
 					cmp.Diff(want, got),
 				)
 			}
@@ -78,20 +78,20 @@ func testListExecute(t *testing.T) {
 			}
 			// This guarantees the config file has only been read, not written.
 			if want, got := before, after; bytes.Compare(got, want) != 0 {
-				t.Errorf("%s has been modified after listing", tc.cmd.config)
+				t.Errorf("%s has been modified after command", tc.cmd.config)
 			}
 		})
 	}
 }
 
-func testListSetFlags(t *testing.T) {
+func testShowSetFlags(t *testing.T) {
 	testCases := []struct {
 		flags map[string]string
-		want  listCmd
+		want  showCmd
 	}{
 		{
 			flags: nil,
-			want: listCmd{
+			want: showCmd{
 				check: false,
 			},
 		},
@@ -99,7 +99,7 @@ func testListSetFlags(t *testing.T) {
 			flags: map[string]string{
 				"check": "false",
 			},
-			want: listCmd{
+			want: showCmd{
 				check: false,
 			},
 		},
@@ -107,7 +107,7 @@ func testListSetFlags(t *testing.T) {
 			flags: map[string]string{
 				"check": "true",
 			},
-			want: listCmd{
+			want: showCmd{
 				check: true,
 			},
 		},
@@ -115,8 +115,8 @@ func testListSetFlags(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			var (
-				cmd  listCmd
-				fset = flag.NewFlagSet("list", flag.PanicOnError)
+				cmd  showCmd
+				fset = flag.NewFlagSet("show", flag.PanicOnError)
 				args = make([]string, 0, len(tc.flags))
 			)
 			for name, value := range tc.flags {
@@ -129,7 +129,7 @@ func testListSetFlags(t *testing.T) {
 			}
 			if want, got := tc.want, cmd; !cmp.Equal(got, want, allowUnexported) {
 				t.Errorf(
-					"(*listCmd).SetFlags mismatch (-want +got):\n%s",
+					"(*showCmd).SetFlags mismatch (-want +got):\n%s",
 					cmp.Diff(want, got, allowUnexported),
 				)
 			}

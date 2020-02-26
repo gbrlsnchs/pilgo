@@ -13,7 +13,7 @@ import (
 	"gsr.dev/pilgrim/parser"
 )
 
-type listCmd struct {
+type showCmd struct {
 	config string
 
 	// flags
@@ -23,7 +23,7 @@ type listCmd struct {
 
 // Execute builds a tree of symlinks based on a configuration file
 // and writes it to stdout.
-func (cmd listCmd) Execute(stdout io.Writer) error {
+func (cmd showCmd) Execute(stdout io.Writer) error {
 	b, err := ioutil.ReadFile(cmd.config)
 	if err != nil {
 		return err
@@ -49,6 +49,6 @@ func (cmd listCmd) Execute(stdout io.Writer) error {
 }
 
 // SetFlags resolves flags.
-func (cmd *listCmd) SetFlags(f *flag.FlagSet) {
+func (cmd *showCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&cmd.check, "check", false, "check all files")
 }

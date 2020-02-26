@@ -39,11 +39,11 @@ func run() int {
 	// This note can be removed when https://github.com/google/subcommands/issues/32 gets resolved.
 	cmd := subcommands.NewCommander(flag.CommandLine, filepath.Base(exe))
 	cmd.Register(command.New(
-		&listCmd{config: defaultConfig, cwd: cwd},
-		command.Name("list"),
-		command.Synopsis("List files to be symlinked."),
-		command.Usage(`list [-check]:
-	List files to be symlinked.`),
+		&showCmd{config: defaultConfig, cwd: cwd},
+		command.Name("show"),
+		command.Synopsis("Show tree view of files to be symlinked."),
+		command.Usage(`show [-check]:
+	Show tree view of files to be symlinked.`),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
