@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"gsr.dev/pilgrim/fs/osfs"
 	"gsr.dev/pilgrim/linker"
-	"gsr.dev/pilgrim/osfs"
 )
 
 type checkCmd struct {

@@ -7,7 +7,7 @@ import (
 	"gsr.dev/pilgrim/fs"
 )
 
-// FileSystem is a OS file system that does real syscalls in order to work.
+// FileSystem is a concrete file system that implements a VFS contract.
 type FileSystem struct{}
 
 // Info returns real information about a file.

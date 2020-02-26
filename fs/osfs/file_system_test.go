@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/osfs"
+	"gsr.dev/pilgrim/fs/osfs"
 )
 
 var _ fs.FileSystem = new(osfs.FileSystem)
