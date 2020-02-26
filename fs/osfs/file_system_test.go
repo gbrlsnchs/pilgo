@@ -2,6 +2,7 @@ package osfs_test
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -10,11 +11,15 @@ import (
 	"gsr.dev/pilgrim/fs/osfs"
 )
 
-var _ fs.FileSystem = new(osfs.FileSystem)
+var (
+	_ fs.FileSystem = osfs.FileSystem{}
+	_ fs.FileSystem = new(osfs.FileSystem)
+)
 
 func TestFileSystem(t *testing.T) {
 	t.Run("Info", testFileSystemInfo)
 	t.Run("ReadDir", testFileSystemReadDir)
+	t.Run("ReadFile", testFileSystemReadFile)
 }
 
 func testFileSystemInfo(t *testing.T) {
@@ -115,6 +120,40 @@ func testFileSystemReadDir(t *testing.T) {
 					"(*FileSystem).ReadDir mismatch (-want +got):\n%s",
 					cmp.Diff(want, got),
 				)
+			}
+		})
+	}
+}
+
+func testFileSystemReadFile(t *testing.T) {
+	testCases := []struct {
+		filename string
+		want     string
+		err      error
+	}{
+		{
+			filename: "test.txt",
+			want:     "read file test\n",
+			err:      nil,
+		},
+		{
+			filename: "nonexistent.txt",
+			want:     "",
+			err:      os.ErrNotExist,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.filename, func(t *testing.T) {
+			var (
+				fs       osfs.FileSystem
+				filename = filepath.Join("testdata", t.Name())
+			)
+			b, err := fs.ReadFile(filename)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			if want, got := tc.want, b; string(got) != want {
+				t.Errorf("want %q, got %q", want, got)
 			}
 		})
 	}

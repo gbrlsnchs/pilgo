@@ -4,8 +4,14 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/andybalholm/crlf"
+	"golang.org/x/text/transform"
 	"gsr.dev/pilgrim/fs"
 )
+
+// NOTE(gbrlsnchs): Declaring this variable here might prevent concurrent file reads, since
+// this is a stateful transformer used between reads and reset at the beginning of reads.
+var normalize = new(crlf.Normalize)
 
 // FileSystem is a concrete file system that implements a VFS contract.
 type FileSystem struct{}
@@ -41,6 +47,17 @@ func (FileSystem) ReadDir(dirname string) ([]string, error) {
 		names[i] = f.Name()
 	}
 	return names, nil
+}
+
+// ReadFile returns the content of filename.
+// It always transforms CRLF newlines into LF only.
+func (FileSystem) ReadFile(filename string) ([]byte, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return ioutil.ReadAll(transform.NewReader(f, normalize))
 }
 
 type fileInfo struct {

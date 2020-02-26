@@ -5,4 +5,5 @@ package fs
 type FileSystem interface {
 	Info(filename string) (FileInfo, error)
 	ReadDir(dirname string) ([]string, error)
+	ReadFile(filename string) ([]byte, error)
 }

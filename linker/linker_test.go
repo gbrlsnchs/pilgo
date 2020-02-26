@@ -2,6 +2,7 @@ package linker_test
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -490,12 +491,16 @@ func (fs testFileSystem) ReadDir(name string) ([]string, error) {
 	return fs.readDir[name].returnValue, fs.readDir[name].err
 }
 
+func (ts testFileSystem) ReadFile(_ string) ([]byte, error)                 { return nil, nil }
+func (ts testFileSystem) WriteFile(_ string, _ []byte, _ os.FileMode) error { return nil }
+
 type testFileInfo struct {
 	exists   bool
 	isDir    bool
 	linkname string
 }
 
-func (fi testFileInfo) Exists() bool     { return fi.exists }
-func (fi testFileInfo) IsDir() bool      { return fi.isDir }
-func (fi testFileInfo) Linkname() string { return fi.linkname }
+func (fi testFileInfo) Exists() bool      { return fi.exists }
+func (fi testFileInfo) IsDir() bool       { return fi.isDir }
+func (fi testFileInfo) Linkname() string  { return fi.linkname }
+func (fi testFileInfo) Perm() os.FileMode { return 0 }
