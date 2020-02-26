@@ -2,12 +2,15 @@ package osfs_test
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
+	"github.com/andybalholm/crlf"
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/text/transform"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/fs/osfs"
 )
@@ -39,6 +42,7 @@ func TestFileSystem(t *testing.T) {
 	t.Run("Info", testFileSystemInfo)
 	t.Run("ReadDir", testFileSystemReadDir)
 	t.Run("ReadFile", testFileSystemReadFile)
+	t.Run("WriteFile", testFileSystemWriteFile)
 }
 
 func testFileSystemInfo(t *testing.T) {
@@ -186,4 +190,55 @@ func testFileSystemReadFile(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testFileSystemWriteFile(t *testing.T) {
+	testCases := []struct {
+		filename string
+		wantData string
+		wantPerm os.FileMode
+		err      error
+	}{
+		{
+			filename: "test.txt",
+			wantData: "write file test\n",
+			wantPerm: filePerms[runtime.GOOS],
+			err:      nil,
+		},
+	}
+	normalize := new(crlf.Normalize)
+	for _, tc := range testCases {
+		t.Run(tc.filename, func(t *testing.T) {
+			var (
+				fs       osfs.FileSystem
+				filename = filepath.Join("testdata", t.Name())
+			)
+			err := fs.WriteFile(filename, []byte(tc.wantData), tc.wantPerm)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			f, err := os.Open(filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.Remove(filename)
+			defer f.Close()
+			r := transform.NewReader(f, normalize)
+			b, err := ioutil.ReadAll(r)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want, got := tc.wantData, b; string(got) != want {
+				t.Errorf("want %q, got %q", want, got)
+			}
+			fi, err := os.Stat(filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want, got := tc.wantPerm, fi.Mode().Perm(); got != want {
+				t.Errorf("want %#o, got %#o", want, got)
+			}
+		})
+	}
+
 }

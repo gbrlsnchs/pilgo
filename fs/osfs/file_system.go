@@ -63,6 +63,12 @@ func (FileSystem) ReadFile(filename string) ([]byte, error) {
 	return ioutil.ReadAll(transform.NewReader(f, normalize))
 }
 
+// WriteFile writes data to filename with permission perm.
+func (FileSystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
+	// TODO(gbrlsnchs): use package "renameio"
+	return ioutil.WriteFile(filename, data, perm)
+}
+
 type fileInfo struct {
 	exists   bool
 	isDir    bool
