@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,6 +15,24 @@ import (
 var (
 	_ fs.FileSystem = osfs.FileSystem{}
 	_ fs.FileSystem = new(osfs.FileSystem)
+)
+
+var (
+	filePerms = map[string]os.FileMode{
+		"darwin":  0o644,
+		"linux":   0o644,
+		"windows": 0o666,
+	}
+	directoryPerms = map[string]os.FileMode{
+		"darwin":  0o755,
+		"linux":   0o755,
+		"windows": 0o777,
+	}
+	symlinkPerms = map[string]os.FileMode{
+		"darwin":  0o755,
+		"linux":   0o777,
+		"windows": 0o666,
+	}
 )
 
 func TestFileSystem(t *testing.T) {
@@ -28,6 +47,7 @@ func testFileSystemInfo(t *testing.T) {
 		exists   bool
 		isDir    bool
 		linkname string
+		perm     os.FileMode
 		err      error
 	}{
 		{
@@ -35,6 +55,7 @@ func testFileSystemInfo(t *testing.T) {
 			exists:   true,
 			isDir:    false,
 			linkname: "",
+			perm:     filePerms[runtime.GOOS],
 			err:      nil,
 		},
 		{
@@ -42,6 +63,7 @@ func testFileSystemInfo(t *testing.T) {
 			exists:   false,
 			isDir:    false,
 			linkname: "",
+			perm:     0,
 			err:      nil,
 		},
 		{
@@ -49,6 +71,7 @@ func testFileSystemInfo(t *testing.T) {
 			exists:   true,
 			isDir:    true,
 			linkname: "",
+			perm:     directoryPerms[runtime.GOOS],
 			err:      nil,
 		},
 		{
@@ -56,6 +79,7 @@ func testFileSystemInfo(t *testing.T) {
 			exists:   true,
 			isDir:    false,
 			linkname: "directory",
+			perm:     symlinkPerms[runtime.GOOS],
 			err:      nil,
 		},
 	}
@@ -82,6 +106,11 @@ func testFileSystemInfo(t *testing.T) {
 			t.Run("Linkname", func(t *testing.T) {
 				if want, got := tc.linkname, fi.Linkname(); want != got {
 					t.Fatalf("want %q, got %q", want, got)
+				}
+			})
+			t.Run("Perm", func(t *testing.T) {
+				if want, got := tc.perm, fi.Perm(); got != want {
+					t.Fatalf("want %#o, got %#o", want, got)
 				}
 			})
 		})

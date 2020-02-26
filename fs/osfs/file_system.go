@@ -18,17 +18,20 @@ type FileSystem struct{}
 
 // Info returns real information about a file.
 func (FileSystem) Info(filename string) (fs.FileInfo, error) {
-	var info fileInfo
 	fi, err := os.Lstat(filename)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
-		return info, nil
+		return fileInfo{exists: false}, nil
 	}
-	info.exists = true
-	info.isDir = fi.IsDir()
-	if fi.Mode()&os.ModeSymlink != 0 {
+	mode := fi.Mode()
+	info := fileInfo{
+		exists: true,
+		isDir:  fi.IsDir(),
+		perm:   mode.Perm(),
+	}
+	if mode&os.ModeSymlink != 0 {
 		if info.linkname, err = os.Readlink(filename); err != nil {
 			return nil, err
 		}
@@ -64,8 +67,10 @@ type fileInfo struct {
 	exists   bool
 	isDir    bool
 	linkname string
+	perm     os.FileMode
 }
 
-func (fi fileInfo) Exists() bool     { return fi.exists }
-func (fi fileInfo) IsDir() bool      { return fi.isDir }
-func (fi fileInfo) Linkname() string { return fi.linkname }
+func (fi fileInfo) Exists() bool      { return fi.exists }
+func (fi fileInfo) IsDir() bool       { return fi.isDir }
+func (fi fileInfo) Linkname() string  { return fi.linkname }
+func (fi fileInfo) Perm() os.FileMode { return fi.perm }
