@@ -4,14 +4,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"gsr.dev/pilgrim/linker"
+	"gsr.dev/pilgrim/fs"
 )
 
 // FileSystem is a OS file system that does real syscalls in order to work.
 type FileSystem struct{}
 
 // Info returns real information about a file.
-func (FileSystem) Info(filename string) (linker.FileInfo, error) {
+func (FileSystem) Info(filename string) (fs.FileInfo, error) {
 	var info fileInfo
 	fi, err := os.Lstat(filename)
 	if err != nil {

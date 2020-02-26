@@ -1,4 +1,4 @@
-package linker
+package fs
 
 // FileInfo describes information about a file.
 type FileInfo interface {

@@ -1,14 +1,17 @@
 package linker
 
-import "gsr.dev/pilgrim/parser"
+import (
+	"gsr.dev/pilgrim/fs"
+	"gsr.dev/pilgrim/parser"
+)
 
 // Linker is a file symlinker.
 type Linker struct {
-	fs FileSystem
+	fs fs.FileSystem
 }
 
 // New creates a new linker with a given file system.
-func New(fs FileSystem) *Linker { return &Linker{fs} }
+func New(fs fs.FileSystem) *Linker { return &Linker{fs} }
 
 // Resolve checks and resolves nodes in a parsed tree.
 func (ln *Linker) Resolve(n *parser.Node) error {

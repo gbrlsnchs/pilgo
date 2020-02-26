@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/linker"
 	"gsr.dev/pilgrim/parser"
 )
@@ -16,7 +17,7 @@ func TestLinker(t *testing.T) {
 
 func testResolve(t *testing.T) {
 	testCases := []struct {
-		fs   linker.FileSystem
+		fs   fs.FileSystem
 		n    *parser.Node
 		err  error
 		want *parser.Node
@@ -465,3 +466,36 @@ func testResolve(t *testing.T) {
 		})
 	}
 }
+
+type infoReturn struct {
+	returnValue fs.FileInfo
+	err         error
+}
+
+type readDirReturn struct {
+	returnValue []string
+	err         error
+}
+
+type testFileSystem struct {
+	info    map[string]infoReturn
+	readDir map[string]readDirReturn
+}
+
+func (fs testFileSystem) Info(name string) (fs.FileInfo, error) {
+	return fs.info[name].returnValue, fs.info[name].err
+}
+
+func (fs testFileSystem) ReadDir(name string) ([]string, error) {
+	return fs.readDir[name].returnValue, fs.readDir[name].err
+}
+
+type testFileInfo struct {
+	exists   bool
+	isDir    bool
+	linkname string
+}
+
+func (fi testFileInfo) Exists() bool     { return fi.exists }
+func (fi testFileInfo) IsDir() bool      { return fi.isDir }
+func (fi testFileInfo) Linkname() string { return fi.linkname }
