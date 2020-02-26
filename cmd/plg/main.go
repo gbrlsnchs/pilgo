@@ -4,15 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/google/subcommands"
-	"gopkg.in/yaml.v3"
-	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
-	"gsr.dev/pilgrim/parser"
 )
 
 const defaultConfig = "pilgrim.yml"
@@ -62,21 +58,4 @@ func run() int {
 	), "")
 	flag.Parse()
 	return int(cmd.Execute(context.TODO()))
-}
-
-func buildTree(config, cwd string) (*parser.Tree, error) {
-	b, err := ioutil.ReadFile(config)
-	if err != nil {
-		return nil, err
-	}
-	var c pilgrim.Config
-	if err = yaml.Unmarshal(b, &c); err != nil {
-		return nil, err
-	}
-	var p parser.Parser
-	tr, err := p.Parse(c, parser.Cwd(cwd))
-	if err != nil {
-		return nil, err
-	}
-	return tr, err
 }

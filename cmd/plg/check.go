@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 
+	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/fs/osfs"
 	"gsr.dev/pilgrim/linker"
+	"gsr.dev/pilgrim/parser"
 )
 
 type checkCmd struct {
@@ -15,14 +18,21 @@ type checkCmd struct {
 }
 
 func (cmd checkCmd) Execute(stdout io.Writer) error {
-	tr, err := buildTree(cmd.config, cmd.cwd)
+	var fs osfs.FileSystem
+	b, err := fs.ReadFile(cmd.config)
 	if err != nil {
 		return err
 	}
-	var (
-		fs osfs.FileSystem
-		ln = linker.New(fs)
-	)
+	var c pilgrim.Config
+	if yaml.Unmarshal(b, &c); err != nil {
+		return err
+	}
+	var p parser.Parser
+	tr, err := p.Parse(c, parser.Cwd(cmd.cwd))
+	if err != nil {
+		return err
+	}
+	ln := linker.New(fs)
 	if err := tr.Walk(ln.Resolve); err != nil {
 		return err
 	}
