@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -10,12 +9,13 @@ import (
 	"path/filepath"
 
 	"github.com/google/subcommands"
+	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/parser"
 )
 
-const defaultConfig = "pilgrim.json"
+const defaultConfig = "pilgrim.yml"
 
 func main() {
 	os.Exit(run())
@@ -70,7 +70,7 @@ func buildTree(config, cwd string) (*parser.Tree, error) {
 		return nil, err
 	}
 	var c pilgrim.Config
-	if err = json.Unmarshal(b, &c); err != nil {
+	if err = yaml.Unmarshal(b, &c); err != nil {
 		return nil, err
 	}
 	var p parser.Parser

@@ -37,7 +37,7 @@ func testCheckExecute(t *testing.T) {
 	for _, tc := range testCases {
 		testdata := filepath.Join("testdata", t.Name())
 		t.Run(tc.name, func(t *testing.T) {
-			tc.cmd.config = filepath.Join(testdata, "pilgrim.json")
+			tc.cmd.config = filepath.Join(testdata, defaultConfig)
 			before, err := ioutil.ReadFile(tc.cmd.config)
 			if err != nil {
 				t.Fatal(err)
