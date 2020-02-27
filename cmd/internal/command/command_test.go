@@ -121,7 +121,7 @@ func testCommandExecute(t *testing.T) {
 					command.Stdout(&stdout),
 					command.Stderr(&stderr),
 				)
-				status = c.Execute(ctx, nil)
+				status = c.Execute(context.WithValue(ctx, command.ErrCtxKey, "command"), nil)
 			)
 			if want, got := tc.wantStatus, status; got != want {
 				t.Errorf("want %d, got %d", want, got)

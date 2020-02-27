@@ -10,6 +10,10 @@ import (
 	"github.com/google/subcommands"
 )
 
+type ContextKey int
+
+const ErrCtxKey ContextKey = iota
+
 // Command is a CLI command.
 type Command struct {
 	cmd      Interface
@@ -57,7 +61,7 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 		err = c.cmd.Execute(c.stdout)
 	}
 	if err != nil {
-		fmt.Fprintf(c.stderr, "command: %v\n", err)
+		fmt.Fprintf(c.stderr, "%v: %v\n", ctx.Value(ErrCtxKey), err)
 		return subcommands.ExitFailure
 	}
 	return subcommands.ExitSuccess
