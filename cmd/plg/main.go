@@ -57,5 +57,8 @@ func run() int {
 		command.Stderr(os.Stderr),
 	), "")
 	flag.Parse()
-	return int(cmd.Execute(context.TODO()))
+	ctx := context.TODO()
+	return int(cmd.Execute(
+		context.WithValue(ctx, command.ErrCtxKey, exe),
+	))
 }
