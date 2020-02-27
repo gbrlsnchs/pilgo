@@ -24,7 +24,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		n.Status = parser.StatusError
 		return nil
 	}
-	if len(n.Children) > 0 {
+	if len(n.Children) > 0 || len(n.Link.Path) == 0 {
 		n.Status = parser.StatusSkip
 		return nil
 	}
