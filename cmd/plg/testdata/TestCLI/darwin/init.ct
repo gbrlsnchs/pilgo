@@ -1,0 +1,11 @@
+$ cp foo
+$ cp bar
+$ plg init
+$ cat pilgrim.yml
+targets:
+  - bar
+  - foo
+
+$ cp pilgrim.yml
+$ plg init --> FAIL
+plg: configuration file already exists

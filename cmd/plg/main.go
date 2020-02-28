@@ -11,6 +11,7 @@ import (
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
+// TODO(gbrlsnchs): use `pilgrim.DefaultConfig`
 const defaultConfig = "pilgrim.yml"
 
 func main() {
@@ -53,6 +54,15 @@ func run() int {
 		command.Synopsis("Check symlinks and show them in a tree view."),
 		command.Usage(`check:
 	Check symlinks and show them in a tree view.`),
+		command.Stdout(os.Stdout),
+		command.Stderr(os.Stderr),
+	), "")
+	cmd.Register(command.New(
+		&initCmd{config: defaultConfig, cwd: cwd},
+		command.Name("init"),
+		command.Synopsis("Initialize a configuration file."),
+		command.Usage(`init:
+	Initialize a configuration file.`),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
