@@ -68,6 +68,13 @@ func run() int {
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
+	cmd.Register(command.New(
+		&configCmd{config: defaultConfig, cwd: cwd},
+		command.Name("config"),
+		command.Synopsis("Configure a file's options."),
+		command.Usage(`config:
+	Configure a file's options..`),
+	), "")
 	flag.Parse()
 	ctx := context.TODO()
 	return int(cmd.Execute(

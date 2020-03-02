@@ -1,0 +1,41 @@
+$ cp pilgrim.yml
+$ plg config -file=test -targets=foo,bar
+$ cat pilgrim.yml
+baseDir: /tmp
+targets:
+- test
+options:
+  test:
+    targets:
+    - foo
+    - bar
+
+$ plg config -file=test/foo -basedir=testdata
+$ cat pilgrim.yml
+baseDir: /tmp
+targets:
+- test
+options:
+  test:
+    targets:
+    - foo
+    - bar
+    options:
+      foo:
+        baseDir: testdata
+
+$ plg config -file=test/bar -link=b4r
+$ cat pilgrim.yml
+baseDir: /tmp
+targets:
+- test
+options:
+  test:
+    targets:
+    - foo
+    - bar
+    options:
+      bar:
+        link: b4r
+      foo:
+        baseDir: testdata
