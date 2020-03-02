@@ -1,6 +1,9 @@
 package pilgrim
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
 
 // DefaultConfig is the default name of the configuration file for Pilgrim.
 const DefaultConfig = "pilgrim.yml"
@@ -25,4 +28,42 @@ func (c Config) Init(targets []string) Config {
 	}
 	c.Targets = eligible
 	return c
+}
+
+// Set sets o to the resolved option in path.
+func (c *Config) Set(path string, o Config) {
+	var last string
+	path, last = filepath.Split(path)
+	if path == "" {
+		if last == "" {
+			*c = o
+			return
+		}
+		if c.Options == nil {
+			c.Options = make(map[string]Config, 1)
+		}
+		c.Options[last] = o
+		return
+	}
+	path = path[:len(path)-1] // trim suffix separator
+	var (
+		keys = strings.Split(path, string(filepath.Separator))
+		oo   Config
+		ok   bool
+	)
+	for _, k := range keys {
+		if oo, ok = c.Options[k]; !ok {
+			return
+		}
+		if oo.Options == nil {
+			oo = Config{
+				BaseDir: oo.BaseDir,
+				Link:    oo.Link,
+				Targets: oo.Targets,
+				Options: make(map[string]Config, 1),
+			}
+			c.Options[k] = oo
+		}
+	}
+	oo.Options[last] = o
 }
