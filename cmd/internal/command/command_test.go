@@ -63,7 +63,7 @@ type ifaceSpy struct {
 	fset *flag.FlagSet
 }
 
-func (spy *ifaceSpy) Execute(w io.Writer) error {
+func (spy *ifaceSpy) Execute(w io.Writer, opts interface{}) error {
 	fmt.Fprintf(w, "%s", spy.txt)
 	return spy.err
 }

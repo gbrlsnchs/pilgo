@@ -45,20 +45,22 @@ func testConfigExecute(t *testing.T) {
 	for _, tc := range testCases {
 		testdata := filepath.Join("testdata", t.Name())
 		t.Run(tc.name, func(t *testing.T) {
-			tc.cmd.config = filepath.Join(testdata, tc.name+".yml")
-			before, err := ioutil.ReadFile(tc.cmd.config)
+			config := filepath.Join(testdata, tc.name+".yml")
+			before, err := ioutil.ReadFile(config)
 			if err != nil {
 				t.Fatal(err)
 			}
 			// Restore original contents of file.
 			defer func(t *testing.T) {
-				if err := ioutil.WriteFile(tc.cmd.config, before, 0o644); err != nil {
+				if err := ioutil.WriteFile(config, before, 0o644); err != nil {
 					t.Fatal(err)
 				}
 			}(t)
-			tc.cmd.cwd = filepath.Join(testdata, "targets")
+			// tc.cmd.cwd = filepath.Join(testdata, "targets")
 			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd); !errors.Is(got, want) {
+			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
+				config: config,
+			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			golden := readFile(t, filepath.Join(testdata, tc.name+".golden"))
@@ -68,7 +70,7 @@ func testConfigExecute(t *testing.T) {
 					cmp.Diff(want, got),
 				)
 			}
-			after := readFile(t, tc.cmd.config)
+			after := readFile(t, config)
 			if want, got := golden, after; string(got) != string(want) {
 				t.Errorf("\nwant:\n%s\ngot:\n%s", want, got)
 				t.Logf("detailed diff: %s", cmp.Diff(want, got))
@@ -87,8 +89,6 @@ func testConfigSetFlags(t *testing.T) {
 			flags: nil,
 			want: configCmd{
 				baseDir: "",
-				config:  "",
-				cwd:     "",
 				file:    "",
 				link:    strptr{addr: nil},
 				targets: nil,

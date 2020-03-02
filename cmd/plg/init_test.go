@@ -86,10 +86,13 @@ func testInitExecute(t *testing.T) {
 					}
 				}(t)
 			}
-			tc.cmd.config = config
-			tc.cmd.cwd = testdata
 			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd); !errors.Is(got, want) {
+			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
+				config: config,
+				getwd: func() (string, error) {
+					return testdata, nil
+				},
+			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			if want, got := "", bd.String(); got != want {

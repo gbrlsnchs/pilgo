@@ -11,14 +11,12 @@ import (
 	"gsr.dev/pilgrim/parser"
 )
 
-type showCmd struct {
-	config string
-	cwd    string
-}
+type showCmd struct{}
 
-func (cmd showCmd) Execute(stdout io.Writer) error {
+func (showCmd) Execute(stdout io.Writer, v interface{}) error {
+	o := v.(opts)
 	var fs osfs.FileSystem
-	b, err := fs.ReadFile(cmd.config)
+	b, err := fs.ReadFile(o.config)
 	if err != nil {
 		return err
 	}
@@ -26,8 +24,12 @@ func (cmd showCmd) Execute(stdout io.Writer) error {
 	if yaml.Unmarshal(b, &c); err != nil {
 		return err
 	}
+	cwd, err := o.getwd()
+	if err != nil {
+		return err
+	}
 	var p parser.Parser
-	tr, err := p.Parse(c, parser.Cwd(cmd.cwd))
+	tr, err := p.Parse(c, parser.Cwd(cwd))
 	if err != nil {
 		return err
 	}

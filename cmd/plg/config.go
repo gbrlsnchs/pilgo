@@ -12,18 +12,16 @@ import (
 )
 
 type configCmd struct {
-	config string
-	cwd    string
-
 	file    string
 	baseDir string
 	link    strptr
 	targets targetList
 }
 
-func (cmd configCmd) Execute(_ io.Writer) error {
+func (cmd configCmd) Execute(_ io.Writer, v interface{}) error {
+	o := v.(opts)
 	var fs osfs.FileSystem
-	b, err := fs.ReadFile(cmd.config)
+	b, err := fs.ReadFile(o.config)
 	if err != nil {
 		return err
 	}
@@ -39,11 +37,11 @@ func (cmd configCmd) Execute(_ io.Writer) error {
 	if b, err = marshalYAML(c); err != nil {
 		return err
 	}
-	fi, err := fs.Info(cmd.config)
+	fi, err := fs.Info(o.config)
 	if err != nil {
 		return err
 	}
-	return fs.WriteFile(cmd.config, b, fi.Perm())
+	return fs.WriteFile(o.config, b, fi.Perm())
 }
 
 func (cmd *configCmd) SetFlags(f *flag.FlagSet) {

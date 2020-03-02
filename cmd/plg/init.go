@@ -14,21 +14,24 @@ import (
 var errConfigExists = errors.New("configuration file already exists")
 
 type initCmd struct {
-	config string
-	cwd    string
-	force  bool
+	force bool
 }
 
-func (cmd initCmd) Execute(_ io.Writer) error {
+func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
+	o := v.(opts)
 	var (
 		fs osfs.FileSystem
 		c  pilgrim.Config
 	)
-	fi, err := fs.Info(cmd.config)
+	fi, err := fs.Info(o.config)
 	if err != nil {
 		return err
 	}
-	targets, err := fs.ReadDir(cmd.cwd)
+	cwd, err := o.getwd()
+	if err != nil {
+		return err
+	}
+	targets, err := fs.ReadDir(cwd)
 	if err != nil {
 		return err
 	}
@@ -37,7 +40,7 @@ func (cmd initCmd) Execute(_ io.Writer) error {
 		if !cmd.force {
 			return errConfigExists
 		}
-		b, err := fs.ReadFile(cmd.config)
+		b, err := fs.ReadFile(o.config)
 		if err != nil {
 			return err
 		}
@@ -50,7 +53,7 @@ func (cmd initCmd) Execute(_ io.Writer) error {
 	if err != nil {
 		return err
 	}
-	return fs.WriteFile(cmd.config, b, perm)
+	return fs.WriteFile(o.config, b, perm)
 }
 
 func (cmd *initCmd) SetFlags(f *flag.FlagSet) {

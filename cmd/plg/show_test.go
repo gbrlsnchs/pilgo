@@ -14,7 +14,7 @@ import (
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
-var _ command.Interface = new(showCmd)
+var _ command.Interface = showCmd{}
 
 func TestShow(t *testing.T) {
 	t.Run("Execute", testShowExecute)
@@ -37,14 +37,18 @@ func testShowExecute(t *testing.T) {
 	for _, tc := range testCases {
 		testdata := filepath.Join("testdata", t.Name())
 		t.Run(tc.name, func(t *testing.T) {
-			tc.cmd.config = filepath.Join(testdata, defaultConfig)
-			before, err := ioutil.ReadFile(tc.cmd.config)
+			config := filepath.Join(testdata, defaultConfig)
+			before, err := ioutil.ReadFile(config)
 			if err != nil {
 				t.Fatal(err)
 			}
-			tc.cmd.cwd = filepath.Join(testdata, "targets")
 			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd); !errors.Is(got, want) {
+			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
+				config: config,
+				getwd: func() (string, error) {
+					return filepath.Join(testdata, "targets"), nil
+				},
+			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
@@ -54,13 +58,13 @@ func testShowExecute(t *testing.T) {
 					cmp.Diff(want, got),
 				)
 			}
-			after, err := ioutil.ReadFile(tc.cmd.config)
+			after, err := ioutil.ReadFile(config)
 			if err != nil {
 				t.Fatal(err)
 			}
 			// This guarantees the config file has only been read, not written.
 			if want, got := before, after; bytes.Compare(got, want) != 0 {
-				t.Errorf("%s has been modified after command", tc.cmd.config)
+				t.Errorf("%s has been modified after command", config)
 			}
 		})
 	}

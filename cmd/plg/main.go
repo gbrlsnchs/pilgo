@@ -4,29 +4,23 @@ import (
 	"bytes"
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/google/subcommands"
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
-// TODO(gbrlsnchs): use `pilgrim.DefaultConfig`
-const defaultConfig = "pilgrim.yml"
+const defaultConfig = pilgrim.DefaultConfig
 
 func main() {
 	os.Exit(run())
 }
 
 func run() int {
-	exe := os.Args[0]
-	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", exe, err)
-		return int(subcommands.ExitFailure)
-	}
+	exe := filepath.Base(os.Args[0])
 	// NOTE: subcommands.NewCommander must be used in order to avoid bugs
 	// when this function is tested using "go-cmdtest".
 	//
@@ -40,30 +34,30 @@ func run() int {
 	// redirection in order to be checked, each run writes to writers from the first run.
 	//
 	// This note can be removed when https://github.com/google/subcommands/issues/32 gets resolved.
-	cmd := subcommands.NewCommander(flag.CommandLine, filepath.Base(exe))
+	cmd := subcommands.NewCommander(flag.CommandLine, exe)
 	cmd.Register(command.New(
-		showCmd{config: defaultConfig, cwd: cwd},
+		showCmd{},
 		command.Name("show"),
 		command.Synopsis("show tree view of files to be symlinked"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
-		checkCmd{config: defaultConfig, cwd: cwd},
+		checkCmd{},
 		command.Name("check"),
 		command.Synopsis("check symlinks and show them in a tree view"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
-		&initCmd{config: defaultConfig, cwd: cwd},
+		&initCmd{},
 		command.Name("init"),
 		command.Synopsis("initialize a configuration file"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
-		&configCmd{config: defaultConfig, cwd: cwd},
+		&configCmd{},
 		command.Name("config"),
 		command.Synopsis("configure a file's options"),
 		command.Stdout(os.Stdout),
@@ -71,9 +65,20 @@ func run() int {
 	), "")
 	flag.Parse()
 	ctx := context.TODO()
-	return int(cmd.Execute(
-		context.WithValue(ctx, command.ErrCtxKey, exe),
-	))
+	ctx = context.WithValue(ctx, command.ErrCtxKey, exe)
+	ctx = context.WithValue(ctx, command.OptsCtxKey, opts{
+		config:        defaultConfig,
+		getwd:         os.Getwd,
+		userConfigDir: os.UserConfigDir,
+	})
+	status := cmd.Execute(ctx)
+	return int(status)
+}
+
+type opts struct {
+	config        string
+	getwd         func() (string, error)
+	userConfigDir func() (string, error)
 }
 
 func marshalYAML(v interface{}) ([]byte, error) {

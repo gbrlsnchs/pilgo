@@ -12,7 +12,10 @@ import (
 
 type ContextKey int
 
-const ErrCtxKey ContextKey = iota
+const (
+	ErrCtxKey ContextKey = iota
+	OptsCtxKey
+)
 
 // Command is a CLI command.
 type Command struct {
@@ -57,7 +60,7 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 	case <-ctx.Done():
 		err = ctx.Err()
 	default:
-		err = c.cmd.Execute(c.stdout)
+		err = c.cmd.Execute(c.stdout, ctx.Value(OptsCtxKey))
 	}
 	if err != nil {
 		fmt.Fprintf(c.stderr, "%v: %v\n", ctx.Value(ErrCtxKey), err)
@@ -98,6 +101,6 @@ func Stderr(w io.Writer) func(c *Command) {
 
 // Interface is a command to be wrapped by Command.
 type Interface interface {
-	Execute(io.Writer) error
+	Execute(io.Writer, interface{}) error
 	SetFlags(*flag.FlagSet)
 }
