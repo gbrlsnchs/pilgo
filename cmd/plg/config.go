@@ -21,7 +21,7 @@ type configCmd struct {
 	targets targetList
 }
 
-func (cmd configCmd) Execute(stdout io.Writer) error {
+func (cmd configCmd) Execute(_ io.Writer) error {
 	var fs osfs.FileSystem
 	b, err := fs.ReadFile(cmd.config)
 	if err != nil {

@@ -19,7 +19,7 @@ type initCmd struct {
 	force  bool
 }
 
-func (cmd initCmd) Execute(stdout io.Writer) error {
+func (cmd initCmd) Execute(_ io.Writer) error {
 	var (
 		fs osfs.FileSystem
 		c  pilgrim.Config
