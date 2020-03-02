@@ -3,8 +3,8 @@ $ cp bar
 $ plg init
 $ cat pilgrim.yml
 targets:
-  - bar
-  - foo
+- bar
+- foo
 
 $ cp pilgrim.yml
 $ plg init --> FAIL

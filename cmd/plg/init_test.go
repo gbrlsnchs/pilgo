@@ -75,6 +75,16 @@ func testInitExecute(t *testing.T) {
 			config := filepath.Join(testdata, defaultConfig)
 			if tc.remove {
 				defer os.Remove(config)
+			} else if tc.cmd.force {
+				orig, err := ioutil.ReadFile(config)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer func(t *testing.T) {
+					if err := ioutil.WriteFile(config, orig, 0o644); err != nil {
+						t.Fatal(err)
+					}
+				}(t)
 			}
 			tc.cmd.config = config
 			tc.cmd.cwd = testdata

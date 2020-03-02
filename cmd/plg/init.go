@@ -46,7 +46,7 @@ func (cmd initCmd) Execute(stdout io.Writer) error {
 		}
 		perm = fi.Perm()
 	}
-	b, err := yaml.Marshal(c.Init(targets))
+	b, err := marshalYAML(c.Init(targets))
 	if err != nil {
 		return err
 	}
