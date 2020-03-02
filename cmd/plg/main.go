@@ -44,36 +44,28 @@ func run() int {
 	cmd.Register(command.New(
 		showCmd{config: defaultConfig, cwd: cwd},
 		command.Name("show"),
-		command.Synopsis("Show tree view of files to be symlinked."),
-		command.Usage(`show:
-	Show tree view of files to be symlinked.`),
+		command.Synopsis("show tree view of files to be symlinked"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
 		checkCmd{config: defaultConfig, cwd: cwd},
 		command.Name("check"),
-		command.Synopsis("Check symlinks and show them in a tree view."),
-		command.Usage(`check:
-	Check symlinks and show them in a tree view.`),
+		command.Synopsis("check symlinks and show them in a tree view"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
 		&initCmd{config: defaultConfig, cwd: cwd},
 		command.Name("init"),
-		command.Synopsis("Initialize a configuration file."),
-		command.Usage(`init:
-	Initialize a configuration file.`),
+		command.Synopsis("initialize a configuration file"),
 		command.Stdout(os.Stdout),
 		command.Stderr(os.Stderr),
 	), "")
 	cmd.Register(command.New(
 		&configCmd{config: defaultConfig, cwd: cwd},
 		command.Name("config"),
-		command.Synopsis("Configure a file's options."),
-		command.Usage(`config:
-	Configure a file's options..`),
+		command.Synopsis("configure a file's options"),
 	), "")
 	flag.Parse()
 	ctx := context.TODO()

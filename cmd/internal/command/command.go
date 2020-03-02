@@ -19,7 +19,6 @@ type Command struct {
 	cmd      Interface
 	name     string
 	synopsis string
-	usage    string
 
 	stdout, stderr io.Writer
 }
@@ -44,7 +43,7 @@ func (c *Command) Name() string { return c.name }
 func (c *Command) Synopsis() string { return c.synopsis }
 
 // Usage returns the command's usage instructions.
-func (c *Command) Usage() string { return c.usage }
+func (c *Command) Usage() string { return fmt.Sprintf("%s (%s):\n", c.name, c.synopsis) }
 
 // SetFlags sets all necessary flags.
 func (c *Command) SetFlags(f *flag.FlagSet) {
@@ -78,13 +77,6 @@ func Name(s string) func(*Command) {
 func Synopsis(s string) func(*Command) {
 	return func(c *Command) {
 		c.synopsis = s
-	}
-}
-
-// Usage sets the command's usage instructions.
-func Usage(s string) func(*Command) {
-	return func(c *Command) {
-		c.usage = s
 	}
 }
 

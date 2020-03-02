@@ -40,8 +40,8 @@ func testCommandSynopsis(t *testing.T) {
 }
 
 func testCommandUsage(t *testing.T) {
-	usage := "baz"
-	c := command.New(new(ifaceSpy), command.Usage("baz"))
+	usage := "foo (bar):\n"
+	c := command.New(new(ifaceSpy), command.Name("foo"), command.Synopsis("bar"))
 	if want, got := usage, c.Usage(); got != want {
 		t.Errorf("want %q, got %q", want, got)
 	}
