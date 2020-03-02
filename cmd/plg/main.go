@@ -35,34 +35,25 @@ func run() int {
 	//
 	// This note can be removed when https://github.com/google/subcommands/issues/32 gets resolved.
 	cmd := subcommands.NewCommander(flag.CommandLine, exe)
-	cmd.Register(command.New(
-		showCmd{},
-		command.Name("show"),
-		command.Synopsis("show tree view of files to be symlinked"),
-		command.Stdout(os.Stdout),
-		command.Stderr(os.Stderr),
-	), "")
-	cmd.Register(command.New(
-		checkCmd{},
-		command.Name("check"),
-		command.Synopsis("check symlinks and show them in a tree view"),
-		command.Stdout(os.Stdout),
-		command.Stderr(os.Stderr),
-	), "")
-	cmd.Register(command.New(
-		&initCmd{},
-		command.Name("init"),
-		command.Synopsis("initialize a configuration file"),
-		command.Stdout(os.Stdout),
-		command.Stderr(os.Stderr),
-	), "")
-	cmd.Register(command.New(
-		&configCmd{},
-		command.Name("config"),
-		command.Synopsis("configure a file's options"),
-		command.Stdout(os.Stdout),
-		command.Stderr(os.Stderr),
-	), "")
+	commands := []struct {
+		command.Interface
+		name     string
+		synopsis string
+	}{
+		{showCmd{}, "show", "show tree view of files to be symlinked"},
+		{checkCmd{}, "check", "check symlinks and show them in a tree view"},
+		{&initCmd{}, "init", "initialize a configuration file"},
+		{&configCmd{}, "config", "configure a file's options"},
+	}
+	for _, c := range commands {
+		cmd.Register(command.New(
+			c.Interface,
+			command.Name(c.name),
+			command.Synopsis(c.synopsis),
+			command.Stdout(os.Stdout),
+			command.Stderr(os.Stderr),
+		), "")
+	}
 	flag.Parse()
 	ctx := context.TODO()
 	ctx = context.WithValue(ctx, command.ErrCtxKey, exe)
