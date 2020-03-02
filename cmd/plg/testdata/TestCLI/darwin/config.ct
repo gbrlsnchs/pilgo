@@ -1,3 +1,6 @@
+$ plg config --> FAIL
+plg: open pilgrim.yml: no such file or directory
+
 $ cp pilgrim.yml
 $ plg config -file=test -targets=foo,bar
 $ cat pilgrim.yml

@@ -66,6 +66,8 @@ func run() int {
 		&configCmd{config: defaultConfig, cwd: cwd},
 		command.Name("config"),
 		command.Synopsis("configure a file's options"),
+		command.Stdout(os.Stdout),
+		command.Stderr(os.Stderr),
 	), "")
 	flag.Parse()
 	ctx := context.TODO()
