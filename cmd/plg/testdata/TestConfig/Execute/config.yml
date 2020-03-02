@@ -1,0 +1,4 @@
+baseDir: /tmp
+targets:
+- bar
+- foo

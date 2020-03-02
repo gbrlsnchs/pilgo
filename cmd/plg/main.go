@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/google/subcommands"
+	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
@@ -71,4 +73,14 @@ func run() int {
 	return int(cmd.Execute(
 		context.WithValue(ctx, command.ErrCtxKey, exe),
 	))
+}
+
+func marshalYAML(v interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

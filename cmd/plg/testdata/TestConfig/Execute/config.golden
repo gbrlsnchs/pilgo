@@ -1,0 +1,12 @@
+baseDir: /tmp
+targets:
+- bar
+- foo
+options:
+  foo:
+    baseDir: test
+    link: f00
+    targets:
+    - test
+    - testing
+    - testdata
