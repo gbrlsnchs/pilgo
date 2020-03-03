@@ -68,6 +68,36 @@ func testInitExecute(t *testing.T) {
 			err:    errConfigExists,
 			remove: false,
 		},
+		{
+			name: "exclude",
+			cmd: initCmd{
+				exclude: commaset{
+					"bar": struct{}{},
+				},
+			},
+			want: pilgrim.Config{
+				Targets: []string{
+					"foo",
+				},
+			},
+			err:    nil,
+			remove: true,
+		},
+		{
+			name: "include",
+			cmd: initCmd{
+				include: commaset{
+					"bar": struct{}{},
+				},
+			},
+			want: pilgrim.Config{
+				Targets: []string{
+					"bar",
+				},
+			},
+			err:    nil,
+			remove: true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -134,6 +164,28 @@ func testInitSetFlags(t *testing.T) {
 				"force": "false",
 			},
 			want: initCmd{force: false},
+		},
+		{
+			flags: map[string]string{
+				"exclude": "foo,bar,baz,qux",
+			},
+			want: initCmd{force: false, exclude: commaset{
+				"foo": struct{}{},
+				"bar": struct{}{},
+				"baz": struct{}{},
+				"qux": struct{}{},
+			}},
+		},
+		{
+			flags: map[string]string{
+				"include": "foo,bar,baz,qux",
+			},
+			want: initCmd{force: false, include: commaset{
+				"foo": struct{}{},
+				"bar": struct{}{},
+				"baz": struct{}{},
+				"qux": struct{}{},
+			}},
 		},
 	}
 	for _, tc := range testCases {

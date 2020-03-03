@@ -15,9 +15,11 @@ func TestConfig(t *testing.T) {
 
 func testConfigInit(t *testing.T) {
 	testCases := []struct {
-		c       pilgrim.Config
-		targets []string
-		want    pilgrim.Config
+		c        pilgrim.Config
+		targets  []string
+		includes map[string]struct{}
+		excludes map[string]struct{}
+		want     pilgrim.Config
 	}{
 		{
 			c: pilgrim.Config{
@@ -49,10 +51,36 @@ func testConfigInit(t *testing.T) {
 				Targets: []string{"foo", "bar"},
 			},
 		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+			},
+			targets: []string{"foo", "bar", ".git"},
+			excludes: map[string]struct{}{
+				"bar": struct{}{},
+			},
+			want: pilgrim.Config{
+				BaseDir: "test",
+				Targets: []string{"foo"},
+			},
+		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+			},
+			targets: []string{"foo", "bar", ".git"},
+			includes: map[string]struct{}{
+				"bar": struct{}{},
+			},
+			want: pilgrim.Config{
+				BaseDir: "test",
+				Targets: []string{"bar"},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
-			c := tc.c.Init(tc.targets)
+			c := tc.c.Init(tc.targets, tc.includes, tc.excludes)
 			if want, got := tc.want, c; !cmp.Equal(got, want) {
 				t.Errorf("Config.Init mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}

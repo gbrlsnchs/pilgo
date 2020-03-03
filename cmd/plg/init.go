@@ -14,7 +14,9 @@ import (
 var errConfigExists = errors.New("configuration file already exists")
 
 type initCmd struct {
-	force bool
+	force   bool
+	include commaset
+	exclude commaset
 }
 
 func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
@@ -49,7 +51,7 @@ func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 		}
 		perm = fi.Perm()
 	}
-	b, err := marshalYAML(c.Init(targets))
+	b, err := marshalYAML(c.Init(targets, cmd.include, cmd.exclude))
 	if err != nil {
 		return err
 	}
@@ -58,4 +60,6 @@ func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 
 func (cmd *initCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&cmd.force, "force", false, "override targets from existing configuration file")
+	f.Var(&cmd.include, "include", "comma-separated list of targets to be included")
+	f.Var(&cmd.exclude, "exclude", "comma-separated list of targets to be excluded")
 }

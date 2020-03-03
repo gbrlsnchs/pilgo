@@ -18,10 +18,20 @@ type Config struct {
 
 // Init returns a copy of c with only eligible files from targets, which are any
 // files that don't start with a dot nor is named equal DefaultConfig's value.
-func (c Config) Init(targets []string) Config {
+func (c Config) Init(targets []string, includes, excludes map[string]struct{}) Config {
 	eligible := make([]string, 0, len(targets))
 	for _, tg := range targets {
 		if strings.HasPrefix(tg, ".") || tg == DefaultConfig {
+			continue
+		}
+		if len(includes) > 0 {
+			_, included := includes[tg]
+			if !included {
+				continue
+			}
+		}
+		_, excluded := excludes[tg]
+		if excluded {
 			continue
 		}
 		eligible = append(eligible, tg)
