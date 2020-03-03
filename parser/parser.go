@@ -54,7 +54,10 @@ func (p *Parser) parseTarget(baseDir string, target, link []string, c pilgrim.Co
 		linkname := *c.Link
 		link[lnlen-1] = linkname
 		if linkname == "" {
-			link = link[:lnlen-1]
+			s := link[:lnlen-1]
+			// We need to create a new slice to avoid reusing the
+			// same underlying array between children.
+			link = append(make([]string, 0, len(s)), s...)
 		}
 	}
 	n.Link = File{baseDir, link}
