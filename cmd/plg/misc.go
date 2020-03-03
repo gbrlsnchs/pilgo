@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"sort"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type commalist []string
@@ -34,4 +37,14 @@ func (tgl commaset) String() string {
 	}
 	sort.Strings(arr)
 	return strings.Join(arr, ",")
+}
+
+func marshalYAML(v interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

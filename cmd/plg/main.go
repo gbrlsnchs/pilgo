@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"os"
 	"path/filepath"
 
 	"github.com/google/subcommands"
-	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
@@ -70,14 +68,4 @@ type opts struct {
 	config        string
 	getwd         func() (string, error)
 	userConfigDir func() (string, error)
-}
-
-func marshalYAML(v interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := yaml.NewEncoder(&buf)
-	enc.SetIndent(2)
-	if err := enc.Encode(v); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }
