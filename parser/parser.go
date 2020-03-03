@@ -19,7 +19,7 @@ func (p *Parser) Parse(c pilgrim.Config, opts ...ParseOption) (*Tree, error) {
 			return nil, err
 		}
 	}
-	if p.baseDir == "" {
+	if c.BaseDir != "" {
 		p.baseDir = c.BaseDir
 	}
 	root := &Node{Children: p.parseChildren(p.baseDir, nil, nil, c)}
