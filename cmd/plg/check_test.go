@@ -25,7 +25,6 @@ func testCheckExecute(t *testing.T) {
 	testCases := []struct {
 		name string
 		cmd  checkCmd
-		want string
 		err  error
 	}{
 		{
@@ -48,6 +47,7 @@ func testCheckExecute(t *testing.T) {
 				getwd: func() (string, error) {
 					return filepath.Join(testdata, "targets"), nil
 				},
+				userConfigDir: func() (string, error) { return "user_config_dir", nil },
 			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}

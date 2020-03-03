@@ -25,12 +25,16 @@ func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
 	if yaml.Unmarshal(b, &c); err != nil {
 		return err
 	}
+	baseDir, err := o.userConfigDir()
+	if err != nil {
+		return err
+	}
 	cwd, err := o.getwd()
 	if err != nil {
 		return err
 	}
 	var p parser.Parser
-	tr, err := p.Parse(c, parser.Cwd(cwd))
+	tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd))
 	if err != nil {
 		return err
 	}

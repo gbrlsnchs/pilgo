@@ -25,7 +25,6 @@ func testShowExecute(t *testing.T) {
 	testCases := []struct {
 		name string
 		cmd  showCmd
-		want string
 		err  error
 	}{
 		{
@@ -48,13 +47,14 @@ func testShowExecute(t *testing.T) {
 				getwd: func() (string, error) {
 					return filepath.Join(testdata, "targets"), nil
 				},
+				userConfigDir: func() (string, error) { return "user_config_dir", nil },
 			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
 			if want, got := golden, bd.String(); got != want {
 				t.Errorf(
-					`"show" command output mismatch (-want +got):\n%s`,
+					"\"show\" command output mismatch (-want +got):\n%s",
 					cmp.Diff(want, got),
 				)
 			}

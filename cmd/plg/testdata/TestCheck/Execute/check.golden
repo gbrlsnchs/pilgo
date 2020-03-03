@@ -1,2 +1,2 @@
 .
-└── test <- /tmp/test (READY)
+└── test <- user_config_dir/test (READY)
