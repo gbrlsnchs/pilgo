@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"os"
 	"sort"
 
 	"gsr.dev/pilgrim"
@@ -8,8 +9,9 @@ import (
 
 // Parser is a configuration parser.
 type Parser struct {
-	cwd     string
-	baseDir string
+	cwd      string
+	baseDir  string
+	envsubst bool
 }
 
 // Parse parses a configuration file and returns its tree representation.
@@ -33,8 +35,9 @@ func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string
 		sort.Strings(c.Targets)
 		children = make([]*Node, tglen)
 		for i, tg := range c.Targets {
+			tg = p.expandVar(tg)
 			children[i] = p.parseTarget(
-				baseDir,
+				p.expandVar(baseDir),
 				append(parentTarget, tg),
 				append(parentLink, tg),
 				c.Options[tg],
@@ -65,6 +68,13 @@ func (p *Parser) parseTarget(baseDir string, target, link []string, c pilgrim.Co
 	return n
 }
 
+func (p *Parser) expandVar(s string) string {
+	if p.envsubst {
+		return os.ExpandEnv(s)
+	}
+	return s
+}
+
 // ParseOption is a funcional option that intend to modify a Parser.
 type ParseOption func(*Parser) error
 
@@ -82,4 +92,10 @@ func Cwd(dirname string) ParseOption {
 		p.cwd = dirname
 		return nil
 	}
+}
+
+// Envsubst enables replacing ${var} or $var with their environment values.
+func Envsubst(p *Parser) error {
+	p.envsubst = true
+	return nil
 }

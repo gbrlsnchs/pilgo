@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -14,6 +15,8 @@ func TestParser(t *testing.T) {
 }
 
 func testParserParse(t *testing.T) {
+	os.Setenv("MY_ENV_VAR", "home")
+	defer os.Unsetenv("MY_ENV_VAR")
 	testCases := []struct {
 		c    pilgrim.Config
 		opts []parser.ParseOption
@@ -309,6 +312,44 @@ func testParserParse(t *testing.T) {
 								Link:   parser.File{"test", []string{"footest"}},
 							},
 						},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "$MY_ENV_VAR",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+				},
+			},
+			opts: []parser.ParseOption{parser.Envsubst},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{"foo"}},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: pilgrim.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"$MY_ENV_VAR",
+				},
+			},
+			opts: []parser.ParseOption{parser.Envsubst},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"home"}},
+						Link:   parser.File{"test", []string{"home"}},
 					},
 				}},
 			},
