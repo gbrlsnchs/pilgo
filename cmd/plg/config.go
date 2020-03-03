@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
@@ -15,7 +14,7 @@ type configCmd struct {
 	file    string
 	baseDir string
 	link    strptr
-	targets targetList
+	targets commalist
 }
 
 func (cmd configCmd) Execute(_ io.Writer, v interface{}) error {
@@ -50,15 +49,6 @@ func (cmd *configCmd) SetFlags(f *flag.FlagSet) {
 	f.Var(&cmd.link, "link", "set field \"link\"")
 	f.Var(&cmd.targets, "targets", "comma-separated list of targets")
 }
-
-type targetList []string
-
-func (tgl *targetList) Set(value string) error {
-	*tgl = strings.Split(value, ",")
-	return nil
-}
-
-func (tgl targetList) String() string { return strings.Join(tgl, ",") }
 
 type strptr struct {
 	addr *string

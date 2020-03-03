@@ -33,7 +33,7 @@ func testConfigExecute(t *testing.T) {
 				file:    "foo",
 				baseDir: "test",
 				link:    strptr{addr: newString("f00")},
-				targets: targetList{
+				targets: commalist{
 					"test",
 					"testing",
 					"testdata",
@@ -107,7 +107,7 @@ func testConfigSetFlags(t *testing.T) {
 				link: strptr{
 					addr: newString("7357"),
 				},
-				targets: targetList{"foo", "bar", "baz"},
+				targets: commalist{"foo", "bar", "baz"},
 			},
 		},
 	}
