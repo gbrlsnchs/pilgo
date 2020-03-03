@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,6 +23,8 @@ func TestCheck(t *testing.T) {
 }
 
 func testCheckExecute(t *testing.T) {
+	os.Setenv("MY_ENV_VAR", "home")
+	defer os.Unsetenv("MY_ENV_VAR")
 	testCases := []struct {
 		name string
 		cmd  checkCmd

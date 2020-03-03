@@ -34,7 +34,7 @@ func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
 		return err
 	}
 	var p parser.Parser
-	tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd))
+	tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd), parser.Envsubst)
 	if err != nil {
 		return err
 	}

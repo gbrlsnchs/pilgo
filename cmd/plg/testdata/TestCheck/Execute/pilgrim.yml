@@ -1,2 +1,3 @@
 targets:
-  - test
+- $MY_ENV_VAR
+- test

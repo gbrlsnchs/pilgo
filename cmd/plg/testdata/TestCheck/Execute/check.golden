@@ -1,2 +1,3 @@
 .
+├── home <- user_config_dir/home (READY)
 └── test <- user_config_dir/test (READY)
