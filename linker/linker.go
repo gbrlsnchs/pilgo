@@ -1,8 +1,22 @@
 package linker
 
 import (
+	"errors"
+	"fmt"
+
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/parser"
+)
+
+var (
+	// ErrLinkExists means an unrelated file exists in place of a link.
+	ErrLinkExists = errors.New("file exists in place of link")
+	// ErrLinkNotExpands means a file in place of a link can't be expanded.
+	ErrLinkNotExpands = errors.New("file exists in place of link and is not expandable")
+	// ErrTargetNotExists means a target doesn't exist and thus can't be symlinked.
+	ErrTargetNotExists = errors.New("target doesn't exist")
+	// ErrTargetNotExpands means a target is not a directory and therefore can't be expanded.
+	ErrTargetNotExpands = errors.New("target can't be expanded")
 )
 
 // Linker is a file symlinker.
@@ -22,7 +36,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 	}
 	if !target.Exists() {
 		n.Status = parser.StatusError
-		return nil
+		return newLinkErr(tgpath, ErrTargetNotExists)
 	}
 	if len(n.Children) > 0 || len(n.Link.Path) == 0 {
 		n.Status = parser.StatusSkip
@@ -43,11 +57,15 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 			return nil
 		}
 		n.Status = parser.StatusConflict
-		return nil
+		return newLinkErr(lnpath, ErrLinkExists)
 	}
-	if !target.IsDir() || !link.IsDir() {
+	if !target.IsDir() {
 		n.Status = parser.StatusConflict
-		return nil
+		return newLinkErr(tgpath, ErrTargetNotExpands)
+	}
+	if !link.IsDir() {
+		n.Status = parser.StatusConflict
+		return newLinkErr(lnpath, ErrLinkNotExpands)
 	}
 	children, err := ln.fs.ReadDir(tgpath)
 	if err != nil {
@@ -77,3 +95,5 @@ func expand(n *parser.Node, children []string) {
 		}
 	}
 }
+
+func newLinkErr(path string, err error) error { return fmt.Errorf("linker: %s: %w", path, err) }

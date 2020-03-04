@@ -201,7 +201,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: nil,
+			err: linker.ErrLinkExists,
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -221,6 +221,7 @@ func testResolve(t *testing.T) {
 					"foo": {
 						returnValue: testFileInfo{
 							exists: true,
+							isDir:  true,
 						},
 						err: nil,
 					},
@@ -244,7 +245,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: nil,
+			err: linker.ErrLinkNotExpands,
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -286,7 +287,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: nil,
+			err: linker.ErrTargetNotExists,
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -436,7 +437,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: nil,
+			err: linker.ErrTargetNotExpands,
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -497,6 +498,7 @@ func testResolve(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			ln := linker.New(tc.fs)
 			err := ln.Resolve(tc.n)
+			// TODO(gbrlsnchs): check error message has correct file path
 			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
