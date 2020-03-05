@@ -1,4 +1,8 @@
 $ cp pilgrim.yml
+$ plg check
+.
+└── test <- \tmp\test (ERROR)
+
 $ cp test
 $ plg check
 .

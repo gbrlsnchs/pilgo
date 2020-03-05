@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -39,7 +40,7 @@ func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
 		return err
 	}
 	ln := linker.New(fs)
-	if err := tr.Walk(ln.Resolve); err != nil {
+	if err := tr.Walk(resolveFunc(ln)); err != nil {
 		return err
 	}
 	// TODO(gbrlsnchs): print errors' details
@@ -48,3 +49,19 @@ func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
 }
 
 func (checkCmd) SetFlags(_ *flag.FlagSet) { /* NOP */ }
+
+func resolveFunc(ln *linker.Linker) func(n *parser.Node) error {
+	return func(n *parser.Node) error {
+		if err := ln.Resolve(n); err != nil && !isConflict(err) {
+			return err
+		}
+		return nil
+	}
+}
+
+func isConflict(err error) bool {
+	return errors.Is(err, linker.ErrLinkExists) ||
+		errors.Is(err, linker.ErrLinkNotExpands) ||
+		errors.Is(err, linker.ErrTargetNotExists) ||
+		errors.Is(err, linker.ErrTargetNotExpands)
+}
