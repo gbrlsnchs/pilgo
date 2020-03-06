@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/google/subcommands"
 )
@@ -55,18 +56,23 @@ func (c *Command) SetFlags(f *flag.FlagSet) {
 
 // Execute executes the command.
 func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	var err error
+	var (
+		status = subcommands.ExitSuccess
+		bd     strings.Builder
+		err    error
+	)
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	default:
-		err = c.cmd.Execute(c.stdout, ctx.Value(OptsCtxKey))
+		err = c.cmd.Execute(&bd, ctx.Value(OptsCtxKey))
 	}
 	if err != nil {
 		fmt.Fprintf(c.stderr, "%v: %v\n", ctx.Value(ErrCtxKey), err)
-		return subcommands.ExitFailure
+		status = subcommands.ExitFailure
 	}
-	return subcommands.ExitSuccess
+	fmt.Fprint(c.stdout, bd.String())
+	return status
 }
 
 // Name sets the command's name.

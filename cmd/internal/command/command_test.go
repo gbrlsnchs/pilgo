@@ -80,30 +80,34 @@ func testCommandExecute(t *testing.T) {
 		err        error
 		cancel     bool
 		wantStderr string
+		wantOutput string
 	}{
 		{
 			wantStatus: subcommands.ExitSuccess,
-			out:        "test",
-			wantStdout: "test",
+			out:        "test\n",
+			wantStdout: "test\n",
 			err:        nil,
 			cancel:     false,
 			wantStderr: "",
+			wantOutput: "test\n",
 		},
 		{
 			wantStatus: subcommands.ExitFailure,
-			out:        "test",
-			wantStdout: "test",
+			out:        "test\n",
+			wantStdout: "test\n",
 			err:        errors.New("oops"),
 			cancel:     false,
 			wantStderr: "command: oops\n",
+			wantOutput: "command: oops\ntest\n",
 		},
 		{
 			wantStatus: subcommands.ExitFailure,
-			out:        "test",
+			out:        "test\n",
 			wantStdout: "", // context is checked before execution
 			err:        nil,
 			cancel:     true,
 			wantStderr: fmt.Sprintf("command: %v\n", context.Canceled),
+			wantOutput: fmt.Sprintf("command: %v\n", context.Canceled),
 		},
 	}
 	for _, tc := range testCases {
@@ -114,12 +118,13 @@ func testCommandExecute(t *testing.T) {
 				cancel()
 			}
 			var (
+				output         strings.Builder
 				stdout, stderr strings.Builder
 				spy            = &ifaceSpy{tc.out, tc.err, nil}
 				c              = command.New(
 					spy,
-					command.Stdout(&stdout),
-					command.Stderr(&stderr),
+					command.Stdout(io.MultiWriter(&output, &stdout)),
+					command.Stderr(io.MultiWriter(&output, &stderr)),
 				)
 				status = c.Execute(context.WithValue(ctx, command.ErrCtxKey, "command"), nil)
 			)
@@ -130,6 +135,9 @@ func testCommandExecute(t *testing.T) {
 				t.Errorf("want %q, got %q", want, got)
 			}
 			if want, got := tc.wantStderr, stderr.String(); got != want {
+				t.Errorf("want %q, got %q", want, got)
+			}
+			if want, got := tc.wantOutput, output.String(); got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
 		})
