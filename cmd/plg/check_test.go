@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -31,33 +30,33 @@ func testCheckExecute(t *testing.T) {
 		err  error
 	}{
 		{
-			name: "check",
+			name: "default",
 			cmd:  checkCmd{},
 			err:  nil,
 		},
 	}
 	for _, tc := range testCases {
-		testdata := filepath.Join("testdata", t.Name())
 		t.Run(tc.name, func(t *testing.T) {
-			config := filepath.Join(testdata, defaultConfig)
+			config := filepath.Join("testdata", t.Name(), defaultConfig)
+			cwd := filepath.Join("testdata", t.Name(), "targets")
 			before, err := ioutil.ReadFile(config)
 			if err != nil {
 				t.Fatal(err)
 			}
 			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config: config,
-				getwd: func() (string, error) {
-					return filepath.Join(testdata, "targets"), nil
-				},
+			err = tc.cmd.Execute(&bd, opts{
+				config:        config,
+				getwd:         func() (string, error) { return cwd, nil },
 				userConfigDir: func() (string, error) { return "user_config_dir", nil },
-			}); !errors.Is(got, want) {
+			})
+			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
 			if want, got := golden, bd.String(); got != want {
-				t.Errorf(
-					`"show" command output mismatch (-want +got):\n%s`,
+				t.Errorf("\nwant:\n%s\ngot:\n%s\n", want, got)
+				t.Logf(
+					"\"check\" command output mismatch (-want +got):\n%s",
 					cmp.Diff(want, got),
 				)
 			}
@@ -66,7 +65,7 @@ func testCheckExecute(t *testing.T) {
 				t.Fatal(err)
 			}
 			// This guarantees the config file has only been read, not written.
-			if want, got := before, after; bytes.Compare(got, want) != 0 {
+			if want, got := before, after; string(got) != string(want) {
 				t.Errorf("%s has been modified after command", config)
 			}
 		})
