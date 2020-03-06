@@ -1,0 +1,4 @@
+$ cp pilgrim.yml
+$ plg show
+.
+└── test <- /tmp/test

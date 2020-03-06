@@ -39,7 +39,7 @@ func run() int {
 		synopsis string
 	}{
 		{showCmd{}, "show", "show tree view of files to be symlinked"},
-		{checkCmd{}, "check", "check symlinks and show them in a tree view"},
+		{&checkCmd{}, "check", "check symlinks and show them in a tree view"},
 		{&initCmd{}, "init", "initialize a configuration file"},
 		{&configCmd{}, "config", "configure a file's options"},
 	}

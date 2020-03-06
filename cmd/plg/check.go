@@ -13,9 +13,13 @@ import (
 	"gsr.dev/pilgrim/parser"
 )
 
-type checkCmd struct{}
+var errGotConflicts = errors.New("there are one or more conflicts")
 
-func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
+type checkCmd struct {
+	fail bool
+}
+
+func (cmd checkCmd) Execute(stdout io.Writer, v interface{}) error {
 	o := v.(opts)
 	var fs osfs.FileSystem
 	b, err := fs.ReadFile(o.config)
@@ -39,24 +43,35 @@ func (checkCmd) Execute(stdout io.Writer, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	ln := linker.New(fs)
-	if err := tr.Walk(resolveFunc(ln)); err != nil {
+	var (
+		ln      = linker.New(fs)
+		errlist []error
+	)
+	if err := tr.Walk(func(n *parser.Node) error {
+		if err := ln.Resolve(n); err != nil {
+			if !isConflict(err) {
+				return err
+			}
+			if cmd.fail {
+				errlist = append(errlist, err)
+			}
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
-	// TODO(gbrlsnchs): print errors' details
+	if len(errlist) > 0 {
+		for _, err := range errlist {
+			fmt.Fprintf(stdout, "\t- %v\n", err)
+		}
+		return errGotConflicts
+	}
 	fmt.Fprint(stdout, tr)
 	return nil
 }
 
-func (checkCmd) SetFlags(_ *flag.FlagSet) { /* NOP */ }
-
-func resolveFunc(ln *linker.Linker) func(n *parser.Node) error {
-	return func(n *parser.Node) error {
-		if err := ln.Resolve(n); err != nil && !isConflict(err) {
-			return err
-		}
-		return nil
-	}
+func (cmd *checkCmd) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&cmd.fail, "fail", false, "exit with fail status if there are conflicts")
 }
 
 func isConflict(err error) bool {

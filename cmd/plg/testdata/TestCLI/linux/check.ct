@@ -5,7 +5,7 @@ $ plg check
 
 $ plg check -fail --> FAIL
 plg: there are one or more conflicts
-	- linker: /private${ROOTDIR}/test: target doesn't exist
+	- linker: ${ROOTDIR}/test: target doesn't exist
 
 $ cp test
 $ plg check

@@ -1,0 +1,1 @@
+	- linker: testdata/TestCheck/Execute/fail/targets/nonexistent: target doesn't exist

@@ -14,7 +14,7 @@ import (
 	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
-var _ command.Interface = checkCmd{}
+var _ command.Interface = new(checkCmd)
 
 func TestCheck(t *testing.T) {
 	t.Run("Execute", testCheckExecute)
@@ -33,6 +33,11 @@ func testCheckExecute(t *testing.T) {
 			name: "default",
 			cmd:  checkCmd{},
 			err:  nil,
+		},
+		{
+			name: "fail",
+			cmd:  checkCmd{fail: true},
+			err:  errGotConflicts,
 		},
 	}
 	for _, tc := range testCases {
@@ -81,6 +86,12 @@ func testCheckSetFlags(t *testing.T) {
 		{
 			flags: nil,
 			want:  checkCmd{},
+		},
+		{
+			flags: map[string]string{
+				"fail": "true",
+			},
+			want: checkCmd{fail: true},
 		},
 	}
 	for _, tc := range testCases {
