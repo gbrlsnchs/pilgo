@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
-	"gsr.dev/pilgrim/fs/osfs"
+	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/parser"
 )
 
@@ -15,7 +15,7 @@ type showCmd struct{}
 
 func (showCmd) Execute(stdout io.Writer, v interface{}) error {
 	o := v.(opts)
-	var fs osfs.FileSystem
+	var fs fs.FileSystem
 	b, err := fs.ReadFile(o.config)
 	if err != nil {
 		return err

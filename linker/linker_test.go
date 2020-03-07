@@ -18,7 +18,7 @@ func TestLinker(t *testing.T) {
 
 func testResolve(t *testing.T) {
 	testCases := []struct {
-		fs   fs.FileSystem
+		fs   linker.FileSystem
 		n    *parser.Node
 		err  error
 		want *parser.Node
@@ -534,9 +534,6 @@ func (fs testFileSystem) Info(name string) (fs.FileInfo, error) {
 func (fs testFileSystem) ReadDir(name string) ([]string, error) {
 	return fs.readDir[name].returnValue, fs.readDir[name].err
 }
-
-func (ts testFileSystem) ReadFile(_ string) ([]byte, error)                 { return nil, nil }
-func (ts testFileSystem) WriteFile(_ string, _ []byte, _ os.FileMode) error { return nil }
 
 type testFileInfo struct {
 	exists   bool

@@ -1,4 +1,4 @@
-package osfs_test
+package fs_test
 
 import (
 	"errors"
@@ -12,12 +12,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/text/transform"
 	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/osfs"
-)
-
-var (
-	_ fs.FileSystem = osfs.FileSystem{}
-	_ fs.FileSystem = new(osfs.FileSystem)
 )
 
 var (
@@ -90,7 +84,7 @@ func testFileSystemInfo(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.filename, func(t *testing.T) {
 			var (
-				fs       osfs.FileSystem
+				fs       fs.FileSystem
 				filename = filepath.Join("testdata", t.Name())
 			)
 			fi, err := fs.Info(filename)
@@ -141,7 +135,7 @@ func testFileSystemReadDir(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.filename, func(t *testing.T) {
 			var (
-				fs       osfs.FileSystem
+				fs       fs.FileSystem
 				filename = filepath.Join("testdata", t.Name())
 			)
 			files, err := fs.ReadDir(filename)
@@ -178,7 +172,7 @@ func testFileSystemReadFile(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.filename, func(t *testing.T) {
 			var (
-				fs       osfs.FileSystem
+				fs       fs.FileSystem
 				filename = filepath.Join("testdata", t.Name())
 			)
 			b, err := fs.ReadFile(filename)
@@ -210,7 +204,7 @@ func testFileSystemWriteFile(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.filename, func(t *testing.T) {
 			var (
-				fs       osfs.FileSystem
+				fs       fs.FileSystem
 				filename = filepath.Join("testdata", t.Name())
 			)
 			err := fs.WriteFile(filename, []byte(tc.wantData), tc.wantPerm)

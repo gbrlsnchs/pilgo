@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
-	"gsr.dev/pilgrim/fs/osfs"
+	"gsr.dev/pilgrim/fs"
 )
 
 var errConfigExists = errors.New("configuration file already exists")
@@ -22,7 +22,7 @@ type initCmd struct {
 func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 	o := v.(opts)
 	var (
-		fs osfs.FileSystem
+		fs fs.FileSystem
 		c  pilgrim.Config
 	)
 	fi, err := fs.Info(o.config)

@@ -1,4 +1,4 @@
-package osfs_test
+package fs_test
 
 import (
 	"fmt"
