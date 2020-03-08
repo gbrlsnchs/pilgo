@@ -4,7 +4,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"gsr.dev/pilgrim/internal/treewriter"
+	"gsr.dev/pilgrim/parser/internal/treewriter"
 )
 
 // Tree is a simple tree data structure
