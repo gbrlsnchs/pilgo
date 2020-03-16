@@ -1,4 +1,4 @@
-package fs_test
+package fsutil_test
 
 import (
 	"fmt"
@@ -11,11 +11,11 @@ func TestMain(m *testing.M) {
 	// XXX: Since symlinks in testdata folder aren't recognized
 	// on Windows, this creates them only for that platform.
 	testdirs := []string{
-		"Info",
 		"ReadDir",
+		"Stat",
 	}
 	for _, dir := range testdirs {
-		symlink := filepath.Join("testdata", "TestFileSystem", dir, "symlink")
+		symlink := filepath.Join("testdata", "TestOSDriver", dir, "symlink")
 		if err := os.Remove(symlink); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

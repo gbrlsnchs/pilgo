@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/fs"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var errConfigExists = errors.New("configuration file already exists")
@@ -22,10 +23,10 @@ type initCmd struct {
 func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 	o := v.(opts)
 	var (
-		fs fs.FileSystem
+		fs = fs.New(fsutil.OSDriver{})
 		c  pilgrim.Config
 	)
-	fi, err := fs.Info(o.config)
+	fi, err := fs.Stat(o.config)
 	if err != nil {
 		return err
 	}
@@ -33,7 +34,7 @@ func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	targets, err := fs.ReadDir(cwd)
+	files, err := fs.ReadDir(cwd)
 	if err != nil {
 		return err
 	}
@@ -50,6 +51,10 @@ func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 			return err
 		}
 		perm = fi.Perm()
+	}
+	targets := make([]string, len(files))
+	for i, fi := range files {
+		targets[i] = fi.Name()
 	}
 	b, err := marshalYAML(c.Init(targets, cmd.include, cmd.exclude))
 	if err != nil {

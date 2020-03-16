@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/parser"
 )
 
@@ -20,16 +21,16 @@ var (
 
 // Linker is a file symlinker.
 type Linker struct {
-	fs FileSystem
+	fs fs.FileSystem
 }
 
 // New creates a new linker with a given file system.
-func New(fs FileSystem) *Linker { return &Linker{fs} }
+func New(fs fs.FileSystem) *Linker { return &Linker{fs} }
 
 // Resolve checks and resolves nodes in a parsed tree.
 func (ln *Linker) Resolve(n *parser.Node) error {
 	tgpath := n.Target.FullPath()
-	target, err := ln.fs.Info(tgpath)
+	target, err := ln.fs.Stat(tgpath)
 	if err != nil {
 		return err
 	}
@@ -42,7 +43,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 		return nil
 	}
 	lnpath := n.Link.FullPath()
-	link, err := ln.fs.Info(lnpath)
+	link, err := ln.fs.Stat(lnpath)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 	return nil
 }
 
-func expand(n *parser.Node, children []string) {
+func expand(n *parser.Node, children []fs.FileInfo) {
 	if len(children) <= 0 {
 		return
 	}
@@ -84,11 +85,11 @@ func expand(n *parser.Node, children []string) {
 		n.Children[i] = &parser.Node{
 			Target: parser.File{
 				BaseDir: n.Target.BaseDir,
-				Path:    append(n.Target.Path, c),
+				Path:    append(n.Target.Path, c.Name()),
 			},
 			Link: parser.File{
 				BaseDir: n.Link.BaseDir,
-				Path:    append(n.Link.Path, c),
+				Path:    append(n.Link.Path, c.Name()),
 			},
 			Children: nil,
 		}

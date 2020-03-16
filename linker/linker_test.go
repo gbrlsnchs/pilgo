@@ -2,12 +2,12 @@ package linker_test
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/fs"
+	"gsr.dev/pilgrim/fs/fstest"
 	"gsr.dev/pilgrim/linker"
 	"gsr.dev/pilgrim/parser"
 )
@@ -18,26 +18,24 @@ func TestLinker(t *testing.T) {
 
 func testResolve(t *testing.T) {
 	testCases := []struct {
-		fs   linker.FileSystem
+		drv  fstest.Driver
 		n    *parser.Node
 		err  error
 		want *parser.Node
 	}{
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: false,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: false,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -66,20 +64,18 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -130,21 +126,19 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists:   true,
-							linkname: filepath.Join("", "foo"),
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn:   true,
+						LinknameReturn: filepath.Join("", "foo"),
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -173,21 +167,19 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists:   true,
-							linkname: filepath.Join("test", "bar"),
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn:   true,
+						LinknameReturn: filepath.Join("test", "bar"),
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "bar"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -216,22 +208,20 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  false,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  false,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -260,20 +250,18 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: false,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: false,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: false,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: false,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -302,32 +290,32 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  true,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
 					},
 				},
-				readDir: map[string]readDirReturn{
-					"foo": readDirReturn{
-						returnValue: []string{
-							"bar",
-							"baz",
-							"qux",
-						},
-						err: nil,
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+				ReadDirReturn: map[string][]fs.FileInfo{
+					"foo": {
+						fstest.FileInfo{NameReturn: "bar"},
+						fstest.FileInfo{NameReturn: "baz"},
+						fstest.FileInfo{NameReturn: "qux"},
 					},
+					filepath.Join("test", "foo"): nil,
+				},
+				ReadDirErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -408,22 +396,20 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  false,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  false,
 					},
-					filepath.Join("test", "foo"): {
-						returnValue: testFileInfo{
-							exists: true,
-							isDir:  true,
-						},
-						err: nil,
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
 				},
 			},
 			n: &parser.Node{
@@ -452,20 +438,18 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			fs: testFileSystem{
-				info: map[string]infoReturn{
-					"foo": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
 					},
-					"test": {
-						returnValue: testFileInfo{
-							exists: true,
-						},
-						err: nil,
+					"test": fstest.FileInfo{
+						ExistsReturn: true,
 					},
+				},
+				StatErr: map[string]error{
+					"foo":  nil,
+					"test": nil,
 				},
 			},
 			n: &parser.Node{
@@ -496,7 +480,7 @@ func testResolve(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
-			ln := linker.New(tc.fs)
+			ln := linker.New(fs.New(&tc.drv))
 			err := ln.Resolve(tc.n)
 			// TODO(gbrlsnchs): check error message has correct file path
 			if want, got := tc.err, err; !errors.Is(got, want) {
@@ -511,37 +495,3 @@ func testResolve(t *testing.T) {
 		})
 	}
 }
-
-type infoReturn struct {
-	returnValue fs.FileInfo
-	err         error
-}
-
-type readDirReturn struct {
-	returnValue []string
-	err         error
-}
-
-type testFileSystem struct {
-	info    map[string]infoReturn
-	readDir map[string]readDirReturn
-}
-
-func (fs testFileSystem) Info(name string) (fs.FileInfo, error) {
-	return fs.info[name].returnValue, fs.info[name].err
-}
-
-func (fs testFileSystem) ReadDir(name string) ([]string, error) {
-	return fs.readDir[name].returnValue, fs.readDir[name].err
-}
-
-type testFileInfo struct {
-	exists   bool
-	isDir    bool
-	linkname string
-}
-
-func (fi testFileInfo) Exists() bool      { return fi.exists }
-func (fi testFileInfo) IsDir() bool       { return fi.isDir }
-func (fi testFileInfo) Linkname() string  { return fi.linkname }
-func (fi testFileInfo) Perm() os.FileMode { return 0 }

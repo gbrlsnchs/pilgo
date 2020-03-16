@@ -1,81 +1,57 @@
 package fs
 
 import (
-	"io/ioutil"
+	"errors"
 	"os"
-
-	"github.com/andybalholm/crlf"
-	"golang.org/x/text/transform"
 )
 
-// NOTE(gbrlsnchs): Declaring this variable here might prevent concurrent file reads, since
-// this is a stateful transformer used between reads and reset at the beginning of reads.
-var normalize = new(crlf.Normalize)
+// ErrNoDriver is the error for a nonfunctional file system.
+var ErrNoDriver = errors.New("fs: nil driver")
 
 // FileSystem is a concrete file system that implements a VFS contract.
-type FileSystem struct{}
+type FileSystem struct {
+	drv Driver
+}
 
-// Info returns real information about a file.
-func (FileSystem) Info(filename string) (FileInfo, error) {
-	fi, err := os.Lstat(filename)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-		return fileInfo{exists: false}, nil
-	}
-	mode := fi.Mode()
-	info := fileInfo{
-		exists: true,
-		isDir:  fi.IsDir(),
-		perm:   mode.Perm(),
-	}
-	if mode&os.ModeSymlink != 0 {
-		if info.linkname, err = os.Readlink(filename); err != nil {
-			return nil, err
-		}
-	}
-	return info, nil
+// Driver is the internal file system implementation.
+type Driver interface {
+	ReadDir(dirname string) ([]FileInfo, error)
+	ReadFile(filename string) ([]byte, error)
+	Stat(filename string) (FileInfo, error)
+	WriteFile(filename string, data []byte, perm os.FileMode) error
+}
+
+// New creates a new FileSystem with drv as its engine.
+func New(drv Driver) FileSystem {
+	return FileSystem{drv}
 }
 
 // ReadDir lists names of files from dirname.
-func (FileSystem) ReadDir(dirname string) ([]string, error) {
-	files, err := ioutil.ReadDir(dirname)
-	if err != nil {
-		return nil, err
-	}
-	names := make([]string, len(files))
-	for i, f := range files {
-		names[i] = f.Name()
-	}
-	return names, nil
+func (fs FileSystem) ReadDir(dirname string) ([]FileInfo, error) {
+	fs.testDriver()
+	return fs.drv.ReadDir(dirname)
 }
 
 // ReadFile returns the content of filename.
-// It always transforms CRLF newlines into LF only.
-func (FileSystem) ReadFile(filename string) ([]byte, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	return ioutil.ReadAll(transform.NewReader(f, normalize))
+func (fs FileSystem) ReadFile(filename string) ([]byte, error) {
+	fs.testDriver()
+	return fs.drv.ReadFile(filename)
+}
+
+// Stat returns information about a file.
+func (fs FileSystem) Stat(filename string) (FileInfo, error) {
+	fs.testDriver()
+	return fs.drv.Stat(filename)
 }
 
 // WriteFile writes data to filename with permission perm.
-func (FileSystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	// TODO(gbrlsnchs): use package "renameio"
-	return ioutil.WriteFile(filename, data, perm)
+func (fs FileSystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
+	fs.testDriver()
+	return fs.drv.WriteFile(filename, data, perm)
 }
 
-type fileInfo struct {
-	exists   bool
-	isDir    bool
-	linkname string
-	perm     os.FileMode
+func (fs FileSystem) testDriver() {
+	if fs.drv == nil {
+		panic(ErrNoDriver)
+	}
 }
-
-func (fi fileInfo) Exists() bool      { return fi.exists }
-func (fi fileInfo) IsDir() bool       { return fi.isDir }
-func (fi fileInfo) Linkname() string  { return fi.linkname }
-func (fi fileInfo) Perm() os.FileMode { return fi.perm }
