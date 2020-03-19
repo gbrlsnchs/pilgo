@@ -65,7 +65,7 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 	case <-ctx.Done():
 		err = ctx.Err()
 	default:
-		err = c.cmd.Execute(&bd, ctx.Value(OptsCtxKey))
+		err = c.execute(ctx, &bd)
 	}
 	if err != nil {
 		fmt.Fprintf(c.stderr, "%v: %v\n", ctx.Value(ErrCtxKey), err)
@@ -73,6 +73,15 @@ func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}
 	}
 	fmt.Fprint(c.stdout, bd.String())
 	return status
+}
+
+func (c *Command) execute(ctx context.Context, w io.Writer) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(error)
+		}
+	}()
+	return c.cmd.Execute(w, ctx.Value(OptsCtxKey))
 }
 
 // Name sets the command's name.

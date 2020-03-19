@@ -57,14 +57,20 @@ func testCommandSetFlags(t *testing.T) {
 	}
 }
 
+var panicErr = errors.New("panic!")
+
 type ifaceSpy struct {
-	txt  string
-	err  error
-	fset *flag.FlagSet
+	txt    string
+	err    error
+	panics bool
+	fset   *flag.FlagSet
 }
 
 func (spy *ifaceSpy) Execute(w io.Writer, opts interface{}) error {
 	fmt.Fprintf(w, "%s", spy.txt)
+	if spy.panics {
+		panic(panicErr)
+	}
 	return spy.err
 }
 
@@ -78,6 +84,7 @@ func testCommandExecute(t *testing.T) {
 		out        string
 		wantStdout string
 		err        error
+		panics     bool
 		cancel     bool
 		wantStderr string
 		wantOutput string
@@ -87,6 +94,7 @@ func testCommandExecute(t *testing.T) {
 			out:        "test\n",
 			wantStdout: "test\n",
 			err:        nil,
+			panics:     false,
 			cancel:     false,
 			wantStderr: "",
 			wantOutput: "test\n",
@@ -96,6 +104,7 @@ func testCommandExecute(t *testing.T) {
 			out:        "test\n",
 			wantStdout: "test\n",
 			err:        errors.New("oops"),
+			panics:     false,
 			cancel:     false,
 			wantStderr: "command: oops\n",
 			wantOutput: "command: oops\ntest\n",
@@ -105,9 +114,20 @@ func testCommandExecute(t *testing.T) {
 			out:        "test\n",
 			wantStdout: "", // context is checked before execution
 			err:        nil,
+			panics:     false,
 			cancel:     true,
 			wantStderr: fmt.Sprintf("command: %v\n", context.Canceled),
 			wantOutput: fmt.Sprintf("command: %v\n", context.Canceled),
+		},
+		{
+			wantStatus: subcommands.ExitFailure,
+			out:        "test\n",
+			wantStdout: "test\n",
+			err:        errors.New("oops"),
+			panics:     true,
+			cancel:     false,
+			wantStderr: "command: panic!\n",
+			wantOutput: "command: panic!\ntest\n",
 		},
 	}
 	for _, tc := range testCases {
@@ -120,7 +140,7 @@ func testCommandExecute(t *testing.T) {
 			var (
 				output         strings.Builder
 				stdout, stderr strings.Builder
-				spy            = &ifaceSpy{tc.out, tc.err, nil}
+				spy            = &ifaceSpy{tc.out, tc.err, tc.panics, nil}
 				c              = command.New(
 					spy,
 					command.Stdout(io.MultiWriter(&output, &stdout)),
