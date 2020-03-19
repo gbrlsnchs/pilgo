@@ -9,6 +9,8 @@ import (
 	"github.com/google/subcommands"
 	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
+	"gsr.dev/pilgrim/fs"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 const defaultConfig = config.DefaultName
@@ -57,6 +59,7 @@ func run() int {
 	ctx = context.WithValue(ctx, command.ErrCtxKey, exe)
 	ctx = context.WithValue(ctx, command.OptsCtxKey, opts{
 		config:        defaultConfig,
+		fsDriver:      fsutil.OSDriver{},
 		getwd:         os.Getwd,
 		userConfigDir: os.UserConfigDir,
 	})
@@ -66,6 +69,7 @@ func run() int {
 
 type opts struct {
 	config        string
+	fsDriver      fs.Driver
 	getwd         func() (string, error)
 	userConfigDir func() (string, error)
 }

@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/cmd/internal/command"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var _ command.Interface = showCmd{}
@@ -46,7 +47,8 @@ func testShowExecute(t *testing.T) {
 			}
 			var bd strings.Builder
 			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config: config,
+				config:   config,
+				fsDriver: fsutil.OSDriver{},
 				getwd: func() (string, error) {
 					return filepath.Join(testdata, "targets"), nil
 				},

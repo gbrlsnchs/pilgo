@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/cmd/internal/command"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var _ command.Interface = new(configCmd)
@@ -59,7 +60,8 @@ func testConfigExecute(t *testing.T) {
 			// tc.cmd.cwd = filepath.Join(testdata, "targets")
 			var bd strings.Builder
 			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config: config,
+				config:   config,
+				fsDriver: fsutil.OSDriver{},
 			}); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}

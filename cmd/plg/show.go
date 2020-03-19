@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/fsutil"
 	"gsr.dev/pilgrim/parser"
 )
 
@@ -16,7 +15,7 @@ type showCmd struct{}
 
 func (showCmd) Execute(stdout io.Writer, v interface{}) error {
 	o := v.(opts)
-	fs := fs.New(fsutil.OSDriver{})
+	fs := fs.New(o.fsDriver)
 	b, err := fs.ReadFile(o.config)
 	if err != nil {
 		return err

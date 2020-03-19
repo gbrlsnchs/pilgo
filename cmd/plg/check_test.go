@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/cmd/internal/command"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var _ command.Interface = new(checkCmd)
@@ -51,6 +52,7 @@ func testCheckExecute(t *testing.T) {
 			var bd strings.Builder
 			err = tc.cmd.Execute(&bd, opts{
 				config:        config,
+				fsDriver:      fsutil.OSDriver{},
 				getwd:         func() (string, error) { return cwd, nil },
 				userConfigDir: func() (string, error) { return "user_config_dir", nil },
 			})

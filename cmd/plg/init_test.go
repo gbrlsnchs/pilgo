@@ -14,6 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
+	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var _ command.Interface = new(initCmd)
@@ -118,7 +119,8 @@ func testInitExecute(t *testing.T) {
 			}
 			var bd strings.Builder
 			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config: conf,
+				config:   conf,
+				fsDriver: fsutil.OSDriver{},
 				getwd: func() (string, error) {
 					return testdata, nil
 				},

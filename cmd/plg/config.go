@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 type configCmd struct {
@@ -20,7 +19,7 @@ type configCmd struct {
 
 func (cmd configCmd) Execute(_ io.Writer, v interface{}) error {
 	o := v.(opts)
-	fs := fs.New(fsutil.OSDriver{})
+	fs := fs.New(o.fsDriver)
 	b, err := fs.ReadFile(o.config)
 	if err != nil {
 		return err
