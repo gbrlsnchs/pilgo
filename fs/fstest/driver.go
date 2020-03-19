@@ -9,6 +9,9 @@ import (
 
 // Driver is a stub and spy implementation of a file system's functionalities.
 type Driver struct {
+	// MkdirAll
+	MkdirAllErr map[string]error
+
 	// ReadDir
 	ReadDirReturn map[string][]fs.FileInfo
 	ReadDirErr    map[string]error
@@ -35,6 +38,12 @@ func (drv *Driver) HasBeenCalled(fn Method) (bool, Args) {
 	ptr := reflect.ValueOf(fn).Pointer()
 	args, ok := drv.calls[ptr]
 	return ok, args
+}
+
+// MkdirAll returns a stub of directory creation.
+func (drv *Driver) MkdirAll(dirname string) error {
+	defer drv.setHasBeenCalled(drv.MkdirAll, dirname)
+	return drv.MkdirAllErr[dirname]
 }
 
 func (drv *Driver) ReadDir(dirname string) ([]fs.FileInfo, error) {

@@ -17,6 +17,11 @@ var normalize = new(crlf.Normalize)
 // OSDriver is the driver for a concrete file system.
 type OSDriver struct{}
 
+// MkdirAll creates directories recursively or is a NOP when they already exist.
+func (OSDriver) MkdirAll(dirname string) error {
+	return os.MkdirAll(dirname, 0o755)
+}
+
 // ReadDir lists names of files from dirname.
 func (OSDriver) ReadDir(dirname string) ([]fs.FileInfo, error) {
 	files, err := ioutil.ReadDir(dirname)

@@ -32,10 +32,42 @@ var (
 )
 
 func TestOSDriver(t *testing.T) {
+	t.Run("MkdirAll", testOSDriverMkdirAll)
 	t.Run("ReadDir", testOSDriverReadDir)
 	t.Run("ReadFile", testOSDriverReadFile)
 	t.Run("Stat", testOSDriverStat)
 	t.Run("WriteFile", testOSDriverWriteFile)
+}
+
+func testOSDriverMkdirAll(t *testing.T) {
+	testCases := []struct {
+		dirname string
+		err     error
+	}{
+		{"foo", nil},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.dirname, func(t *testing.T) {
+			var (
+				drv     fsutil.OSDriver
+				dirname = filepath.Join("testdata", t.Name())
+			)
+			defer func() {
+				os.RemoveAll(dirname)
+			}()
+			err := drv.MkdirAll(dirname)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			dir, err := os.Stat(dirname)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want, got := true, dir.IsDir(); got != want {
+				t.Fatalf("want %t, got %t", want, got)
+			}
+		})
+	}
 }
 
 func testOSDriverReadDir(t *testing.T) {

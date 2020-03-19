@@ -13,10 +13,45 @@ import (
 var _ fs.Driver = new(fstest.Driver)
 
 func TestDriver(t *testing.T) {
+	t.Run("MkdirAll", testDriverMkdirAll)
 	t.Run("ReadDir", testDriverReadDir)
 	t.Run("ReadFile", testDriverReadFile)
 	t.Run("Stat", testDriverStat)
 	t.Run("WriteFile", testDriverWriteFile)
+}
+
+func testDriverMkdirAll(t *testing.T) {
+	errMkdirAll := errors.New("MkdirAll")
+	testCases := []struct {
+		drv     fstest.Driver
+		dirname string
+		err     error
+	}{
+		{
+			drv: fstest.Driver{
+				MkdirAllErr: map[string]error{
+					"foo": errMkdirAll,
+				},
+			},
+			dirname: "foo",
+			err:     errMkdirAll,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.dirname, func(t *testing.T) {
+			err := tc.drv.MkdirAll(tc.dirname)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			hasBeenCalled, args := tc.drv.HasBeenCalled(tc.drv.MkdirAll)
+			if want, got := true, hasBeenCalled; got != want {
+				t.Fatalf("want %t, got %t", want, got)
+			}
+			if want, got := (fstest.Args{tc.dirname}), args; !cmp.Equal(got, want) {
+				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
+			}
+		})
+	}
 }
 
 func testDriverReadDir(t *testing.T) {

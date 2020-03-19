@@ -11,11 +11,38 @@ import (
 )
 
 func TestFileSystem(t *testing.T) {
+	t.Run("MkdirAll", testFileSystemMkdirAll)
 	t.Run("ReadDir", testFileSystemReadDir)
 	t.Run("ReadFile", testFileSystemReadFile)
 	t.Run("Stat", testFileSystemStat)
 	t.Run("WriteFile", testFileSystemWriteFile)
 }
+
+func testFileSystemMkdirAll(t *testing.T) {
+	testCases := []struct {
+		drv fs.Driver
+		err error
+	}{
+		{nil, fs.ErrNoDriver},
+		{new(fstest.Driver), nil},
+	}
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			defer checkPanic(t, tc.err)
+			fs := fs.New(tc.drv)
+			_ = fs.MkdirAll("test")
+			drv := tc.drv.(*fstest.Driver)
+			hasBeenCalled, args := drv.HasBeenCalled(drv.MkdirAll)
+			if want, got := true, hasBeenCalled; got != want {
+				t.Fatalf("want %t, got %t", want, got)
+			}
+			if want, got := (fstest.Args{"test"}), args; !cmp.Equal(got, want) {
+				t.Fatalf("FileSystem.MkdirAll mismatch (-want +got):\n%s", cmp.Diff(want, got))
+			}
+		})
+	}
+}
+
 func testFileSystemReadDir(t *testing.T) {
 	testCases := []struct {
 		drv fs.Driver

@@ -15,6 +15,7 @@ type FileSystem struct {
 
 // Driver is the internal file system implementation.
 type Driver interface {
+	MkdirAll(dirname string) error
 	ReadDir(dirname string) ([]FileInfo, error)
 	ReadFile(filename string) ([]byte, error)
 	Stat(filename string) (FileInfo, error)
@@ -24,6 +25,12 @@ type Driver interface {
 // New creates a new FileSystem with drv as its engine.
 func New(drv Driver) FileSystem {
 	return FileSystem{drv}
+}
+
+// MkdirAll creates directories and their parents, if needed.
+func (fs FileSystem) MkdirAll(dirname string) error {
+	fs.testDriver()
+	return fs.drv.MkdirAll(dirname)
 }
 
 // ReadDir lists names of files from dirname.
