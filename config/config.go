@@ -1,12 +1,12 @@
-package pilgrim
+package config
 
 import (
 	"path/filepath"
 	"strings"
 )
 
-// DefaultConfig is the default name of the configuration file for Pilgrim.
-const DefaultConfig = "pilgrim.yml"
+// DefaultName is the default name of the configuration file for Pilgrim.
+const DefaultName = "pilgrim.yml"
 
 // Config is a configuration format for Pilgrim.
 type Config struct {
@@ -21,7 +21,7 @@ type Config struct {
 func (c Config) Init(targets []string, includes, excludes map[string]struct{}) Config {
 	eligible := make([]string, 0, len(targets))
 	for _, tg := range targets {
-		if strings.HasPrefix(tg, ".") || tg == DefaultConfig {
+		if strings.HasPrefix(tg, ".") || tg == DefaultName {
 			continue
 		}
 		if len(includes) > 0 {

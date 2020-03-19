@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"gopkg.in/yaml.v3"
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/fs/fsutil"
 	"gsr.dev/pilgrim/parser"
@@ -21,7 +21,7 @@ func (showCmd) Execute(stdout io.Writer, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	var c pilgrim.Config
+	var c config.Config
 	if yaml.Unmarshal(b, &c); err != nil {
 		return err
 	}

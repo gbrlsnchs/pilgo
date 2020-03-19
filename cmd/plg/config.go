@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"gopkg.in/yaml.v3"
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/fs/fsutil"
 )
@@ -25,11 +25,11 @@ func (cmd configCmd) Execute(_ io.Writer, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	var c pilgrim.Config
+	var c config.Config
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return err
 	}
-	c.Set(cmd.file, pilgrim.Config{
+	c.Set(cmd.file, config.Config{
 		BaseDir: cmd.baseDir,
 		Link:    cmd.link.addr,
 		Targets: cmd.targets,

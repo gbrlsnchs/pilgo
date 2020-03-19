@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"gopkg.in/yaml.v3"
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/fs/fsutil"
 )
@@ -24,7 +24,7 @@ func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
 	o := v.(opts)
 	var (
 		fs = fs.New(fsutil.OSDriver{})
-		c  pilgrim.Config
+		c  config.Config
 	)
 	fi, err := fs.Stat(o.config)
 	if err != nil {

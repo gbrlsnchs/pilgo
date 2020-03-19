@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/parser"
 )
 
@@ -18,13 +18,13 @@ func testParserParse(t *testing.T) {
 	os.Setenv("MY_ENV_VAR", "home")
 	defer os.Unsetenv("MY_ENV_VAR")
 	testCases := []struct {
-		c    pilgrim.Config
+		c    config.Config
 		opts []parser.ParseOption
 		tr   *parser.Tree
 		err  error
 	}{
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
@@ -42,7 +42,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
@@ -65,13 +65,13 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {Link: newString("bar")},
 				},
 			},
@@ -86,19 +86,19 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
 						},
-						Options: map[string]pilgrim.Config{
-							"bar": pilgrim.Config{
+						Options: map[string]config.Config{
+							"bar": config.Config{
 								Targets: []string{
 									"baz",
 								},
@@ -142,7 +142,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
@@ -166,7 +166,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				Link: nil,
 				Targets: []string{
 					"foo",
@@ -189,13 +189,13 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						BaseDir: "home",
 						Link:    newString(""),
@@ -223,13 +223,13 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						BaseDir: "home",
 						Link:    newString("golang"),
@@ -257,7 +257,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "/tmp",
 				Link:    nil,
 				Targets: []string{
@@ -281,13 +281,13 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Link: newString(""),
 						Targets: []string{
@@ -318,7 +318,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "$MY_ENV_VAR",
 				Link:    nil,
 				Targets: []string{
@@ -337,7 +337,7 @@ func testParserParse(t *testing.T) {
 			err: nil,
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 				Link:    nil,
 				Targets: []string{

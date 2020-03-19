@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/google/subcommands"
-	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
+	"gsr.dev/pilgrim/config"
 )
 
-const defaultConfig = pilgrim.DefaultConfig
+const defaultConfig = config.DefaultName
 
 func main() {
 	os.Exit(run())

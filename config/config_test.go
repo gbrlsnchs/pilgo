@@ -1,11 +1,11 @@
-package pilgrim_test
+package config_test
 
 import (
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 )
 
 func TestConfig(t *testing.T) {
@@ -15,64 +15,64 @@ func TestConfig(t *testing.T) {
 
 func testConfigInit(t *testing.T) {
 	testCases := []struct {
-		c        pilgrim.Config
+		c        config.Config
 		targets  []string
 		includes map[string]struct{}
 		excludes map[string]struct{}
-		want     pilgrim.Config
+		want     config.Config
 	}{
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 			},
 			targets: []string{"foo", "bar"},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 			},
 			targets: []string{"foo", "bar", "pilgrim.yml"},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 			},
 			targets: []string{"foo", "bar", ".git"},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 			},
 			targets: []string{"foo", "bar", ".git"},
 			excludes: map[string]struct{}{
 				"bar": struct{}{},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo"},
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				BaseDir: "test",
 			},
 			targets: []string{"foo", "bar", ".git"},
 			includes: map[string]struct{}{
 				"bar": struct{}{},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"bar"},
 			},
@@ -90,15 +90,15 @@ func testConfigInit(t *testing.T) {
 
 func testConfigSet(t *testing.T) {
 	testCases := []struct {
-		c    pilgrim.Config
+		c    config.Config
 		name string
-		o    pilgrim.Config
-		want pilgrim.Config
+		o    config.Config
+		want config.Config
 	}{
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -107,15 +107,15 @@ func testConfigSet(t *testing.T) {
 				},
 			},
 			name: "foo",
-			o: pilgrim.Config{
+			o: config.Config{
 				BaseDir: "test",
 				Targets: []string{
 					"bar",
 				},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						BaseDir: "test",
 						Targets: []string{
@@ -126,19 +126,19 @@ func testConfigSet(t *testing.T) {
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				Targets: []string{"foo"},
 			},
 			name: "foo",
-			o: pilgrim.Config{
+			o: config.Config{
 				BaseDir: "test",
 				Targets: []string{
 					"bar",
 				},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						BaseDir: "test",
 						Targets: []string{
@@ -149,9 +149,9 @@ func testConfigSet(t *testing.T) {
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -160,12 +160,12 @@ func testConfigSet(t *testing.T) {
 				},
 			},
 			name: "foo",
-			o: pilgrim.Config{
+			o: config.Config{
 				BaseDir: "test",
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						BaseDir: "test",
 					},
@@ -173,9 +173,9 @@ func testConfigSet(t *testing.T) {
 			},
 		},
 		{
-			c: pilgrim.Config{
+			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -184,17 +184,17 @@ func testConfigSet(t *testing.T) {
 				},
 			},
 			name: filepath.Join("foo", "bar"),
-			o: pilgrim.Config{
+			o: config.Config{
 				Targets: []string{"baz"},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]pilgrim.Config{
+				Options: map[string]config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
 						},
-						Options: map[string]pilgrim.Config{
+						Options: map[string]config.Config{
 							"bar": {
 								Targets: []string{
 									"baz",
@@ -206,12 +206,12 @@ func testConfigSet(t *testing.T) {
 			},
 		},
 		{
-			c:    pilgrim.Config{},
+			c:    config.Config{},
 			name: "",
-			o: pilgrim.Config{
+			o: config.Config{
 				Targets: []string{"foo"},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{"foo"},
 				Options: nil,
 			},

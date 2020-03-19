@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"gopkg.in/yaml.v3"
-	"gsr.dev/pilgrim"
 	"gsr.dev/pilgrim/cmd/internal/command"
+	"gsr.dev/pilgrim/config"
 )
 
 var _ command.Interface = new(initCmd)
@@ -27,14 +27,14 @@ func testInitExecute(t *testing.T) {
 	testCases := []struct {
 		name   string
 		cmd    initCmd
-		want   pilgrim.Config
+		want   config.Config
 		err    error
 		remove bool
 	}{
 		{
 			name: "init",
 			cmd:  initCmd{},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{
 					"bar",
 					"foo",
@@ -46,7 +46,7 @@ func testInitExecute(t *testing.T) {
 		{
 			name: "force",
 			cmd:  initCmd{force: true},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "/tmp",
 				Targets: []string{
 					"bar",
@@ -59,7 +59,7 @@ func testInitExecute(t *testing.T) {
 		{
 			name: "nop",
 			cmd:  initCmd{},
-			want: pilgrim.Config{
+			want: config.Config{
 				BaseDir: "/tmp",
 				Targets: []string{
 					"test",
@@ -75,7 +75,7 @@ func testInitExecute(t *testing.T) {
 					"bar": struct{}{},
 				},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{
 					"foo",
 				},
@@ -90,7 +90,7 @@ func testInitExecute(t *testing.T) {
 					"bar": struct{}{},
 				},
 			},
-			want: pilgrim.Config{
+			want: config.Config{
 				Targets: []string{
 					"bar",
 				},
@@ -102,23 +102,23 @@ func testInitExecute(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			testdata := filepath.Join("testdata", t.Name())
-			config := filepath.Join(testdata, defaultConfig)
+			conf := filepath.Join(testdata, defaultConfig)
 			if tc.remove {
-				defer os.Remove(config)
+				defer os.Remove(conf)
 			} else if tc.cmd.force {
-				orig, err := ioutil.ReadFile(config)
+				orig, err := ioutil.ReadFile(conf)
 				if err != nil {
 					t.Fatal(err)
 				}
 				defer func(t *testing.T) {
-					if err := ioutil.WriteFile(config, orig, 0o644); err != nil {
+					if err := ioutil.WriteFile(conf, orig, 0o644); err != nil {
 						t.Fatal(err)
 					}
 				}(t)
 			}
 			var bd strings.Builder
 			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config: config,
+				config: conf,
 				getwd: func() (string, error) {
 					return testdata, nil
 				},
@@ -128,8 +128,8 @@ func testInitExecute(t *testing.T) {
 			if want, got := "", bd.String(); got != want {
 				t.Errorf("want %q, got %q", want, got)
 			}
-			var c pilgrim.Config
-			b, err := ioutil.ReadFile(config)
+			var c config.Config
+			b, err := ioutil.ReadFile(conf)
 			if err != nil {
 				t.Fatal(err)
 			}

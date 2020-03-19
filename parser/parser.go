@@ -4,7 +4,7 @@ import (
 	"os"
 	"sort"
 
-	"gsr.dev/pilgrim"
+	"gsr.dev/pilgrim/config"
 )
 
 // Parser is a configuration parser.
@@ -15,7 +15,7 @@ type Parser struct {
 }
 
 // Parse parses a configuration file and returns its tree representation.
-func (p *Parser) Parse(c pilgrim.Config, opts ...ParseOption) (*Tree, error) {
+func (p *Parser) Parse(c config.Config, opts ...ParseOption) (*Tree, error) {
 	for _, opt := range opts {
 		if err := opt(p); err != nil {
 			return nil, err
@@ -28,7 +28,7 @@ func (p *Parser) Parse(c pilgrim.Config, opts ...ParseOption) (*Tree, error) {
 	return &Tree{root}, nil
 }
 
-func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string, c pilgrim.Config) []*Node {
+func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string, c config.Config) []*Node {
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
@@ -47,7 +47,7 @@ func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string
 	return children
 }
 
-func (p *Parser) parseTarget(baseDir string, target, link []string, c pilgrim.Config) *Node {
+func (p *Parser) parseTarget(baseDir string, target, link []string, c config.Config) *Node {
 	n := &Node{Target: File{p.cwd, target}}
 	if c.BaseDir != "" {
 		baseDir = c.BaseDir
