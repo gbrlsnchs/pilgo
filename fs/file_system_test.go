@@ -36,7 +36,8 @@ func testFileSystemMkdirAll(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"test"}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{"test"}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.MkdirAll mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -61,7 +62,8 @@ func testFileSystemReadDir(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"test"}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{"test"}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.ReadDir mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -86,7 +88,8 @@ func testFileSystemReadFile(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"test"}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{"test"}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.ReadFile mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -111,7 +114,8 @@ func testFileSystemStat(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"test"}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{"test"}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.Stat mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -136,7 +140,8 @@ func testFileSystemSymlink(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"foo", "bar"}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{"foo", "bar"}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.Symlink mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -161,7 +166,10 @@ func testFileSystemWriteFile(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{"test", []byte("testing"), os.FileMode(0o777)}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{
+				fstest.Args{"test", []byte("testing"), os.FileMode(0o777)},
+			}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.WriteFile mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})

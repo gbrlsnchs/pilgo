@@ -48,7 +48,8 @@ func testDriverMkdirAll(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.dirname}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.dirname}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -202,7 +203,8 @@ func testDriverReadDir(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.dirname}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.dirname}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -255,7 +257,8 @@ func testDriverReadFile(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.filename}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.filename}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -332,7 +335,8 @@ func testDriverStat(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.filename}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.filename}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -368,7 +372,8 @@ func testDriverSymlink(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.oldname, tc.newname}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.oldname, tc.newname}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})
@@ -406,7 +411,8 @@ func testDriverWriteFile(t *testing.T) {
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			if want, got := (fstest.Args{tc.filename, tc.data, tc.perm}), args; !cmp.Equal(got, want) {
+			callstack := fstest.CallStack{fstest.Args{tc.filename, tc.data, tc.perm}}
+			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})

@@ -30,14 +30,15 @@ type Driver struct {
 	// WriteFile
 	WriteFileErr map[string]error
 
-	calls map[Method]Args
+	calls map[Method]CallStack
 }
 
 type Method interface{}
 type Arg interface{}
 type Args []Arg
+type CallStack []Args
 
-func (drv *Driver) HasBeenCalled(fn Method) (bool, Args) {
+func (drv *Driver) HasBeenCalled(fn Method) (bool, CallStack) {
 	ptr := reflect.ValueOf(fn).Pointer()
 	args, ok := drv.calls[ptr]
 	return ok, args
@@ -78,9 +79,9 @@ func (drv *Driver) WriteFile(filename string, data []byte, perm os.FileMode) err
 func (drv *Driver) setHasBeenCalled(fn Method, args ...Arg) {
 	ptr := reflect.ValueOf(fn).Pointer()
 	if drv.calls == nil {
-		drv.calls = make(map[Method]Args, 5)
+		drv.calls = make(map[Method]CallStack, 5)
 	}
-	drv.calls[ptr] = args
+	drv.calls[ptr] = append(drv.calls[ptr], args)
 }
 
 type FileInfo struct {
