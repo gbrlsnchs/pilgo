@@ -24,6 +24,9 @@ type Driver struct {
 	StatReturn map[string]fs.FileInfo
 	StatErr    map[string]error
 
+	// Symlink
+	SymlinkErr map[string]error
+
 	// WriteFile
 	WriteFileErr map[string]error
 
@@ -59,6 +62,12 @@ func (drv *Driver) ReadFile(filename string) ([]byte, error) {
 func (drv *Driver) Stat(filename string) (fs.FileInfo, error) {
 	defer drv.setHasBeenCalled(drv.Stat, filename)
 	return drv.StatReturn[filename], drv.StatErr[filename]
+}
+
+// Symlink returns a stub of a symlink creation.
+func (drv *Driver) Symlink(oldname, newname string) error {
+	defer drv.setHasBeenCalled(drv.Symlink, oldname, newname)
+	return drv.SymlinkErr[oldname]
 }
 
 func (drv *Driver) WriteFile(filename string, data []byte, perm os.FileMode) error {

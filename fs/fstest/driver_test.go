@@ -17,6 +17,7 @@ func TestDriver(t *testing.T) {
 	t.Run("ReadDir", testDriverReadDir)
 	t.Run("ReadFile", testDriverReadFile)
 	t.Run("Stat", testDriverStat)
+	t.Run("Symlink", testDriverSymlink)
 	t.Run("WriteFile", testDriverWriteFile)
 }
 
@@ -332,6 +333,42 @@ func testDriverStat(t *testing.T) {
 				t.Fatalf("want %t, got %t", want, got)
 			}
 			if want, got := (fstest.Args{tc.filename}), args; !cmp.Equal(got, want) {
+				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
+			}
+		})
+	}
+}
+
+func testDriverSymlink(t *testing.T) {
+	errSymlink := errors.New("Symlink")
+	testCases := []struct {
+		drv     fstest.Driver
+		oldname string
+		newname string
+		err     error
+	}{
+		{
+			drv: fstest.Driver{
+				SymlinkErr: map[string]error{
+					"foo": errSymlink,
+				},
+			},
+			oldname: "foo",
+			newname: "bar",
+			err:     errSymlink,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.oldname+" "+tc.newname, func(t *testing.T) {
+			err := tc.drv.Symlink(tc.oldname, tc.newname)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			hasBeenCalled, args := tc.drv.HasBeenCalled(tc.drv.Symlink)
+			if want, got := true, hasBeenCalled; got != want {
+				t.Fatalf("want %t, got %t", want, got)
+			}
+			if want, got := (fstest.Args{tc.oldname, tc.newname}), args; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}
 		})

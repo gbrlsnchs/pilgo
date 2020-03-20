@@ -118,6 +118,31 @@ func testFileSystemStat(t *testing.T) {
 	}
 }
 
+func testFileSystemSymlink(t *testing.T) {
+	testCases := []struct {
+		drv fs.Driver
+		err error
+	}{
+		{nil, fs.ErrNoDriver},
+		{new(fstest.Driver), nil},
+	}
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			defer checkPanic(t, tc.err)
+			fs := fs.New(tc.drv)
+			_ = fs.Symlink("foo", "bar")
+			drv := tc.drv.(*fstest.Driver)
+			hasBeenCalled, args := drv.HasBeenCalled(drv.Symlink)
+			if want, got := true, hasBeenCalled; got != want {
+				t.Fatalf("want %t, got %t", want, got)
+			}
+			if want, got := (fstest.Args{"foo", "bar"}), args; !cmp.Equal(got, want) {
+				t.Fatalf("FileSystem.Symlink mismatch (-want +got):\n%s", cmp.Diff(want, got))
+			}
+		})
+	}
+}
+
 func testFileSystemWriteFile(t *testing.T) {
 	testCases := []struct {
 		drv fs.Driver

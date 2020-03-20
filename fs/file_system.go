@@ -19,6 +19,7 @@ type Driver interface {
 	ReadDir(dirname string) ([]FileInfo, error)
 	ReadFile(filename string) ([]byte, error)
 	Stat(filename string) (FileInfo, error)
+	Symlink(oldname, newname string) error
 	WriteFile(filename string, data []byte, perm os.FileMode) error
 }
 
@@ -49,6 +50,12 @@ func (fs FileSystem) ReadFile(filename string) ([]byte, error) {
 func (fs FileSystem) Stat(filename string) (FileInfo, error) {
 	fs.testDriver()
 	return fs.drv.Stat(filename)
+}
+
+// Symlink creates a symlink of oldname as newname.
+func (fs FileSystem) Symlink(oldname, newname string) error {
+	fs.testDriver()
+	return fs.drv.Symlink(oldname, newname)
 }
 
 // WriteFile writes data to filename with permission perm.

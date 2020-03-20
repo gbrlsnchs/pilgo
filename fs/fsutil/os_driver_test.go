@@ -36,6 +36,7 @@ func TestOSDriver(t *testing.T) {
 	t.Run("ReadDir", testOSDriverReadDir)
 	t.Run("ReadFile", testOSDriverReadFile)
 	t.Run("Stat", testOSDriverStat)
+	t.Run("Symlink", testOSDriverSymlink)
 	t.Run("WriteFile", testOSDriverWriteFile)
 }
 
@@ -261,6 +262,37 @@ func testOSDriverStat(t *testing.T) {
 					t.Fatalf("want %#o, got %#o", want, got)
 				}
 			})
+		})
+	}
+}
+
+func testOSDriverSymlink(t *testing.T) {
+	testCases := []struct {
+		oldname, newname string
+		err              error
+	}{
+		{"file", "file_link", nil},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.newname, func(t *testing.T) {
+			var (
+				drv      fsutil.OSDriver
+				filename = filepath.Join("testdata", t.Name())
+			)
+			defer func() {
+				os.Remove(filename)
+			}()
+			err := drv.Symlink(tc.oldname, filename)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			oldname, err := os.Readlink(filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want, got := tc.oldname, oldname; got != want {
+				t.Fatalf("want %q, got %q", want, got)
+			}
 		})
 	}
 }

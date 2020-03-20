@@ -84,6 +84,12 @@ func (OSDriver) Stat(filename string) (fs.FileInfo, error) {
 	return info, nil
 }
 
+// Symlink creates a symbolic link newname of oldname.
+func (OSDriver) Symlink(oldname, newname string) error {
+	// TODO(gbrlsnchs): use renameio.Symlink to replace newname, if desired.
+	return os.Symlink(oldname, newname)
+}
+
 // WriteFile writes data to filename with permission perm.
 func (OSDriver) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	// TODO(gbrlsnchs): use package "renameio"
