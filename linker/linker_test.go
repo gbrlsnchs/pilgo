@@ -13,7 +13,356 @@ import (
 )
 
 func TestLinker(t *testing.T) {
+	t.Run("Link", testLink)
 	t.Run("Resolve", testResolve)
+}
+
+func testLink(t *testing.T) {
+	errLink := errors.New("Link")
+	testCases := []struct {
+		drv            fstest.Driver
+		tr             *parser.Tree
+		mkdirAllCalled bool
+		mkdirAllArgs   fstest.CallStack
+		symlinkCalled  bool
+		symlinkArgs    fstest.CallStack
+		err            error
+	}{
+		{
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+			},
+			tr: &parser.Tree{Root: &parser.Node{Children: []*parser.Node{
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"foo"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"foo"},
+					},
+					Children: nil,
+				},
+			}}},
+			mkdirAllCalled: true,
+			mkdirAllArgs: fstest.CallStack{
+				fstest.Args{"test"},
+			},
+			symlinkCalled: true,
+			symlinkArgs: fstest.CallStack{
+				fstest.Args{"foo", filepath.Join("test", "foo")},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+					"conf": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					"dirs": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("dirs", "conf"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+			},
+			tr: &parser.Tree{Root: &parser.Node{Children: []*parser.Node{
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"foo"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"foo"},
+					},
+					Children: nil,
+				},
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"conf"},
+					},
+					Link: parser.File{
+						BaseDir: "dirs",
+						Path:    []string{"conf"},
+					},
+					Children: nil,
+				},
+			}}},
+			mkdirAllCalled: true,
+			mkdirAllArgs: fstest.CallStack{
+				fstest.Args{"test"},
+				fstest.Args{"dirs"},
+			},
+			symlinkCalled: true,
+			symlinkArgs: fstest.CallStack{
+				fstest.Args{"foo", filepath.Join("test", "foo")},
+				fstest.Args{"conf", filepath.Join("dirs", "conf")},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					"conf": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("dirs", "conf"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+			},
+			tr: &parser.Tree{Root: &parser.Node{Children: []*parser.Node{
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"foo"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"foo"},
+					},
+					Children: nil,
+				},
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"conf"},
+					},
+					Link: parser.File{
+						BaseDir: "dirs",
+						Path:    []string{"conf"},
+					},
+					Children: nil,
+				},
+			}}},
+			mkdirAllCalled: false,
+			mkdirAllArgs:   nil,
+			symlinkCalled:  false,
+			symlinkArgs:    nil,
+			err:            linker.ErrLinkNotExpands,
+		},
+		{
+			drv: fstest.Driver{
+				StatReturn: map[string]fs.FileInfo{
+					"foo": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo"): fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					"conf": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("dirs", "conf"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					"foo":                        errLink,
+					filepath.Join("test", "foo"): nil,
+				},
+			},
+			tr: &parser.Tree{Root: &parser.Node{Children: []*parser.Node{
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"foo"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"foo"},
+					},
+					Children: nil,
+				},
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"conf"},
+					},
+					Link: parser.File{
+						BaseDir: "dirs",
+						Path:    []string{"conf"},
+					},
+					Children: nil,
+				},
+			}}},
+			mkdirAllCalled: false,
+			mkdirAllArgs:   nil,
+			symlinkCalled:  false,
+			symlinkArgs:    nil,
+			err:            errLink,
+		},
+		{
+			drv: fstest.Driver{
+				ReadDirReturn: map[string][]fs.FileInfo{
+					"expand": {
+						fstest.FileInfo{NameReturn: "expand_child", ExistsReturn: true},
+					},
+				},
+				ReadDirErr: map[string]error{
+					"expand": nil,
+				},
+				StatReturn: map[string]fs.FileInfo{
+					// done
+					"done": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("test", "done"): fstest.FileInfo{
+						ExistsReturn:   true,
+						LinknameReturn: "done",
+					},
+					// ready
+					"ready": fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("test", "ready"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+					// expand and children
+					"expand": fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "expand"): fstest.FileInfo{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("expand", "expand_child"): fstest.FileInfo{
+						ExistsReturn: true,
+					},
+					filepath.Join("test", "expand", "expand_child"): fstest.FileInfo{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					// done
+					"done":                        nil,
+					filepath.Join("test", "done"): nil,
+					// ready
+					"ready":                        nil,
+					filepath.Join("test", "ready"): nil,
+					// expand
+					"expand":                        nil,
+					filepath.Join("test", "expand"): nil,
+				},
+			},
+			tr: &parser.Tree{Root: &parser.Node{Children: []*parser.Node{
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"done"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"done"},
+					},
+					Children: nil,
+				},
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"ready"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"ready"},
+					},
+					Children: nil,
+				},
+				{
+					Target: parser.File{
+						BaseDir: "",
+						Path:    []string{"expand"},
+					},
+					Link: parser.File{
+						BaseDir: "test",
+						Path:    []string{"expand"},
+					},
+					Children: nil,
+				},
+			}}},
+			mkdirAllCalled: true,
+			mkdirAllArgs: fstest.CallStack{
+				fstest.Args{"test"},
+				fstest.Args{filepath.Join("test", "expand")},
+			},
+			symlinkCalled: true,
+			symlinkArgs: fstest.CallStack{
+				fstest.Args{"ready", filepath.Join("test", "ready")},
+				fstest.Args{
+					filepath.Join("expand", "expand_child"),
+					filepath.Join("test", "expand", "expand_child"),
+				},
+			},
+			err: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run("", func(t *testing.T) {
+			fs := fs.New(&tc.drv)
+			ln := linker.New(fs)
+			err := ln.Link(tc.tr)
+			if want, got := tc.err, err; !errors.Is(got, want) {
+				t.Fatalf("want %v, got %v", want, got)
+			}
+			t.Run("MkdirAll", func(t *testing.T) {
+				hasBeenCalled, args := tc.drv.HasBeenCalled(tc.drv.MkdirAll)
+				if want, got := tc.mkdirAllCalled, hasBeenCalled; got != want {
+					t.Fatalf("want %t, got %t", want, got)
+				}
+				if want, got := tc.mkdirAllArgs, args; !cmp.Equal(got, want) {
+					t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
+				}
+			})
+			t.Run("Symlink", func(t *testing.T) {
+				hasBeenCalled, args := tc.drv.HasBeenCalled(tc.drv.Symlink)
+				if want, got := tc.symlinkCalled, hasBeenCalled; got != want {
+					t.Fatalf("want %t, got %t", want, got)
+				}
+				if want, got := tc.symlinkArgs, args; !cmp.Equal(got, want) {
+					t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
+				}
+			})
+		})
+	}
 }
 
 func testResolve(t *testing.T) {

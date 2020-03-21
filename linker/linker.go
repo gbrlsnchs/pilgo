@@ -27,6 +27,41 @@ type Linker struct {
 // New creates a new linker with a given file system.
 func New(fs fs.FileSystem) *Linker { return &Linker{fs} }
 
+// Link creates every symlink needed in tr. Before creating any symlinks,
+// it resolves nodes and checks for conflicts. If any conflicts or errors
+// are found, it aborts the operation.
+//
+// Also, if needed, it creates parent directories if those don't already exist.
+func (ln *Linker) Link(tr *parser.Tree) error {
+	var (
+		links   [][2]parser.File
+		prepare = func(n *parser.Node) error {
+			if err := ln.Resolve(n); err != nil {
+				return err
+			}
+			if n.Status == parser.StatusReady {
+				links = append(links, [2]parser.File{n.Target, n.Link})
+			}
+			return nil
+		}
+	)
+	if err := tr.Walk(prepare); err != nil {
+		return err
+	}
+	for _, link := range links {
+		tgpath := link[0]
+		lnpath := link[1]
+		parent := lnpath.Dir()
+		if err := ln.fs.MkdirAll(parent); err != nil {
+			return err
+		}
+		if err := ln.fs.Symlink(tgpath.FullPath(), lnpath.FullPath()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Resolve checks and resolves nodes in a parsed tree.
 func (ln *Linker) Resolve(n *parser.Node) error {
 	tgpath := n.Target.FullPath()
