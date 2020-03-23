@@ -7,8 +7,8 @@ import (
 	"gsr.dev/pilgrim/fs"
 )
 
-// Driver is a stub and spy implementation of a file system's functionalities.
-type Driver struct {
+// SpyDriver is a stub and spy implementation of a file system's functionalities.
+type SpyDriver struct {
 	// MkdirAll
 	MkdirAllErr map[string]error
 
@@ -38,45 +38,45 @@ type Arg interface{}
 type Args []Arg
 type CallStack []Args
 
-func (drv *Driver) HasBeenCalled(fn Method) (bool, CallStack) {
+func (drv *SpyDriver) HasBeenCalled(fn Method) (bool, CallStack) {
 	ptr := reflect.ValueOf(fn).Pointer()
 	args, ok := drv.calls[ptr]
 	return ok, args
 }
 
 // MkdirAll returns a stub of directory creation.
-func (drv *Driver) MkdirAll(dirname string) error {
+func (drv *SpyDriver) MkdirAll(dirname string) error {
 	defer drv.setHasBeenCalled(drv.MkdirAll, dirname)
 	return drv.MkdirAllErr[dirname]
 }
 
-func (drv *Driver) ReadDir(dirname string) ([]fs.FileInfo, error) {
+func (drv *SpyDriver) ReadDir(dirname string) ([]fs.FileInfo, error) {
 	defer drv.setHasBeenCalled(drv.ReadDir, dirname)
 	return drv.ReadDirReturn[dirname], drv.ReadDirErr[dirname]
 }
 
-func (drv *Driver) ReadFile(filename string) ([]byte, error) {
+func (drv *SpyDriver) ReadFile(filename string) ([]byte, error) {
 	defer drv.setHasBeenCalled(drv.ReadFile, filename)
 	return drv.ReadFileReturn[filename], drv.ReadFileErr[filename]
 }
 
-func (drv *Driver) Stat(filename string) (fs.FileInfo, error) {
+func (drv *SpyDriver) Stat(filename string) (fs.FileInfo, error) {
 	defer drv.setHasBeenCalled(drv.Stat, filename)
 	return drv.StatReturn[filename], drv.StatErr[filename]
 }
 
 // Symlink returns a stub of a symlink creation.
-func (drv *Driver) Symlink(oldname, newname string) error {
+func (drv *SpyDriver) Symlink(oldname, newname string) error {
 	defer drv.setHasBeenCalled(drv.Symlink, oldname, newname)
 	return drv.SymlinkErr[oldname]
 }
 
-func (drv *Driver) WriteFile(filename string, data []byte, perm os.FileMode) error {
+func (drv *SpyDriver) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	defer drv.setHasBeenCalled(drv.WriteFile, filename, data, perm)
 	return drv.WriteFileErr[filename]
 }
 
-func (drv *Driver) setHasBeenCalled(fn Method, args ...Arg) {
+func (drv *SpyDriver) setHasBeenCalled(fn Method, args ...Arg) {
 	ptr := reflect.ValueOf(fn).Pointer()
 	if drv.calls == nil {
 		drv.calls = make(map[Method]CallStack, 5)
@@ -84,7 +84,7 @@ func (drv *Driver) setHasBeenCalled(fn Method, args ...Arg) {
 	drv.calls[ptr] = append(drv.calls[ptr], args)
 }
 
-type FileInfo struct {
+type StubFile struct {
 	NameReturn     string
 	ExistsReturn   bool
 	IsDirReturn    bool
@@ -92,8 +92,8 @@ type FileInfo struct {
 	PermReturn     os.FileMode
 }
 
-func (fi FileInfo) Name() string      { return fi.NameReturn }
-func (fi FileInfo) Exists() bool      { return fi.ExistsReturn }
-func (fi FileInfo) IsDir() bool       { return fi.IsDirReturn }
-func (fi FileInfo) Linkname() string  { return fi.LinknameReturn }
-func (fi FileInfo) Perm() os.FileMode { return fi.PermReturn }
+func (fi StubFile) Name() string      { return fi.NameReturn }
+func (fi StubFile) Exists() bool      { return fi.ExistsReturn }
+func (fi StubFile) IsDir() bool       { return fi.IsDirReturn }
+func (fi StubFile) Linkname() string  { return fi.LinknameReturn }
+func (fi StubFile) Perm() os.FileMode { return fi.PermReturn }

@@ -24,14 +24,14 @@ func testFileSystemMkdirAll(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_ = fs.MkdirAll("test")
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.MkdirAll)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
@@ -50,14 +50,14 @@ func testFileSystemReadDir(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_, _ = fs.ReadDir("test")
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.ReadDir)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
@@ -76,14 +76,14 @@ func testFileSystemReadFile(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_, _ = fs.ReadFile("test")
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.ReadFile)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
@@ -102,14 +102,14 @@ func testFileSystemStat(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_, _ = fs.Stat("test")
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.Stat)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
@@ -128,14 +128,14 @@ func testFileSystemSymlink(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_ = fs.Symlink("foo", "bar")
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.Symlink)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
@@ -154,14 +154,14 @@ func testFileSystemWriteFile(t *testing.T) {
 		err error
 	}{
 		{nil, fs.ErrNoDriver},
-		{new(fstest.Driver), nil},
+		{new(fstest.SpyDriver), nil},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
 			_ = fs.WriteFile("test", []byte("testing"), 0o777)
-			drv := tc.drv.(*fstest.Driver)
+			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.WriteFile)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)

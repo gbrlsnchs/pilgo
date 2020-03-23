@@ -10,26 +10,26 @@ import (
 	"gsr.dev/pilgrim/fs/fstest"
 )
 
-var _ fs.Driver = new(fstest.Driver)
+var _ fs.Driver = new(fstest.SpyDriver)
 
-func TestDriver(t *testing.T) {
-	t.Run("MkdirAll", testDriverMkdirAll)
-	t.Run("ReadDir", testDriverReadDir)
-	t.Run("ReadFile", testDriverReadFile)
-	t.Run("Stat", testDriverStat)
-	t.Run("Symlink", testDriverSymlink)
-	t.Run("WriteFile", testDriverWriteFile)
+func TestSpyDriver(t *testing.T) {
+	t.Run("MkdirAll", testSpyDriverMkdirAll)
+	t.Run("ReadDir", testSpyDriverReadDir)
+	t.Run("ReadFile", testSpyDriverReadFile)
+	t.Run("Stat", testSpyDriverStat)
+	t.Run("Symlink", testSpyDriverSymlink)
+	t.Run("WriteFile", testSpyDriverWriteFile)
 }
 
-func testDriverMkdirAll(t *testing.T) {
+func testSpyDriverMkdirAll(t *testing.T) {
 	errMkdirAll := errors.New("MkdirAll")
 	testCases := []struct {
-		drv     fstest.Driver
+		drv     fstest.SpyDriver
 		dirname string
 		err     error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				MkdirAllErr: map[string]error{
 					"foo": errMkdirAll,
 				},
@@ -56,26 +56,26 @@ func testDriverMkdirAll(t *testing.T) {
 	}
 }
 
-func testDriverReadDir(t *testing.T) {
+func testSpyDriverReadDir(t *testing.T) {
 	errReadDir := errors.New("ReadDir")
 	testCases := []struct {
-		drv     fstest.Driver
+		drv     fstest.SpyDriver
 		dirname string
 		want    []fs.FileInfo
 		err     error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadDirReturn: map[string][]fs.FileInfo{
 					"foo": {
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "foo_1",
 							ExistsReturn:   true,
 							IsDirReturn:    false,
 							LinknameReturn: "1_oof",
 							PermReturn:     0o777,
 						},
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "foo_2",
 							ExistsReturn:   true,
 							IsDirReturn:    true,
@@ -88,14 +88,14 @@ func testDriverReadDir(t *testing.T) {
 			},
 			dirname: "foo",
 			want: []fs.FileInfo{
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "foo_1",
 					ExistsReturn:   true,
 					IsDirReturn:    false,
 					LinknameReturn: "1_oof",
 					PermReturn:     0o777,
 				},
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "foo_2",
 					ExistsReturn:   true,
 					IsDirReturn:    true,
@@ -106,17 +106,17 @@ func testDriverReadDir(t *testing.T) {
 			err: nil,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadDirReturn: map[string][]fs.FileInfo{
 					"bar": {
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "bar_1",
 							ExistsReturn:   true,
 							IsDirReturn:    false,
 							LinknameReturn: "1_rab",
 							PermReturn:     0o777,
 						},
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "bar_2",
 							ExistsReturn:   true,
 							IsDirReturn:    true,
@@ -129,14 +129,14 @@ func testDriverReadDir(t *testing.T) {
 			},
 			dirname: "bar",
 			want: []fs.FileInfo{
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "bar_1",
 					ExistsReturn:   true,
 					IsDirReturn:    false,
 					LinknameReturn: "1_rab",
 					PermReturn:     0o777,
 				},
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "bar_2",
 					ExistsReturn:   true,
 					IsDirReturn:    true,
@@ -147,17 +147,17 @@ func testDriverReadDir(t *testing.T) {
 			err: nil,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadDirReturn: map[string][]fs.FileInfo{
 					"foo": {
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "foo_1",
 							ExistsReturn:   true,
 							IsDirReturn:    false,
 							LinknameReturn: "1_oof",
 							PermReturn:     0o777,
 						},
-						fstest.FileInfo{
+						fstest.StubFile{
 							NameReturn:     "foo_2",
 							ExistsReturn:   true,
 							IsDirReturn:    true,
@@ -172,14 +172,14 @@ func testDriverReadDir(t *testing.T) {
 			},
 			dirname: "foo",
 			want: []fs.FileInfo{
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "foo_1",
 					ExistsReturn:   true,
 					IsDirReturn:    false,
 					LinknameReturn: "1_oof",
 					PermReturn:     0o777,
 				},
-				fstest.FileInfo{
+				fstest.StubFile{
 					NameReturn:     "foo_2",
 					ExistsReturn:   true,
 					IsDirReturn:    true,
@@ -211,16 +211,16 @@ func testDriverReadDir(t *testing.T) {
 	}
 }
 
-func testDriverReadFile(t *testing.T) {
+func testSpyDriverReadFile(t *testing.T) {
 	errReadFile := errors.New("ReadFile")
 	testCases := []struct {
-		drv      fstest.Driver
+		drv      fstest.SpyDriver
 		filename string
 		want     []byte
 		err      error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadFileReturn: map[string][]byte{
 					"foo": []byte("foo"),
 				},
@@ -231,7 +231,7 @@ func testDriverReadFile(t *testing.T) {
 			err:      nil,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadFileReturn: map[string][]byte{
 					"foo": []byte("foo"),
 				},
@@ -265,18 +265,18 @@ func testDriverReadFile(t *testing.T) {
 	}
 }
 
-func testDriverStat(t *testing.T) {
+func testSpyDriverStat(t *testing.T) {
 	errStat := errors.New("Stat")
 	testCases := []struct {
-		fs       fstest.Driver
+		fs       fstest.SpyDriver
 		filename string
 		want     fs.FileInfo
 		err      error
 	}{
 		{
-			fs: fstest.Driver{
+			fs: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						NameReturn:     "foo_1",
 						ExistsReturn:   true,
 						IsDirReturn:    false,
@@ -287,7 +287,7 @@ func testDriverStat(t *testing.T) {
 				StatErr: nil,
 			},
 			filename: "foo",
-			want: fstest.FileInfo{
+			want: fstest.StubFile{
 				NameReturn:     "foo_1",
 				ExistsReturn:   true,
 				IsDirReturn:    false,
@@ -297,9 +297,9 @@ func testDriverStat(t *testing.T) {
 			err: nil,
 		},
 		{
-			fs: fstest.Driver{
+			fs: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						NameReturn:     "foo_1",
 						ExistsReturn:   true,
 						IsDirReturn:    false,
@@ -312,7 +312,7 @@ func testDriverStat(t *testing.T) {
 				},
 			},
 			filename: "foo",
-			want: fstest.FileInfo{
+			want: fstest.StubFile{
 				NameReturn:     "foo_1",
 				ExistsReturn:   true,
 				IsDirReturn:    false,
@@ -343,16 +343,16 @@ func testDriverStat(t *testing.T) {
 	}
 }
 
-func testDriverSymlink(t *testing.T) {
+func testSpyDriverSymlink(t *testing.T) {
 	errSymlink := errors.New("Symlink")
 	testCases := []struct {
-		drv     fstest.Driver
+		drv     fstest.SpyDriver
 		oldname string
 		newname string
 		err     error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				SymlinkErr: map[string]error{
 					"foo": errSymlink,
 				},
@@ -380,17 +380,17 @@ func testDriverSymlink(t *testing.T) {
 	}
 }
 
-func testDriverWriteFile(t *testing.T) {
+func testSpyDriverWriteFile(t *testing.T) {
 	errWriteFile := errors.New("WriteFile")
 	testCases := []struct {
-		drv      fstest.Driver
+		drv      fstest.SpyDriver
 		filename string
 		data     []byte
 		perm     os.FileMode
 		err      error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				WriteFileErr: map[string]error{
 					"foo": errWriteFile,
 				},

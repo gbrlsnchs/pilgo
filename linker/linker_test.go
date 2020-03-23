@@ -20,7 +20,7 @@ func TestLinker(t *testing.T) {
 func testLink(t *testing.T) {
 	errLink := errors.New("Link")
 	testCases := []struct {
-		drv            fstest.Driver
+		drv            fstest.SpyDriver
 		tr             *parser.Tree
 		mkdirAllCalled bool
 		mkdirAllArgs   fstest.CallStack
@@ -29,12 +29,12 @@ func testLink(t *testing.T) {
 		err            error
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -67,21 +67,21 @@ func testLink(t *testing.T) {
 			err: nil,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: false,
 					},
-					"conf": fstest.FileInfo{
+					"conf": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					"dirs": fstest.FileInfo{
+					"dirs": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("dirs", "conf"): fstest.FileInfo{
+					filepath.Join("dirs", "conf"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -127,19 +127,19 @@ func testLink(t *testing.T) {
 			err: nil,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 					},
-					"conf": fstest.FileInfo{
+					"conf": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("dirs", "conf"): fstest.FileInfo{
+					filepath.Join("dirs", "conf"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -179,19 +179,19 @@ func testLink(t *testing.T) {
 			err:            linker.ErrLinkNotExpands,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 					},
-					"conf": fstest.FileInfo{
+					"conf": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("dirs", "conf"): fstest.FileInfo{
+					filepath.Join("dirs", "conf"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -231,10 +231,10 @@ func testLink(t *testing.T) {
 			err:            errLink,
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				ReadDirReturn: map[string][]fs.FileInfo{
 					"expand": {
-						fstest.FileInfo{NameReturn: "expand_child", ExistsReturn: true},
+						fstest.StubFile{NameReturn: "expand_child", ExistsReturn: true},
 					},
 				},
 				ReadDirErr: map[string]error{
@@ -242,33 +242,33 @@ func testLink(t *testing.T) {
 				},
 				StatReturn: map[string]fs.FileInfo{
 					// done
-					"done": fstest.FileInfo{
+					"done": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "done"): fstest.FileInfo{
+					filepath.Join("test", "done"): fstest.StubFile{
 						ExistsReturn:   true,
 						LinknameReturn: "done",
 					},
 					// ready
-					"ready": fstest.FileInfo{
+					"ready": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "ready"): fstest.FileInfo{
+					filepath.Join("test", "ready"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 					// expand and children
-					"expand": fstest.FileInfo{
+					"expand": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("test", "expand"): fstest.FileInfo{
+					filepath.Join("test", "expand"): fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("expand", "expand_child"): fstest.FileInfo{
+					filepath.Join("expand", "expand_child"): fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "expand", "expand_child"): fstest.FileInfo{
+					filepath.Join("test", "expand", "expand_child"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -367,18 +367,18 @@ func testLink(t *testing.T) {
 
 func testResolve(t *testing.T) {
 	testCases := []struct {
-		drv  fstest.Driver
+		drv  fstest.SpyDriver
 		n    *parser.Node
 		err  error
 		want *parser.Node
 	}{
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -413,12 +413,12 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 					},
 				},
@@ -475,12 +475,12 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn:   true,
 						LinknameReturn: filepath.Join("", "foo"),
 					},
@@ -516,12 +516,12 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn:   true,
 						LinknameReturn: filepath.Join("test", "bar"),
 					},
@@ -557,13 +557,13 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  false,
 					},
@@ -599,12 +599,12 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: false,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: false,
 					},
 				},
@@ -639,13 +639,13 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
@@ -656,9 +656,9 @@ func testResolve(t *testing.T) {
 				},
 				ReadDirReturn: map[string][]fs.FileInfo{
 					"foo": {
-						fstest.FileInfo{NameReturn: "bar"},
-						fstest.FileInfo{NameReturn: "baz"},
-						fstest.FileInfo{NameReturn: "qux"},
+						fstest.StubFile{NameReturn: "bar"},
+						fstest.StubFile{NameReturn: "baz"},
+						fstest.StubFile{NameReturn: "qux"},
 					},
 					filepath.Join("test", "foo"): nil,
 				},
@@ -745,13 +745,13 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  false,
 					},
-					filepath.Join("test", "foo"): fstest.FileInfo{
+					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
@@ -787,12 +787,12 @@ func testResolve(t *testing.T) {
 			},
 		},
 		{
-			drv: fstest.Driver{
+			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
-					"foo": fstest.FileInfo{
+					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					"test": fstest.FileInfo{
+					"test": fstest.StubFile{
 						ExistsReturn: true,
 					},
 				},
