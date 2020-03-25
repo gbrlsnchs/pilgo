@@ -153,6 +153,9 @@ func (drv *InMemoryDriver) mkdirAll(dirname string) (FileStat, error) {
 		paths = strings.Split(dirname, pathSep)
 	)
 	for _, p := range paths {
+		if p == "" {
+			continue
+		}
 		f, ok := files[p]
 		if ok {
 			fstat := FileStat{p, f}

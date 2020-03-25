@@ -13,16 +13,16 @@ import (
 
 var _ fs.Driver = new(fstest.InMemoryDriver)
 
-func TestFakeDriver(t *testing.T) {
-	t.Run("MkdirAll", testFakeDriverMkdirAll)
-	t.Run("ReadDir", testFakeDriverReadDir)
-	t.Run("ReadFile", testFakeDriverReadFile)
-	t.Run("Stat", testFakeDriverStat)
-	t.Run("Symlink", testFakeDriverSymlink)
-	t.Run("WriteFile", testFakeDriverWriteFile)
+func TestInMemoryDriver(t *testing.T) {
+	t.Run("MkdirAll", testInMemoryDriverMkdirAll)
+	t.Run("ReadDir", testInMemoryDriverReadDir)
+	t.Run("ReadFile", testInMemoryDriverReadFile)
+	t.Run("Stat", testInMemoryDriverStat)
+	t.Run("Symlink", testInMemoryDriverSymlink)
+	t.Run("WriteFile", testInMemoryDriverWriteFile)
 }
 
-func testFakeDriverMkdirAll(t *testing.T) {
+func testInMemoryDriverMkdirAll(t *testing.T) {
 	testCases := []struct {
 		drv     fstest.InMemoryDriver
 		dirname string
@@ -113,6 +113,34 @@ func testFakeDriverMkdirAll(t *testing.T) {
 			},
 			err: fstest.ErrExist,
 		},
+		{
+			drv: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: make(map[string]fstest.File, 0),
+					},
+				},
+			},
+			dirname: filepath.Join("foo", "bar") + string(filepath.Separator),
+			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.dirname, func(t *testing.T) {
@@ -127,7 +155,7 @@ func testFakeDriverMkdirAll(t *testing.T) {
 	}
 }
 
-func testFakeDriverReadDir(t *testing.T) {
+func testInMemoryDriverReadDir(t *testing.T) {
 	testCases := []struct {
 		drv     fstest.InMemoryDriver
 		dirname string
@@ -199,7 +227,7 @@ func testFakeDriverReadDir(t *testing.T) {
 	}
 }
 
-func testFakeDriverReadFile(t *testing.T) {
+func testInMemoryDriverReadFile(t *testing.T) {
 	testCases := []struct {
 		drv      fstest.InMemoryDriver
 		filename string
@@ -275,7 +303,7 @@ func testFakeDriverReadFile(t *testing.T) {
 	}
 }
 
-func testFakeDriverStat(t *testing.T) {
+func testInMemoryDriverStat(t *testing.T) {
 	testCases := []struct {
 		drv      fstest.InMemoryDriver
 		filename string
@@ -368,7 +396,7 @@ func testFakeDriverStat(t *testing.T) {
 	}
 }
 
-func testFakeDriverSymlink(t *testing.T) {
+func testInMemoryDriverSymlink(t *testing.T) {
 	testCases := []struct {
 		drv     fstest.InMemoryDriver
 		oldname string
@@ -458,7 +486,7 @@ func testFakeDriverSymlink(t *testing.T) {
 	}
 }
 
-func testFakeDriverWriteFile(t *testing.T) {
+func testInMemoryDriverWriteFile(t *testing.T) {
 	testCases := []struct {
 		drv      fstest.InMemoryDriver
 		filename string
