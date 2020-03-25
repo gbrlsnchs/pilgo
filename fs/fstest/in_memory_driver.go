@@ -138,7 +138,7 @@ func (drv *InMemoryDriver) find(filename string) (FileStat, error) {
 			fstat = FileStat{p, f}
 			continue
 		}
-		return FileStat{}, fmt.Errorf("fstest: %w", ErrNotExist)
+		return FileStat{}, fmt.Errorf("fstest: %s: %w", filename, ErrNotExist)
 	}
 	return fstat, nil
 }
