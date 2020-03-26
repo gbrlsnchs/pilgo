@@ -44,6 +44,7 @@ func run() int {
 		{&checkCmd{}, "check", "check symlinks and show them in a tree view"},
 		{&initCmd{}, "init", "initialize a configuration file"},
 		{&configCmd{}, "config", "configure a file's options"},
+		{linkCmd{}, "link", "create symlinks"},
 	}
 	for _, c := range commands {
 		cmd.Register(command.New(

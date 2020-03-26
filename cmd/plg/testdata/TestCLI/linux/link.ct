@@ -1,0 +1,8 @@
+$ mkdir links
+$ cp link_config.yml targets/pilgrim.yml
+$ cd targets
+$ plg link --> FAIL
+plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
+
+$ cp test
+$ plg link
