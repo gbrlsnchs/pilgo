@@ -45,9 +45,8 @@ func cpCmd(pwd string) func() int {
 		)
 		if argc > 0 {
 			original = argv[0]
-			if argc == 1 {
-				clone = original
-			} else {
+			clone = original
+			if argc > 1 {
 				clone = argv[1]
 			}
 		}
@@ -56,11 +55,18 @@ func cpCmd(pwd string) func() int {
 		}
 		b, err := ioutil.ReadFile(filepath.Join(pwd, original))
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return failureStatus
 		}
-		if err = ioutil.WriteFile(clone, b, 0o644); err != nil {
-			fmt.Println(err)
+		dir, _ := filepath.Split(clone)
+		if dir != "" {
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return failureStatus
+			}
+		}
+		if err := ioutil.WriteFile(clone, b, 0o644); err != nil {
+			fmt.Fprintln(os.Stderr, err)
 			return failureStatus
 		}
 		return 0
