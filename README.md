@@ -1,4 +1,5 @@
 # Pilgrim
+![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgrim/workflows/Linux,%20macOS%20and%20Windows/badge.svg)
 
 ## What
 Pilgrim is a tool for managing dotfiles via symlinks.
