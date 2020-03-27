@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 )
@@ -19,8 +21,8 @@ type initCmd struct {
 	exclude commaset
 }
 
-func (cmd initCmd) Execute(_ io.Writer, v interface{}) error {
-	o := v.(opts)
+func (cmd initCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
+	o := ctx.Value(command.OptsCtxKey).(opts)
 	var (
 		fs = fs.New(o.fsDriver)
 		c  config.Config

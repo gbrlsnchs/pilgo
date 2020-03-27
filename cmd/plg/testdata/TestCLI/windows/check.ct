@@ -4,8 +4,8 @@ $ plg check
 └── test <- \tmp\test (ERROR)
 
 $ plg check -fail --> FAIL
-plg: there are one or more conflicts
-	- linker: ${ROOTDIR}\test: target doesn't exist
+plg: linker: there is 1 conflict
+plg: linker: ${ROOTDIR}\test: target doesn't exist
 
 $ cp test
 $ plg check

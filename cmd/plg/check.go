@@ -1,26 +1,27 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/linker"
 	"gsr.dev/pilgrim/parser"
 )
 
-var errGotConflicts = errors.New("there are one or more conflicts")
-
 type checkCmd struct {
 	fail bool
 }
 
-func (cmd checkCmd) Execute(stdout io.Writer, v interface{}) error {
-	o := v.(opts)
+func (cmd checkCmd) Execute(ctx context.Context, stdout, stderr io.Writer) error {
+	o := ctx.Value(command.OptsCtxKey).(opts)
+	exe := ctx.Value(command.ErrCtxKey).(string)
 	fs := fs.New(o.fsDriver)
 	b, err := fs.ReadFile(o.config)
 	if err != nil {
@@ -43,40 +44,24 @@ func (cmd checkCmd) Execute(stdout io.Writer, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	var (
-		ln      = linker.New(fs)
-		errlist []error
-	)
-	if err := tr.Walk(func(n *parser.Node) error {
-		if err := ln.Resolve(n); err != nil {
-			if !isConflict(err) {
-				return err
+	ln := linker.New(fs)
+	if err = ln.Resolve(tr); err != nil {
+		var cft *linker.ConflictError
+		if errors.As(err, &cft) {
+			if !cmd.fail {
+				goto printtree
 			}
-			if cmd.fail {
-				errlist = append(errlist, err)
+			for _, err := range cft.Errs {
+				fmt.Fprintf(stderr, "%s: %v\n", exe, err)
 			}
 		}
-		return nil
-	}); err != nil {
 		return err
 	}
-	if len(errlist) > 0 {
-		for _, err := range errlist {
-			fmt.Fprintf(stdout, "\t- %v\n", err)
-		}
-		return errGotConflicts
-	}
+printtree:
 	fmt.Fprint(stdout, tr)
 	return nil
 }
 
 func (cmd *checkCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&cmd.fail, "fail", false, "exit with fail status if there are conflicts")
-}
-
-func isConflict(err error) bool {
-	return errors.Is(err, linker.ErrLinkExists) ||
-		errors.Is(err, linker.ErrLinkNotExpands) ||
-		errors.Is(err, linker.ErrTargetNotExists) ||
-		errors.Is(err, linker.ErrTargetNotExpands)
 }

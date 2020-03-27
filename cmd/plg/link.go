@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/linker"
@@ -14,8 +16,8 @@ import (
 
 type linkCmd struct{}
 
-func (linkCmd) Execute(stdout io.Writer, v interface{}) error {
-	opts := v.(opts)
+func (linkCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
+	opts := ctx.Value(command.OptsCtxKey).(opts)
 	fs := fs.New(opts.fsDriver)
 	cwd, err := opts.getwd()
 	if err != nil {

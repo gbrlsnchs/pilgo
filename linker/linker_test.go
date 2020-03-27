@@ -367,10 +367,11 @@ func testLink(t *testing.T) {
 
 func testResolve(t *testing.T) {
 	testCases := []struct {
-		drv  fstest.SpyDriver
-		n    *parser.Node
-		err  error
-		want *parser.Node
+		drv       fstest.SpyDriver
+		n         *parser.Node
+		err       error
+		conflicts []error
+		want      *parser.Node
 	}{
 		{
 			drv: fstest.SpyDriver{
@@ -415,11 +416,19 @@ func testResolve(t *testing.T) {
 		{
 			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
+					// targets
 					"foo": fstest.StubFile{
 						ExistsReturn: true,
 					},
-					filepath.Join("test", "foo"): fstest.StubFile{
+					filepath.Join("foo", "bar"): fstest.StubFile{
 						ExistsReturn: true,
+					},
+					// links
+					filepath.Join("test", "foo"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+					filepath.Join("test", "foo", "bar"): fstest.StubFile{
+						ExistsReturn: false,
 					},
 				},
 				StatErr: map[string]error{
@@ -469,6 +478,7 @@ func testResolve(t *testing.T) {
 							BaseDir: "test",
 							Path:    []string{"foo", "bar"},
 						},
+						Status: parser.StatusReady,
 					},
 				},
 				Status: parser.StatusSkip,
@@ -542,7 +552,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: linker.ErrLinkExists,
+			conflicts: []error{linker.ErrLinkExists},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -584,7 +594,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: linker.ErrLinkNotExpands,
+			conflicts: []error{linker.ErrLinkNotExpands},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -624,7 +634,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: linker.ErrTargetNotExists,
+			conflicts: []error{linker.ErrTargetNotExists},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -641,13 +651,36 @@ func testResolve(t *testing.T) {
 		{
 			drv: fstest.SpyDriver{
 				StatReturn: map[string]fs.FileInfo{
+					// targets
 					"foo": fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
 					},
+					filepath.Join("foo", "bar"): fstest.StubFile{
+						ExistsReturn: true,
+					},
+					filepath.Join("foo", "baz"): fstest.StubFile{
+						ExistsReturn: true,
+					},
+					filepath.Join("foo", "qux"): fstest.StubFile{
+						ExistsReturn: true,
+					},
+					// links
 					filepath.Join("test", "foo"): fstest.StubFile{
 						ExistsReturn: true,
 						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo", "bar"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+					filepath.Join("test", "foo", "bar"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+					filepath.Join("test", "foo", "baz"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+					filepath.Join("test", "foo", "qux"): fstest.StubFile{
+						ExistsReturn: false,
 					},
 				},
 				StatErr: map[string]error{
@@ -705,6 +738,7 @@ func testResolve(t *testing.T) {
 							},
 						},
 						Children: nil,
+						Status:   parser.StatusReady,
 					},
 					{
 						Target: parser.File{
@@ -722,6 +756,7 @@ func testResolve(t *testing.T) {
 							},
 						},
 						Children: nil,
+						Status:   parser.StatusReady,
 					},
 					{
 						Target: parser.File{
@@ -739,6 +774,7 @@ func testResolve(t *testing.T) {
 							},
 						},
 						Children: nil,
+						Status:   parser.StatusReady,
 					},
 				},
 				Status: parser.StatusExpand,
@@ -772,7 +808,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
-			err: linker.ErrTargetNotExpands,
+			conflicts: []error{linker.ErrTargetNotExpands},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -830,10 +866,27 @@ func testResolve(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			ln := linker.New(fs.New(&tc.drv))
-			err := ln.Resolve(tc.n)
+			tr := &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{tc.n}},
+			}
+			err := ln.Resolve(tr)
 			// TODO(gbrlsnchs): check error message has correct file path
-			if want, got := tc.err, err; !errors.Is(got, want) {
-				t.Fatalf("want %v, got %v", want, got)
+			var cft *linker.ConflictError
+			if errors.As(err, &cft) {
+				if want, got := len(tc.conflicts), len(cft.Errs); got != want {
+					t.Fatalf("want %d, got %d", want, got)
+				}
+				for i, err := range cft.Errs {
+					t.Run("conflict", func(t *testing.T) {
+						if want, got := tc.conflicts[i], err; !errors.Is(got, want) {
+							t.Fatalf("want %v, got %v", want, got)
+						}
+					})
+				}
+			} else {
+				if want, got := tc.err, err; !errors.Is(got, want) {
+					t.Fatalf("want %v, got %v", want, got)
+				}
 			}
 			if want, got := tc.want, tc.n; !cmp.Equal(got, want) {
 				t.Errorf(

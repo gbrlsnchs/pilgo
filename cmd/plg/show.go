@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 	"gsr.dev/pilgrim/parser"
@@ -13,8 +15,8 @@ import (
 
 type showCmd struct{}
 
-func (showCmd) Execute(stdout io.Writer, v interface{}) error {
-	o := v.(opts)
+func (showCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
+	o := ctx.Value(command.OptsCtxKey).(opts)
 	fs := fs.New(o.fsDriver)
 	b, err := fs.ReadFile(o.config)
 	if err != nil {

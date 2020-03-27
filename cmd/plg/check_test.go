@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/fs/fsutil"
+	"gsr.dev/pilgrim/linker"
 )
 
 var _ command.Interface = new(checkCmd)
@@ -26,19 +28,19 @@ func testCheckExecute(t *testing.T) {
 	os.Setenv("MY_ENV_VAR", "home")
 	defer os.Unsetenv("MY_ENV_VAR")
 	testCases := []struct {
-		name string
-		cmd  checkCmd
-		err  error
+		name      string
+		cmd       checkCmd
+		conflicts bool
 	}{
 		{
-			name: "default",
-			cmd:  checkCmd{},
-			err:  nil,
+			name:      "default",
+			cmd:       checkCmd{},
+			conflicts: false,
 		},
 		{
-			name: "fail",
-			cmd:  checkCmd{fail: true},
-			err:  errGotConflicts,
+			name:      "fail",
+			cmd:       checkCmd{fail: true},
+			conflicts: true,
 		},
 	}
 	for _, tc := range testCases {
@@ -49,15 +51,18 @@ func testCheckExecute(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			var bd strings.Builder
-			err = tc.cmd.Execute(&bd, opts{
-				config:        config,
-				fsDriver:      fsutil.OSDriver{},
-				getwd:         func() (string, error) { return cwd, nil },
-				userConfigDir: func() (string, error) { return "user_config_dir", nil },
-			})
-			if want, got := tc.err, err; !errors.Is(got, want) {
-				t.Fatalf("want %v, got %v", want, got)
+			var (
+				bd  strings.Builder
+				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
+					config:        config,
+					fsDriver:      fsutil.OSDriver{},
+					getwd:         func() (string, error) { return cwd, nil },
+					userConfigDir: func() (string, error) { return "user_config_dir", nil },
+				})
+			)
+			err = tc.cmd.Execute(context.WithValue(ctx, command.ErrCtxKey, "plg"), &bd, &bd)
+			if want, got := tc.conflicts, errors.As(err, new(*linker.ConflictError)); got != want {
+				t.Fatalf("want %t, got %t", want, got)
 			}
 			golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
 			if want, got := golden, bd.String(); got != want {

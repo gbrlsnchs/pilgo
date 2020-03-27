@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -57,12 +58,14 @@ func testConfigExecute(t *testing.T) {
 					t.Fatal(err)
 				}
 			}(t)
-			// tc.cmd.cwd = filepath.Join(testdata, "targets")
-			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config:   config,
-				fsDriver: fsutil.OSDriver{},
-			}); !errors.Is(got, want) {
+			var (
+				bd  strings.Builder
+				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
+					config:   config,
+					fsDriver: fsutil.OSDriver{},
+				})
+			)
+			if want, got := tc.err, tc.cmd.Execute(ctx, &bd, nil); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			golden := readFile(t, filepath.Join(testdata, tc.name+".golden"))

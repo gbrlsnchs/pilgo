@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strings"
 
 	"github.com/google/subcommands"
 )
@@ -58,30 +57,36 @@ func (c *Command) SetFlags(f *flag.FlagSet) {
 func (c *Command) Execute(ctx context.Context, _ *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	var (
 		status = subcommands.ExitSuccess
-		bd     strings.Builder
 		err    error
+		lw     = &lineWriter{stdout: c.stdout, stderr: c.stderr}
 	)
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 	default:
-		err = c.execute(ctx, &bd)
+		// NOTE: By using this pattern, we're able to share the underlying line slice from lw
+		// while implementing different writing methods.
+		stdout := (*stdoutWriter)(lw)
+		stderr := (*stderrWriter)(lw)
+		err = c.execute(ctx, stdout, stderr)
 	}
 	if err != nil {
 		fmt.Fprintf(c.stderr, "%v: %v\n", ctx.Value(ErrCtxKey), err)
 		status = subcommands.ExitFailure
 	}
-	fmt.Fprint(c.stdout, bd.String())
+	for _, line := range lw.lines {
+		fmt.Fprint(line.w, line.txt)
+	}
 	return status
 }
 
-func (c *Command) execute(ctx context.Context, w io.Writer) (err error) {
+func (c *Command) execute(ctx context.Context, stdout, stderr io.Writer) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = r.(error)
 		}
 	}()
-	return c.cmd.Execute(w, ctx.Value(OptsCtxKey))
+	return c.cmd.Execute(ctx, stdout, stderr)
 }
 
 // Name sets the command's name.
@@ -116,6 +121,32 @@ func Stderr(w io.Writer) func(c *Command) {
 
 // Interface is a command to be wrapped by Command.
 type Interface interface {
-	Execute(io.Writer, interface{}) error
+	Execute(ctx context.Context, stdout, stderr io.Writer) error
 	SetFlags(*flag.FlagSet)
+}
+
+type line struct {
+	w   io.Writer
+	txt string
+}
+
+type lineWriter struct {
+	stdout, stderr io.Writer
+	lines          []line
+}
+
+type stdoutWriter lineWriter
+
+func (w *stdoutWriter) Write(b []byte) (int, error) {
+	l := line{w.stdout, string(b)}
+	w.lines = append(w.lines, l)
+	return len(b), nil
+}
+
+type stderrWriter lineWriter
+
+func (w *stderrWriter) Write(b []byte) (int, error) {
+	l := line{w.stderr, string(b)}
+	w.lines = append(w.lines, l)
+	return len(b), nil
 }

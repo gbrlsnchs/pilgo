@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -117,14 +118,17 @@ func testInitExecute(t *testing.T) {
 					}
 				}(t)
 			}
-			var bd strings.Builder
-			if want, got := tc.err, tc.cmd.Execute(&bd, opts{
-				config:   conf,
-				fsDriver: fsutil.OSDriver{},
-				getwd: func() (string, error) {
-					return testdata, nil
-				},
-			}); !errors.Is(got, want) {
+			var (
+				bd  strings.Builder
+				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
+					config:   conf,
+					fsDriver: fsutil.OSDriver{},
+					getwd: func() (string, error) {
+						return testdata, nil
+					},
+				})
+			)
+			if want, got := tc.err, tc.cmd.Execute(ctx, &bd, nil); !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
 			if want, got := "", bd.String(); got != want {

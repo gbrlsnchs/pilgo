@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 
 	"gopkg.in/yaml.v3"
+	"gsr.dev/pilgrim/cmd/internal/command"
 	"gsr.dev/pilgrim/config"
 	"gsr.dev/pilgrim/fs"
 )
@@ -17,8 +19,8 @@ type configCmd struct {
 	targets commalist
 }
 
-func (cmd configCmd) Execute(_ io.Writer, v interface{}) error {
-	o := v.(opts)
+func (cmd configCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
+	o := ctx.Value(command.OptsCtxKey).(opts)
 	fs := fs.New(o.fsDriver)
 	b, err := fs.ReadFile(o.config)
 	if err != nil {

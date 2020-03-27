@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -248,7 +249,8 @@ func testLinkExecute(t *testing.T) {
 					getwd:         func() (string, error) { return filepath.Join("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return filepath.Join("home", "config"), nil },
 				}
-				err = tc.cmd.Execute(&bd, opts)
+				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts)
+				err = tc.cmd.Execute(ctx, &bd, nil)
 			)
 			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)

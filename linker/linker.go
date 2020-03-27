@@ -36,7 +36,7 @@ func (ln *Linker) Link(tr *parser.Tree) error {
 	var (
 		links   [][2]parser.File
 		prepare = func(n *parser.Node) error {
-			if err := ln.Resolve(n); err != nil {
+			if err := ln.resolve(n); err != nil {
 				return err
 			}
 			if n.Status == parser.StatusReady {
@@ -63,7 +63,34 @@ func (ln *Linker) Link(tr *parser.Tree) error {
 }
 
 // Resolve checks and resolves nodes in a parsed tree.
-func (ln *Linker) Resolve(n *parser.Node) error {
+func (ln *Linker) Resolve(tr *parser.Tree) error {
+	cft := new(ConflictError)
+	err := tr.Walk(func(n *parser.Node) error {
+		err := ln.resolve(n)
+		switch {
+		case errors.Is(err, ErrLinkExists):
+			fallthrough
+		case errors.Is(err, ErrLinkNotExpands):
+			fallthrough
+		case errors.Is(err, ErrTargetNotExists):
+			fallthrough
+		case errors.Is(err, ErrTargetNotExpands):
+			cft.Errs = append(cft.Errs, err)
+			return nil
+		default:
+			return err
+		}
+	})
+	if err != nil {
+		return err
+	}
+	if len(cft.Errs) > 0 {
+		return cft
+	}
+	return nil
+}
+
+func (ln *Linker) resolve(n *parser.Node) error {
 	tgpath := n.Target.FullPath()
 	target, err := ln.fs.Stat(tgpath)
 	if err != nil {
@@ -71,7 +98,7 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 	}
 	if !target.Exists() {
 		n.Status = parser.StatusError
-		return newLinkErr(tgpath, ErrTargetNotExists)
+		return errWithPath(tgpath, ErrTargetNotExists)
 	}
 	if len(n.Children) > 0 || len(n.Link.Path) == 0 {
 		n.Status = parser.StatusSkip
@@ -92,15 +119,15 @@ func (ln *Linker) Resolve(n *parser.Node) error {
 			return nil
 		}
 		n.Status = parser.StatusConflict
-		return newLinkErr(lnpath, ErrLinkExists)
+		return errWithPath(lnpath, ErrLinkExists)
 	}
 	if !target.IsDir() {
 		n.Status = parser.StatusConflict
-		return newLinkErr(tgpath, ErrTargetNotExpands)
+		return errWithPath(tgpath, ErrTargetNotExpands)
 	}
 	if !link.IsDir() {
 		n.Status = parser.StatusConflict
-		return newLinkErr(lnpath, ErrLinkNotExpands)
+		return errWithPath(lnpath, ErrLinkNotExpands)
 	}
 	children, err := ln.fs.ReadDir(tgpath)
 	if err != nil {
@@ -131,4 +158,4 @@ func expand(n *parser.Node, children []fs.FileInfo) {
 	}
 }
 
-func newLinkErr(path string, err error) error { return fmt.Errorf("linker: %s: %w", path, err) }
+func errWithPath(path string, err error) error { return fmt.Errorf("linker: %s: %w", path, err) }
