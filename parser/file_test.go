@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gsr.dev/pilgrim/parser"
+	"github.com/gbrlsnchs/pilgo/parser"
 )
 
 func TestFile(t *testing.T) {

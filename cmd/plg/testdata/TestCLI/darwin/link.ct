@@ -1,5 +1,5 @@
 $ mkdir links
-$ cp link_config.yml targets/pilgrim.yml
+$ cp link_config.yml targets/pilgo.yml
 $ cd targets
 $ plg link --> FAIL
 plg: linker: there is 1 conflict

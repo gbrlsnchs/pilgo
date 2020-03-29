@@ -1,4 +1,4 @@
-module gsr.dev/pilgrim
+module github.com/gbrlsnchs/pilgo
 
 go 1.13
 

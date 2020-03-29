@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/andybalholm/crlf"
+	"github.com/gbrlsnchs/pilgo/fs/fsutil"
 	"golang.org/x/text/transform"
-	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var (

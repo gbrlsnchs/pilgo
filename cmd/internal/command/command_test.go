@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
 	"github.com/google/subcommands"
-	"gsr.dev/pilgrim/cmd/internal/command"
 )
 
 var _ subcommands.Command = new(command.Command)

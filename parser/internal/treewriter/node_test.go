@@ -1,6 +1,6 @@
 package treewriter_test
 
-import "gsr.dev/pilgrim/parser/internal/treewriter"
+import "github.com/gbrlsnchs/pilgo/parser/internal/treewriter"
 
 type testNode struct {
 	text  string

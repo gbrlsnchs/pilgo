@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gsr.dev/pilgrim/parser/internal/treewriter"
+	"github.com/gbrlsnchs/pilgo/parser/internal/treewriter"
 )
 
 const dullStatus = StatusSkip | StatusExpand

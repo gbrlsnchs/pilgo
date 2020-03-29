@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/config"
 )
 
 func TestConfig(t *testing.T) {
@@ -35,7 +35,7 @@ func testConfigInit(t *testing.T) {
 			c: config.Config{
 				BaseDir: "test",
 			},
-			targets: []string{"foo", "bar", "pilgrim.yml"},
+			targets: []string{"foo", "bar", "pilgo.yml"},
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},

@@ -1,4 +1,4 @@
-$ cp pilgrim.yml
+$ cp pilgo.yml
 $ plg show
 .
 └── test <- /tmp/test

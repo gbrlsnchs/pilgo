@@ -4,7 +4,7 @@ import (
 	"os"
 	"sort"
 
-	"gsr.dev/pilgrim/config"
+	"github.com/gbrlsnchs/pilgo/config"
 )
 
 // Parser is a configuration parser.

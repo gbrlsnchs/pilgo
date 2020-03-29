@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"gsr.dev/pilgrim/fs"
+	"github.com/gbrlsnchs/pilgo/fs"
 )
 
 var (

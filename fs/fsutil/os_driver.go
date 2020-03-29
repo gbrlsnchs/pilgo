@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/andybalholm/crlf"
+	"github.com/gbrlsnchs/pilgo/fs"
 	"golang.org/x/text/transform"
-	"gsr.dev/pilgrim/fs"
 )
 
 // NOTE(gbrlsnchs): Declaring this variable here might prevent concurrent file reads, since

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/fs"
+	"github.com/gbrlsnchs/pilgo/fs/fstest"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/fstest"
 )
 
 var _ fs.Driver = new(fstest.SpyDriver)
@@ -396,7 +396,7 @@ func testSpyDriverWriteFile(t *testing.T) {
 				},
 			},
 			filename: "foo",
-			data:     []byte("pilgrim"),
+			data:     []byte("pilgo"),
 			perm:     0o777,
 			err:      errWriteFile,
 		},

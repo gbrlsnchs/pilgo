@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/config"
+	"github.com/gbrlsnchs/pilgo/parser"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/config"
-	"gsr.dev/pilgrim/parser"
 )
 
 func TestParser(t *testing.T) {

@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-// DefaultName is the default name of the configuration file for Pilgrim.
-const DefaultName = "pilgrim.yml"
+// DefaultName is the default name of the configuration file for Pilgo.
+const DefaultName = "pilgo.yml"
 
-// Config is a configuration format for Pilgrim.
+// Config is a configuration format for Pilgo.
 type Config struct {
 	BaseDir string            `yaml:"baseDir,omitempty"`
 	Link    *string           `yaml:"link,omitempty"`

@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/fs"
+	"github.com/gbrlsnchs/pilgo/fs/fstest"
+	"github.com/gbrlsnchs/pilgo/linker"
+	"github.com/gbrlsnchs/pilgo/parser"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/fstest"
-	"gsr.dev/pilgrim/linker"
-	"gsr.dev/pilgrim/parser"
 )
 
 func TestLinker(t *testing.T) {

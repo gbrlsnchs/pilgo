@@ -4,7 +4,7 @@ import (
 	"os"
 	"reflect"
 
-	"gsr.dev/pilgrim/fs"
+	"github.com/gbrlsnchs/pilgo/fs"
 )
 
 // SpyDriver is a stub and spy implementation of a file system's functionalities.

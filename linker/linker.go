@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/parser"
+	"github.com/gbrlsnchs/pilgo/fs"
+	"github.com/gbrlsnchs/pilgo/parser"
 )
 
 var (

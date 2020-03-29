@@ -3,7 +3,7 @@ package linker_test
 import (
 	"testing"
 
-	"gsr.dev/pilgrim/linker"
+	"github.com/gbrlsnchs/pilgo/linker"
 )
 
 func TestConflictError(t *testing.T) {

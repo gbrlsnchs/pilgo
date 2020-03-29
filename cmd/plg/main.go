@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/pilgo/config"
+	"github.com/gbrlsnchs/pilgo/fs"
+	"github.com/gbrlsnchs/pilgo/fs/fsutil"
 	"github.com/google/subcommands"
-	"gsr.dev/pilgrim/cmd/internal/command"
-	"gsr.dev/pilgrim/config"
-	"gsr.dev/pilgrim/fs"
-	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 const defaultConfig = config.DefaultName

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/parser"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/parser"
 )
 
 func TestTree(t *testing.T) {

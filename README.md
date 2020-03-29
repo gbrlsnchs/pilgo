@@ -1,8 +1,8 @@
-# Pilgrim
-![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgrim/workflows/Linux,%20macOS%20and%20Windows/badge.svg)
+# Pilgo
+![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgo/workflows/Linux,%20macOS%20and%20Windows/badge.svg)
 
 ## What
-Pilgrim is a tool for managing dotfiles via symlinks.
+Pilgo is a tool for managing dotfiles via symlinks either through a CLI (`plg`) or a Go framework.
 
 ## Why
 Because using GNU Stow is limiting and you want visual feedback of how things are configured.
@@ -43,9 +43,9 @@ OK, in the previous example, for all directories except `zsh`, you want to symli
 For `zsh`, you can't symlink the whole directory, since you're going to put files in `$HOME`. Therefore, you need to symlink them individually (no, you don't want to symlink `zsh` as your `$HOME`, please no).
 
 ### Creating a configuration file
-Pilgrim uses a configuration file to manage your dotfiles. The configuration file is a simple YAML file called `pilgrim.yml`.
+Pilgo uses a configuration file to manage your dotfiles. The configuration file is a simple YAML file called `pilgo.yml`.
 
-Pilgrim can initialize a configuration file for you, and by default includes all eligible files in the current directory ():
+Pilgo can initialize a configuration file for you, and by default includes all eligible files in the current directory ():
 
 ```shell
 $ plg init
@@ -66,7 +66,7 @@ $ tree
 │   └── mpd.conf
 ├── mpv
 │   └── mpv.conf
-├── pilgrim.yml
+├── pilgo.yml
 └── zsh
     ├── zprofile
     └── zshrc
@@ -74,7 +74,7 @@ $ tree
 6 directories, 8 files
 ```
 
-Notice that we now have a file called `pilgrim.yml`, and here's what's within it:
+Notice that we now have a file called `pilgo.yml`, and here's what's within it:
 ```yaml
 targets:
 - alacritty
@@ -99,7 +99,7 @@ $ plg show
 └── zsh       <- /home/me/.config/zsh
 ```
 
-The output is very self-explanatory: the tree structure shows your dotfiles listed in the `pilgrim.yml` file, the arrow shows to where links will point after you create symlinks using Pilgrim.
+The output is very self-explanatory: the tree structure shows your dotfiles listed in the `pilgo.yml` file, the arrow shows to where links will point after you create symlinks using Pilgo.
 
 <kbd>**Hint:**</kbd> The default base directory is `$XDG_BASE_DIRECTORY` for Linux distros, `$HOME/Library/Application Support` for macOS and `%AppData%` on Windows.
 
@@ -116,9 +116,9 @@ To do so, we run:
 $ plg config -file=zsh -basedir='$HOME' -link='' -targets=zprofile,zshrc
 ```
 
-<kbd>**Hint:**</kbd> Pilgrim substitutes environment variables in order for your `pilgrim.yml` to be more portable.
+<kbd>**Hint:**</kbd> Pilgo substitutes environment variables in order for your `pilgo.yml` to be more portable.
 
-As said before, one advantage of using Pilgrim is that you can name files however you want and then configure them in `pilgrim.yml` to have a custom symlink name, not needing to name files with an initial dot.
+As said before, one advantage of using Pilgo is that you can name files however you want and then configure them in `pilgo.yml` to have a custom symlink name, not needing to name files with an initial dot.
 
 For both `zprofile` and `zshrc`, we'll need to configure them to have a custom name when symlinked:
 ```shell
@@ -159,14 +159,14 @@ $ plg check
 
 OK, some statuses showed up in the right part of the output. Here is what these statuses mean:
   - `READY` means everything is OK for the file to be symlinked
-  - `DONE` means the file is already symlinked to the target configured in `pilgrim.yml`
+  - `DONE` means the file is already symlinked to the target configured in `pilgo.yml`
   - `EXPAND` means a directory already exists where we want to create our symlink, so it recursively creates symlinks for the target's children if it's a directory and puts them inside the existing directory
   - `SKIP` means the file is just a directory to hold other targets, so it doesn't get symlinked (like in the `zsh` example, where the directory `zsh` was just used to wrap ZSH-related files)
   - `CONFLICT` means it's impossible to expand either the target, the link or both, and the file in place of where our symlink should be created has no relation with it
   - `ERROR` means things broke and gone wrong
 
 ### Creating symlinks
-Finally, after you visualized what's going to be done, it's time to symlink. Note that, before symlinking, Pilgrim checks for conflicts and errors, so you won't have only half of your dotfiles directory symlinked.
+Finally, after you visualized what's going to be done, it's time to symlink. Note that, before symlinking, Pilgo checks for conflicts and errors, so you won't have only half of your dotfiles directory symlinked.
 
 
 It's a two step process, first check, then symlink:
@@ -176,4 +176,4 @@ $ plg link
 
 If there's an error, the command above should fail and return an exit code greater than zero.
 
-Otherwise, you're done! You only need to configure `pilgrim.yml` once. After that, commit it along your dotfiles (in the root directory) and use Pilgrim to deal with your dotfiles in other environments.
+Otherwise, you're done! You only need to configure `pilgo.yml` once. After that, commit it along your dotfiles (in the root directory) and use Pilgo to deal with your dotfiles in other environments.

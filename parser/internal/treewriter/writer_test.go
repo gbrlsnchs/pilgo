@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"gsr.dev/pilgrim/parser/internal/treewriter"
+	"github.com/gbrlsnchs/pilgo/parser/internal/treewriter"
 )
 
 func TestWriter(t *testing.T) {

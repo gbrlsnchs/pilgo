@@ -1,9 +1,9 @@
 $ plg config --> FAIL
-plg: open pilgrim.yml: The system cannot find the file specified.
+plg: open pilgo.yml: The system cannot find the file specified.
 
-$ cp pilgrim.yml
+$ cp pilgo.yml
 $ plg config -file=test -targets=foo,bar
-$ cat pilgrim.yml
+$ cat pilgo.yml
 baseDir: /tmp
 targets:
 - test
@@ -14,7 +14,7 @@ options:
     - bar
 
 $ plg config -file=test\foo -basedir=testdata
-$ cat pilgrim.yml
+$ cat pilgo.yml
 baseDir: /tmp
 targets:
 - test
@@ -28,7 +28,7 @@ options:
         baseDir: testdata
 
 $ plg config -file=test\bar -link=b4r
-$ cat pilgrim.yml
+$ cat pilgo.yml
 baseDir: /tmp
 targets:
 - test

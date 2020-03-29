@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/pilgo/fs/fsutil"
 	"github.com/google/go-cmp/cmp"
-	"gsr.dev/pilgrim/cmd/internal/command"
-	"gsr.dev/pilgrim/fs/fsutil"
 )
 
 var _ command.Interface = new(configCmd)

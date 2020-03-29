@@ -31,7 +31,7 @@ func TestCLI(t *testing.T) {
 	// Utility commands.
 	ts.Commands["cp"] = cmdtest.InProcessProgram("cp", cpCmd(filepath.Join(pwd, testdata)))
 
-	// Pilgrim commands.
+	// Pilgo commands.
 	ts.Commands["plg"] = cmdtest.InProcessProgram("plg", run)
 	ts.Run(t, *update)
 }
