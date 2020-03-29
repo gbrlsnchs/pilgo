@@ -176,7 +176,7 @@ func testLink(t *testing.T) {
 			mkdirAllArgs:   nil,
 			symlinkCalled:  false,
 			symlinkArgs:    nil,
-			err:            linker.ErrLinkNotExpands,
+			err:            (*linker.ConflictError)(nil),
 		},
 		{
 			drv: fstest.SpyDriver{
@@ -340,8 +340,10 @@ func testLink(t *testing.T) {
 			fs := fs.New(&tc.drv)
 			ln := linker.New(fs)
 			err := ln.Link(tc.tr)
-			if want, got := tc.err, err; !errors.Is(got, want) {
-				t.Fatalf("want %v, got %v", want, got)
+			if !errors.As(err, &tc.err) {
+				if want, got := tc.err, err; !errors.Is(got, want) {
+					t.Fatalf("want %v, got %v", want, got)
+				}
 			}
 			t.Run("MkdirAll", func(t *testing.T) {
 				hasBeenCalled, args := tc.drv.HasBeenCalled(tc.drv.MkdirAll)
@@ -552,6 +554,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
+			err:       (*linker.ConflictError)(nil),
 			conflicts: []error{linker.ErrLinkExists},
 			want: &parser.Node{
 				Target: parser.File{
@@ -594,6 +597,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
+			err:       (*linker.ConflictError)(nil),
 			conflicts: []error{linker.ErrLinkNotExpands},
 			want: &parser.Node{
 				Target: parser.File{
@@ -634,6 +638,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
+			err:       (*linker.ConflictError)(nil),
 			conflicts: []error{linker.ErrTargetNotExists},
 			want: &parser.Node{
 				Target: parser.File{
@@ -808,6 +813,7 @@ func testResolve(t *testing.T) {
 				},
 				Children: nil,
 			},
+			err:       (*linker.ConflictError)(nil),
 			conflicts: []error{linker.ErrTargetNotExpands},
 			want: &parser.Node{
 				Target: parser.File{
@@ -871,8 +877,8 @@ func testResolve(t *testing.T) {
 			}
 			err := ln.Resolve(tr)
 			// TODO(gbrlsnchs): check error message has correct file path
-			var cft *linker.ConflictError
-			if errors.As(err, &cft) {
+			if errors.As(err, &tc.err) {
+				cft := tc.err.(*linker.ConflictError)
 				if want, got := len(tc.conflicts), len(cft.Errs); got != want {
 					t.Fatalf("want %d, got %d", want, got)
 				}

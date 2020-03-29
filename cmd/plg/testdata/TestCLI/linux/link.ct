@@ -2,6 +2,7 @@ $ mkdir links
 $ cp link_config.yml targets/pilgrim.yml
 $ cd targets
 $ plg link --> FAIL
+plg: linker: there is 1 conflict
 plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
 
 $ cp test

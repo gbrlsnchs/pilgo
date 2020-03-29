@@ -236,7 +236,7 @@ func testLinkExecute(t *testing.T) {
 					},
 				},
 			},
-			err: linker.ErrLinkNotExpands,
+			err: (*linker.ConflictError)(nil),
 		},
 	}
 	for _, tc := range testCases {
@@ -250,15 +250,13 @@ func testLinkExecute(t *testing.T) {
 					userConfigDir: func() (string, error) { return filepath.Join("home", "config"), nil },
 				}
 				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts)
-				err = tc.cmd.Execute(ctx, &bd, nil)
+				err = tc.cmd.Execute(context.WithValue(ctx, command.ErrCtxKey, "plg"), nil, &bd)
 			)
-			if want, got := tc.err, err; !errors.Is(got, want) {
-				t.Fatalf("want %v, got %v", want, got)
+			if !errors.As(err, &tc.err) {
+				if want, got := tc.err, err; !errors.Is(got, want) {
+					t.Fatalf("want %v, got %v", want, got)
+				}
 			}
-			// golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
-			// if want, got := golden, bd.String(); got != want {
-			// 	t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
-			// }
 			if want, got := tc.want, tc.drv; !cmp.Equal(got, want) {
 				t.Fatalf("(-want +got):\n%s", cmp.Diff(want, got))
 			}

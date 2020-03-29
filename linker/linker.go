@@ -33,12 +33,13 @@ func New(fs fs.FileSystem) *Linker { return &Linker{fs} }
 //
 // Also, if needed, it creates parent directories if those don't already exist.
 func (ln *Linker) Link(tr *parser.Tree) error {
+	err := ln.Resolve(tr)
+	if err != nil {
+		return err
+	}
 	var (
 		links   [][2]parser.File
 		prepare = func(n *parser.Node) error {
-			if err := ln.resolve(n); err != nil {
-				return err
-			}
 			if n.Status == parser.StatusReady {
 				links = append(links, [2]parser.File{n.Target, n.Link})
 			}

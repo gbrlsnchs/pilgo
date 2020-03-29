@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"path/filepath"
 
@@ -16,8 +18,9 @@ import (
 
 type linkCmd struct{}
 
-func (linkCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
+func (linkCmd) Execute(ctx context.Context, stdout, stderr io.Writer) error {
 	opts := ctx.Value(command.OptsCtxKey).(opts)
+	exe := ctx.Value(command.ErrCtxKey).(string)
 	fs := fs.New(opts.fsDriver)
 	cwd, err := opts.getwd()
 	if err != nil {
@@ -42,6 +45,12 @@ func (linkCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
 	}
 	ln := linker.New(fs)
 	if err := ln.Link(tr); err != nil {
+		var cft *linker.ConflictError
+		if errors.As(err, &cft) {
+			for _, err := range cft.Errs {
+				fmt.Fprintf(stderr, "%s: %v\n", exe, err)
+			}
+		}
 		return err
 	}
 	return nil
