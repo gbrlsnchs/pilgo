@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gbrlsnchs/pilgo/cmd/internal"
 	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
@@ -45,6 +46,7 @@ func run() int {
 		{&initCmd{}, "init", "initialize a configuration file"},
 		{&configCmd{}, "config", "configure a file's options"},
 		{linkCmd{}, "link", "create symlinks"},
+		{versionCmd{internal.Version()}, "version", "show version"},
 	}
 	for _, c := range commands {
 		cmd.Register(command.New(
