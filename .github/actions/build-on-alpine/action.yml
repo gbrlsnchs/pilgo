@@ -1,0 +1,5 @@
+name: Build on Alpine Linux
+description: Build Go binary using Alpine and musl
+runs:
+  using: docker
+  image: ../../../Dockerfile

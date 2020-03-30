@@ -1,0 +1,30 @@
+on:
+  push:
+    tags:
+    - 'v*'
+name: Release
+jobs:
+  build:
+    name: Build binaries in Alpine Linux
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build project
+      env:
+        PILGO_VERSION: ${{ github.ref }}
+      uses: ./.github/actions/build-on-alpine
+    - name: Pack binaries
+      run: |
+        tar -czvf darwin.tar.gz LICENSE README.md --directory=.bin/darwin .
+        tar -czvf linux.tar.gz LICENSE README.md --directory=.bin/linux .
+        zip windows.zip LICENSE README.md --recurse-paths --junk-paths .bin/windows
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          darwin.tar.gz
+          linux.tar.gz
+          windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
