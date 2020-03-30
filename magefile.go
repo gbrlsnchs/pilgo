@@ -19,7 +19,7 @@ var (
 	env     = map[string]string{versionEnvName: pilgoVersion()}
 )
 
-func Test() (err error) {
+func Test() error {
 	return sh.RunWith(env, "go", "test", "-race", "-ldflags", ldflags, "./...")
 }
 
