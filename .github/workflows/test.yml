@@ -1,4 +1,10 @@
-on: [push, pull_request]
+on:
+  push:
+    tags-ignore:
+    - 'v*'
+  pull_request:
+    tags-ignore:
+    - 'v*'
 name: Linux, macOS and Windows
 env:
   MAGEFILE_VERBOSE: true
