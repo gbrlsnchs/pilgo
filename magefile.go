@@ -58,7 +58,7 @@ func Test() error {
 func pilgoVersion() string {
 	v := os.Getenv(versionEnvName)
 	if v != "" {
-		return strings.TrimPrefix(v, "refs/tags")
+		return strings.TrimPrefix(v, "refs/tags/")
 	}
 	return "test_version"
 }
