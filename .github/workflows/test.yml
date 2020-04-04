@@ -1,8 +1,12 @@
 on:
   push:
+    branches:
+    - '*'
     tags-ignore:
     - 'v*'
   pull_request:
+    branches:
+    - '*'
     tags-ignore:
     - 'v*'
 name: Linux, macOS and Windows
