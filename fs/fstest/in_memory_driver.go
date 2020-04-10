@@ -112,6 +112,7 @@ func (drv *InMemoryDriver) create(filename string, f File, mkdir bool) error {
 	parent := drv.Files
 	dir, file := filepath.Split(filename)
 	if dir != "" {
+		dir = strings.TrimSuffix(dir, pathSep)
 		fstatFn := drv.find
 		if mkdir {
 			fstatFn = drv.mkdirAll

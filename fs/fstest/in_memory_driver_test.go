@@ -538,6 +538,39 @@ func testInMemoryDriverWriteFile(t *testing.T) {
 			},
 			err: fstest.ErrExist,
 		},
+		{
+			drv: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: make(map[string]fstest.File),
+					},
+				},
+			},
+			filename: filepath.Join("foo", "bar"),
+			data:     []byte("bar"),
+			perm:     0o644,
+			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     0o644,
+								Data:     []byte("bar"),
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.filename, func(t *testing.T) {
