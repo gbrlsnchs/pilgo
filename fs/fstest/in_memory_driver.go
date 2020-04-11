@@ -11,6 +11,13 @@ import (
 	"github.com/gbrlsnchs/pilgo/fs"
 )
 
+type createOpts int
+
+const (
+	mkdirOpt createOpts = 1 << iota
+	overwriteOpt
+)
+
 var (
 	// ErrNotExist means a file doesn't exist.
 	ErrNotExist = errors.New("file doesn't exist")
@@ -82,12 +89,11 @@ func (drv *InMemoryDriver) Symlink(oldname, newname string) error {
 		Data:     nil,
 		Children: nil,
 	}
-	return drv.create(newname, f, true)
+	return drv.create(newname, f, mkdirOpt)
 }
 
 // WriteFile simulates a file write by associating data and perm with filename.
-// It only works if filename doesn't already exist and its parent directories, if any, exist.
-// Else, it returns an error.
+// It overwrites files that are not directories, but still preserve the file perm.
 func (drv *InMemoryDriver) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	f := File{
 		Linkname: "",
@@ -95,15 +101,16 @@ func (drv *InMemoryDriver) WriteFile(filename string, data []byte, perm os.FileM
 		Data:     data,
 		Children: nil,
 	}
-	return drv.create(filename, f, false)
+	return drv.create(filename, f, overwriteOpt)
 }
 
-func (drv *InMemoryDriver) create(filename string, f File, mkdir bool) error {
+func (drv *InMemoryDriver) create(filename string, f File, opts createOpts) error {
 	fstat, err := drv.find(filename)
 	if err != nil && !errors.Is(err, ErrNotExist) {
 		return err
 	}
-	if fstat.Exists() {
+	exists := fstat.Exists()
+	if exists && (opts&overwriteOpt == 0 || fstat.IsDir()) {
 		return ErrExist
 	}
 	if drv.Files == nil {
@@ -114,7 +121,7 @@ func (drv *InMemoryDriver) create(filename string, f File, mkdir bool) error {
 	if dir != "" {
 		dir = strings.TrimSuffix(dir, pathSep)
 		fstatFn := drv.find
-		if mkdir {
+		if opts&mkdirOpt != 0 {
 			fstatFn = drv.mkdirAll
 		}
 		fstat, err := fstatFn(dir)
@@ -122,6 +129,9 @@ func (drv *InMemoryDriver) create(filename string, f File, mkdir bool) error {
 			return err
 		}
 		parent = fstat.File.Children
+	}
+	if exists {
+		f.Perm = fstat.Perm()
 	}
 	parent[file] = f
 	return nil

@@ -519,7 +519,7 @@ func testInMemoryDriverWriteFile(t *testing.T) {
 						Linkname: "",
 						Perm:     os.ModePerm,
 						Data:     nil,
-						Children: nil,
+						Children: make(map[string]fstest.File),
 					},
 				},
 			},
@@ -532,11 +532,37 @@ func testInMemoryDriverWriteFile(t *testing.T) {
 						Linkname: "",
 						Perm:     os.ModePerm,
 						Data:     nil,
-						Children: nil,
+						Children: make(map[string]fstest.File),
 					},
 				},
 			},
 			err: fstest.ErrExist,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+			},
+			filename: "foo",
+			data:     []byte("bar"),
+			perm:     0o644,
+			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("bar"),
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
 		},
 		{
 			drv: fstest.InMemoryDriver{
