@@ -1,45 +1,112 @@
 package main
 
 import (
-	"context"
 	"errors"
-	"flag"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/cli/clitest"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
-	"github.com/gbrlsnchs/pilgo/fs/fsutil"
+	"github.com/gbrlsnchs/pilgo/fs/fstest"
 	"github.com/google/go-cmp/cmp"
-	"gopkg.in/yaml.v3"
 )
 
-var _ command.Interface = new(initCmd)
-
 func TestInit(t *testing.T) {
-	t.Run("Execute", testInitExecute)
-	t.Run("SetFlags", testInitSetFlags)
-}
-
-func testInitExecute(t *testing.T) {
 	testCases := []struct {
 		name   string
+		drv    fstest.InMemoryDriver
 		cmd    initCmd
-		want   config.Config
+		want   fstest.InMemoryDriver
 		err    error
 		remove bool
 	}{
 		{
-			name: "init",
-			cmd:  initCmd{},
-			want: config.Config{
-				Targets: []string{
-					"bar",
-					"foo",
+			name: "default",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: initCmd{},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"default.yml": {
+										Linkname: "",
+										Perm:     0o644,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"bar",
+												"foo",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err:    nil,
@@ -47,12 +114,100 @@ func testInitExecute(t *testing.T) {
 		},
 		{
 			name: "force",
-			cmd:  initCmd{force: true},
-			want: config.Config{
-				BaseDir: "/tmp",
-				Targets: []string{
-					"bar",
-					"foo",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"force.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: initCmd{force: true},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"force.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"bar",
+												"foo",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err:    nil,
@@ -60,41 +215,287 @@ func testInitExecute(t *testing.T) {
 		},
 		{
 			name: "nop",
-			cmd:  initCmd{},
-			want: config.Config{
-				BaseDir: "/tmp",
-				Targets: []string{
-					"test",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"nop.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: initCmd{},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"nop.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err:    errConfigExists,
 			remove: false,
 		},
 		{
-			name: "exclude",
+			name: "include",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
 			cmd: initCmd{
-				exclude: commaset{
+				include: cliutil.CommaSepOptionSet{
 					"bar": struct{}{},
 				},
 			},
-			want: config.Config{
-				Targets: []string{
-					"foo",
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"include.yml": {
+										Linkname: "",
+										Perm:     0o644,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"bar",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err:    nil,
 			remove: true,
 		},
 		{
-			name: "include",
+			name: "exclude",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
 			cmd: initCmd{
-				include: commaset{
+				exclude: cliutil.CommaSepOptionSet{
 					"bar": struct{}{},
 				},
 			},
-			want: config.Config{
-				Targets: []string{
-					"bar",
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"exclude.yml": {
+										Linkname: "",
+										Perm:     0o644,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"foo",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err:    nil,
@@ -103,117 +504,26 @@ func testInitExecute(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			testdata := filepath.Join("testdata", t.Name())
-			conf := filepath.Join(testdata, defaultConfig)
-			if tc.remove {
-				defer os.Remove(conf)
-			} else if tc.cmd.force {
-				orig, err := ioutil.ReadFile(conf)
-				if err != nil {
-					t.Fatal(err)
-				}
-				defer func(t *testing.T) {
-					if err := ioutil.WriteFile(conf, orig, 0o644); err != nil {
-						t.Fatal(err)
-					}
-				}(t)
-			}
 			var (
-				bd  strings.Builder
-				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
-					config:   conf,
-					fsDriver: fsutil.OSDriver{},
-					getwd: func() (string, error) {
-						return testdata, nil
-					},
-				})
+				appcfg = appConfig{
+					conf:  tc.name + ".yml",
+					fs:    &tc.drv,
+					getwd: func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
+				}
+				exec = tc.cmd.register(appcfg.copy)
+				prg  = clitest.NewProgram("init")
+				err  = exec(prg)
 			)
-			if want, got := tc.err, tc.cmd.Execute(ctx, &bd, nil); !errors.Is(got, want) {
+			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
-			if want, got := "", bd.String(); got != want {
-				t.Errorf("want %q, got %q", want, got)
+			if want, got := "", prg.Output(); got != want {
+				t.Fatalf("\"init\" command output mismatch (-want +got):\n%s",
+					cmp.Diff(want, got))
 			}
-			var c config.Config
-			b, err := ioutil.ReadFile(conf)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err = yaml.Unmarshal(b, &c); err != nil {
-				t.Fatal(err)
-			}
-			if want, got := tc.want, c; !cmp.Equal(got, want) {
-				t.Errorf("command \"init\" outcome failed (-want +got):\n%s", cmp.Diff(want, got))
-			}
-		})
-	}
-}
-
-func testInitSetFlags(t *testing.T) {
-	allowUnexported := cmp.AllowUnexported(initCmd{})
-	testCases := []struct {
-		flags map[string]string
-		want  initCmd
-	}{
-		{
-			flags: nil,
-			want:  initCmd{},
-		},
-		{
-			flags: map[string]string{
-				"force": "true",
-			},
-			want: initCmd{force: true},
-		},
-		{
-			flags: map[string]string{
-				"force": "false",
-			},
-			want: initCmd{force: false},
-		},
-		{
-			flags: map[string]string{
-				"exclude": "foo,bar,baz,qux",
-			},
-			want: initCmd{force: false, exclude: commaset{
-				"foo": struct{}{},
-				"bar": struct{}{},
-				"baz": struct{}{},
-				"qux": struct{}{},
-			}},
-		},
-		{
-			flags: map[string]string{
-				"include": "foo,bar,baz,qux",
-			},
-			want: initCmd{force: false, include: commaset{
-				"foo": struct{}{},
-				"bar": struct{}{},
-				"baz": struct{}{},
-				"qux": struct{}{},
-			}},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run("", func(t *testing.T) {
-			var (
-				cmd  initCmd
-				fset = flag.NewFlagSet("init", flag.PanicOnError)
-				args = make([]string, 0, len(tc.flags))
-			)
-			for name, value := range tc.flags {
-				args = append(args, fmt.Sprintf("-%s=%s", name, value))
-			}
-			cmd.SetFlags(fset)
-			t.Logf("args: %v", args)
-			if err := fset.Parse(args); err != nil {
-				t.Fatal(err)
-			}
-			if want, got := tc.want, cmd; !cmp.Equal(got, want, allowUnexported) {
-				t.Errorf(
-					"(*initCmd).SetFlags mismatch (-want +got):\n%s",
-					cmp.Diff(want, got, allowUnexported),
-				)
+			if want, got := tc.want, tc.drv; !cmp.Equal(got, want) {
+				t.Fatalf("\"init\" command has unintended effects in the file system: (-want +got):\n%s",
+					cmp.Diff(want, got))
 			}
 		})
 	}

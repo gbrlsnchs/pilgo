@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/andybalholm/crlf v0.0.0-20171020200849-670099aa064f
+	github.com/gbrlsnchs/cli v0.6.0
 	github.com/google/go-cmdtest v0.2.0
 	github.com/google/go-cmp v0.4.0
 	github.com/google/subcommands v1.0.1

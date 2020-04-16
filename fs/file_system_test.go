@@ -3,6 +3,7 @@ package fs_test
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/gbrlsnchs/pilgo/fs"
@@ -30,13 +31,13 @@ func testFileSystemMkdirAll(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
-			_ = fs.MkdirAll("test")
+			_ = fs.MkdirAll("test/foo")
 			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.MkdirAll)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			callstack := fstest.CallStack{fstest.Args{"test"}}
+			callstack := fstest.CallStack{fstest.Args{filepath.Join("test", "foo")}}
 			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.MkdirAll mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
@@ -56,13 +57,13 @@ func testFileSystemReadDir(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
-			_, _ = fs.ReadDir("test")
+			_, _ = fs.ReadDir("test/foo")
 			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.ReadDir)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			callstack := fstest.CallStack{fstest.Args{"test"}}
+			callstack := fstest.CallStack{fstest.Args{filepath.Join("test", "foo")}}
 			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.ReadDir mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
@@ -82,13 +83,13 @@ func testFileSystemReadFile(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
-			_, _ = fs.ReadFile("test")
+			_, _ = fs.ReadFile("test/foo")
 			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.ReadFile)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			callstack := fstest.CallStack{fstest.Args{"test"}}
+			callstack := fstest.CallStack{fstest.Args{filepath.Join("test", "foo")}}
 			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.ReadFile mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
@@ -108,13 +109,13 @@ func testFileSystemStat(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
-			_, _ = fs.Stat("test")
+			_, _ = fs.Stat("test/foo")
 			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.Stat)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
-			callstack := fstest.CallStack{fstest.Args{"test"}}
+			callstack := fstest.CallStack{fstest.Args{filepath.Join("test", "foo")}}
 			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.Stat mismatch (-want +got):\n%s", cmp.Diff(want, got))
 			}
@@ -160,14 +161,14 @@ func testFileSystemWriteFile(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			defer checkPanic(t, tc.err)
 			fs := fs.New(tc.drv)
-			_ = fs.WriteFile("test", []byte("testing"), 0o777)
+			_ = fs.WriteFile("test/foo", []byte("testing"), 0o777)
 			drv := tc.drv.(*fstest.SpyDriver)
 			hasBeenCalled, args := drv.HasBeenCalled(drv.WriteFile)
 			if want, got := true, hasBeenCalled; got != want {
 				t.Fatalf("want %t, got %t", want, got)
 			}
 			callstack := fstest.CallStack{
-				fstest.Args{"test", []byte("testing"), os.FileMode(0o777)},
+				fstest.Args{filepath.Join("test", "foo"), []byte("testing"), os.FileMode(0o777)},
 			}
 			if want, got := callstack, args; !cmp.Equal(got, want) {
 				t.Fatalf("FileSystem.WriteFile mismatch (-want +got):\n%s", cmp.Diff(want, got))

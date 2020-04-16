@@ -1,141 +1,170 @@
 package main
 
 import (
-	"context"
 	"errors"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"path/filepath"
-	"strings"
+	"os"
 	"testing"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
-	"github.com/gbrlsnchs/pilgo/fs/fsutil"
+	"github.com/gbrlsnchs/cli/clitest"
+	"github.com/gbrlsnchs/cli/cliutil"
+	"github.com/gbrlsnchs/pilgo/config"
+	"github.com/gbrlsnchs/pilgo/fs/fstest"
 	"github.com/google/go-cmp/cmp"
 )
 
-var _ command.Interface = new(configCmd)
-
 func TestConfig(t *testing.T) {
-	t.Run("Execute", testConfigExecute)
-	t.Run("SetFlags", testConfigSetFlags)
-}
-
-func testConfigExecute(t *testing.T) {
 	testCases := []struct {
 		name string
+		drv  fstest.InMemoryDriver
 		cmd  configCmd
-		want string
+		want fstest.InMemoryDriver
 		err  error
 	}{
 		{
-			name: "config",
+			name: "default",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"default.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											BaseDir: "test",
+											Targets: []string{
+												"foo",
+												"bar",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
 			cmd: configCmd{
 				file:    "foo",
-				baseDir: "test",
+				baseDir: "test_foo",
 				link:    strptr{addr: newString("f00")},
-				targets: commalist{
+				targets: cliutil.CommaSepOptionList{
 					"test",
 					"testing",
 					"testdata",
+				},
+			},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"default.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											BaseDir: "test",
+											Targets: []string{
+												"foo",
+												"bar",
+											},
+											Options: map[string]config.Config{
+												"foo": {
+													BaseDir: "test_foo",
+													Link:    newString("f00"),
+													Targets: []string{
+														"test",
+														"testing",
+														"testdata",
+													},
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
 				},
 			},
 			err: nil,
 		},
 	}
 	for _, tc := range testCases {
-		testdata := filepath.Join("testdata", t.Name())
 		t.Run(tc.name, func(t *testing.T) {
-			config := filepath.Join(testdata, tc.name+".yml")
-			before, err := ioutil.ReadFile(config)
-			if err != nil {
-				t.Fatal(err)
-			}
-			// Restore original contents of file.
-			defer func(t *testing.T) {
-				if err := ioutil.WriteFile(config, before, 0o644); err != nil {
-					t.Fatal(err)
-				}
-			}(t)
 			var (
-				bd  strings.Builder
-				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
-					config:   config,
-					fsDriver: fsutil.OSDriver{},
-				})
+				appcfg = appConfig{
+					conf: tc.name + ".yml",
+					fs:   &tc.drv,
+				}
+				exec = tc.cmd.register(appcfg.copy)
+				prg  = clitest.NewProgram("config")
+				err  = exec(prg)
 			)
-			if want, got := tc.err, tc.cmd.Execute(ctx, &bd, nil); !errors.Is(got, want) {
+			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}
-			golden := readFile(t, filepath.Join(testdata, tc.name+".golden"))
-			if want, got := tc.want, bd.String(); got != want {
-				t.Errorf(
-					`"show" command output mismatch (-want +got):\n%s`,
-					cmp.Diff(want, got),
-				)
+			if want, got := "", prg.Output(); got != want {
+				t.Fatalf("\"config\" command output mismatch (-want +got):\n%s",
+					cmp.Diff(want, got))
 			}
-			after := readFile(t, config)
-			if want, got := golden, after; string(got) != string(want) {
-				t.Errorf("\nwant:\n%s\ngot:\n%s", want, got)
-				t.Logf("detailed diff: %s", cmp.Diff(want, got))
-			}
-		})
-	}
-}
-
-func testConfigSetFlags(t *testing.T) {
-	allowUnexported := cmp.AllowUnexported(configCmd{}, strptr{})
-	testCases := []struct {
-		flags map[string]string
-		want  configCmd
-	}{
-		{
-			flags: nil,
-			want: configCmd{
-				baseDir: "",
-				file:    "",
-				link:    strptr{addr: nil},
-				targets: nil,
-			},
-		},
-		{
-			flags: map[string]string{
-				"file":    "test",
-				"basedir": "testdata",
-				"link":    "7357",
-				"targets": "foo,bar,baz",
-			},
-			want: configCmd{
-				file:    "test",
-				baseDir: "testdata",
-				link: strptr{
-					addr: newString("7357"),
-				},
-				targets: commalist{"foo", "bar", "baz"},
-			},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run("", func(t *testing.T) {
-			var (
-				cmd  configCmd
-				fset = flag.NewFlagSet("config", flag.PanicOnError)
-				args = make([]string, 0, len(tc.flags))
-			)
-			for name, value := range tc.flags {
-				args = append(args, fmt.Sprintf("-%s=%s", name, value))
-			}
-			cmd.SetFlags(fset)
-			t.Logf("args: %v", args)
-			if err := fset.Parse(args); err != nil {
-				t.Fatal(err)
-			}
-			if want, got := tc.want, cmd; !cmp.Equal(got, want, allowUnexported) {
-				t.Errorf(
-					"(*configCmd).SetFlags mismatch (-want +got):\n%s",
-					cmp.Diff(want, got, allowUnexported),
-				)
+			if want, got := tc.want, tc.drv; !cmp.Equal(got, want) {
+				t.Fatalf("\"config\" command has unintended effects in the file system: (-want +got):\n%s",
+					cmp.Diff(want, got))
 			}
 		})
 	}

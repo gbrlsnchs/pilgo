@@ -5,6 +5,8 @@ github.com/andybalholm/crlf v0.0.0-20171020200849-670099aa064f/go.mod h1:k8feO4+
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/gbrlsnchs/cli v0.6.0 h1:ULuqz+SbdFS4YudY6xjP7Hie58w0Tu13N1VWckF5hxE=
+github.com/gbrlsnchs/cli v0.6.0/go.mod h1:Tlit0jImrc8YpMNIZv6pGVyTGxwlmce7ZY2SCIebNfo=
 github.com/google/go-cmdtest v0.2.0 h1:XUVzlv6pnvJvBrjCPqBOawRiVjCJyXEDIorom2gG1rU=
 github.com/google/go-cmdtest v0.2.0/go.mod h1:apVn/GCasLZUVpAJ6oWAuyP7Ne7CEsQbTnc0plM3m+o=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=

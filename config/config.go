@@ -14,23 +14,34 @@ type Config struct {
 	Link    *string           `yaml:"link,omitempty"`
 	Targets []string          `yaml:"targets,omitempty"`
 	Options map[string]Config `yaml:"options,omitempty"`
+
+	opts internalOpts
 }
 
-// Init returns a copy of c with only eligible files from targets, which are any
-// files that don't start with a dot nor is named equal DefaultConfig's value.
-func (c Config) Init(targets []string, includes, excludes map[string]struct{}) Config {
+// New creates a new configuration with given targets. Functional options can be
+// passed to configure which targets should be included or excluded.
+func New(targets []string, opts ...func(*Config)) Config {
+	var c Config
+	for _, o := range opts {
+		o(&c)
+	}
 	eligible := make([]string, 0, len(targets))
 	for _, tg := range targets {
-		if strings.HasPrefix(tg, ".") || tg == DefaultName {
+		switch {
+		case tg == "":
+			fallthrough
+		case tg == c.opts.skipName:
+			fallthrough
+		case !c.opts.addHidden && strings.HasPrefix(tg, "."):
 			continue
 		}
-		if len(includes) > 0 {
-			_, included := includes[tg]
+		if len(c.opts.inc) > 0 {
+			_, included := c.opts.inc[tg]
 			if !included {
 				continue
 			}
 		}
-		_, excluded := excludes[tg]
+		_, excluded := c.opts.exc[tg]
 		if excluded {
 			continue
 		}
@@ -76,4 +87,42 @@ func (c *Config) Set(path string, o Config) {
 		}
 	}
 	oo.Options[last] = o
+}
+
+type internalOpts struct {
+	inc       map[string]struct{}
+	exc       map[string]struct{}
+	skipName  string
+	addHidden bool
+}
+
+// MergeWith is an option to use an existing configuration when
+// building a new one, thus inheriting all fields from the existing one.
+func MergeWith(c Config) func(*Config) {
+	return func(src *Config) {
+		opts := src.opts
+		*src = c
+		src.opts = opts
+	}
+}
+
+// Include is an option to set which files to include in the configuration.
+func Include(set map[string]struct{}) func(*Config) {
+	return func(c *Config) {
+		c.opts.inc = set
+	}
+}
+
+// IncludeHidden is an option that allows files prepended by a dot to be
+// included in the configuration.
+func IncludeHidden(c *Config) {
+	c.opts.addHidden = true
+}
+
+// Exclude is an option to set which files to exclude in the configuration.
+// If an inclusion list is set, this list will have no effect.
+func Exclude(set map[string]struct{}) func(*Config) {
+	return func(c *Config) {
+		c.opts.exc = set
+	}
 }

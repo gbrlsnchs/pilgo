@@ -1,13 +1,11 @@
 package main
 
 import (
-	"context"
 	"errors"
-	"flag"
-	"io"
 	"os"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"gopkg.in/yaml.v3"
@@ -17,55 +15,58 @@ var errConfigExists = errors.New("configuration file already exists")
 
 type initCmd struct {
 	force   bool
-	include commaset
-	exclude commaset
+	include cliutil.CommaSepOptionSet
+	exclude cliutil.CommaSepOptionSet
 }
 
-func (cmd initCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
-	o := ctx.Value(command.OptsCtxKey).(opts)
-	var (
-		fs = fs.New(o.fsDriver)
-		c  config.Config
-	)
-	fi, err := fs.Stat(o.config)
-	if err != nil {
-		return err
-	}
-	cwd, err := o.getwd()
-	if err != nil {
-		return err
-	}
-	files, err := fs.ReadDir(cwd)
-	if err != nil {
-		return err
-	}
-	perm := os.FileMode(0o644)
-	if fi.Exists() {
-		if !cmd.force {
-			return errConfigExists
-		}
-		b, err := fs.ReadFile(o.config)
+func (cmd *initCmd) register(getcfg func() appConfig) func(cli.Program) error {
+	return func(_ cli.Program) error {
+		var (
+			appcfg = getcfg()
+			fs     = fs.New(appcfg.fs)
+		)
+		fi, err := fs.Stat(appcfg.conf)
 		if err != nil {
 			return err
 		}
-		if err = yaml.Unmarshal(b, &c); err != nil {
+		cwd, err := appcfg.getwd()
+		if err != nil {
 			return err
 		}
-		perm = fi.Perm()
+		files, err := fs.ReadDir(cwd)
+		if err != nil {
+			return err
+		}
+		var (
+			perm = os.FileMode(0o644)
+			c    config.Config
+		)
+		if fi.Exists() {
+			if !cmd.force {
+				return errConfigExists
+			}
+			b, err := fs.ReadFile(appcfg.conf)
+			if err != nil {
+				return err
+			}
+			if err = yaml.Unmarshal(b, &c); err != nil {
+				return err
+			}
+			perm = fi.Perm()
+		}
+		targets := make([]string, len(files))
+		for i, fi := range files {
+			targets[i] = fi.Name()
+		}
+		cmd.exclude.Set(appcfg.conf)
+		c = config.New(targets,
+			config.Include(cmd.include),
+			config.Exclude(cmd.exclude),
+			config.MergeWith(c))
+		b, err := marshalYAML(c)
+		if err != nil {
+			return err
+		}
+		return fs.WriteFile(appcfg.conf, b, perm)
 	}
-	targets := make([]string, len(files))
-	for i, fi := range files {
-		targets[i] = fi.Name()
-	}
-	b, err := marshalYAML(c.Init(targets, cmd.include, cmd.exclude))
-	if err != nil {
-		return err
-	}
-	return fs.WriteFile(o.config, b, perm)
-}
-
-func (cmd *initCmd) SetFlags(f *flag.FlagSet) {
-	f.BoolVar(&cmd.force, "force", false, "override targets from existing configuration file")
-	f.Var(&cmd.include, "include", "comma-separated list of targets to be included")
-	f.Var(&cmd.exclude, "exclude", "comma-separated list of targets to be excluded")
 }

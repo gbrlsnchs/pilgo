@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
-	"io"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/cli"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"github.com/gbrlsnchs/pilgo/parser"
@@ -15,32 +12,32 @@ import (
 
 type showCmd struct{}
 
-func (showCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
-	o := ctx.Value(command.OptsCtxKey).(opts)
-	fs := fs.New(o.fsDriver)
-	b, err := fs.ReadFile(o.config)
-	if err != nil {
-		return err
+func (*showCmd) register(getcfg func() appConfig) func(cli.Program) error {
+	return func(prg cli.Program) error {
+		appcfg := getcfg()
+		fs := fs.New(appcfg.fs)
+		b, err := fs.ReadFile(appcfg.conf)
+		if err != nil {
+			return err
+		}
+		var c config.Config
+		if yaml.Unmarshal(b, &c); err != nil {
+			return err
+		}
+		baseDir, err := appcfg.userConfigDir()
+		if err != nil {
+			return err
+		}
+		cwd, err := appcfg.getwd()
+		if err != nil {
+			return err
+		}
+		var p parser.Parser
+		tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd), parser.Envsubst)
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(prg.Stdout(), tr)
+		return nil
 	}
-	var c config.Config
-	if yaml.Unmarshal(b, &c); err != nil {
-		return err
-	}
-	baseDir, err := o.userConfigDir()
-	if err != nil {
-		return err
-	}
-	cwd, err := o.getwd()
-	if err != nil {
-		return err
-	}
-	var p parser.Parser
-	tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd), parser.Envsubst)
-	if err != nil {
-		return err
-	}
-	fmt.Fprint(stdout, tr)
-	return nil
 }
-
-func (showCmd) SetFlags(_ *flag.FlagSet) { /* NOP */ }

@@ -113,7 +113,7 @@ So, for `zsh`, we need to change the following:
 
 To do so, we run:
 ```shell
-$ plg config -file=zsh -basedir='$HOME' -link='' -targets=zprofile,zshrc
+$ plg config -basedir='$HOME' -link='' -targets=zprofile,zshrc zsh
 ```
 
 <kbd>**Hint:**</kbd> Pilgo substitutes environment variables in order for your `pilgo.yml` to be more portable.
@@ -122,8 +122,8 @@ As said before, one advantage of using Pilgo is that you can name files however 
 
 For both `zprofile` and `zshrc`, we'll need to configure them to have a custom name when symlinked:
 ```shell
-$ plg config -file=zsh/zprofile -link=.zprofile
-$ plg config -file=zsh/zshrc -link=.zshrc
+$ plg config -link=.zprofile zsh/zprofile
+$ plg config -link=.zshrc zsh/zshrc
 ```
 
 And now, if we run the `show` command again:

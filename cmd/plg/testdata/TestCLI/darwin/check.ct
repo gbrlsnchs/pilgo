@@ -1,13 +1,40 @@
-$ cp pilgo.yml
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ cp pilgo.yml .
 $ plg check
 .
-└── test <- /tmp/test (ERROR)
+└── test <- links/test (ERROR)
 
 $ plg check -fail --> FAIL
 plg: linker: there is 1 conflict
-plg: linker: /private${ROOTDIR}/test: target doesn't exist
+plg: linker: /private${ROOTDIR}/targets/test: target doesn't exist
 
-$ cp test
+$ plg check -f --> FAIL
+plg: linker: there is 1 conflict
+plg: linker: /private${ROOTDIR}/targets/test: target doesn't exist
+
+$ fecho test
 $ plg check
 .
-└── test <- /tmp/test (READY)
+└── test <- links/test (READY)
+
+$ plg check -help
+Check the status of your dotfiles.
+
+USAGE:
+    check [OPTIONS]
+
+OPTIONS:
+    -f, -fail    Fail when there are one or more conflicts.
+    -h, -help    Print this help message.
+
+$ plg check -h
+Check the status of your dotfiles.
+
+USAGE:
+    check [OPTIONS]
+
+OPTIONS:
+    -f, -fail    Fail when there are one or more conflicts.
+    -h, -help    Print this help message.

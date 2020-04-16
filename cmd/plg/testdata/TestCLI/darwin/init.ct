@@ -1,5 +1,8 @@
-$ cp foo
-$ cp bar
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ fecho foo
+$ fecho bar
 $ plg init
 $ cat pilgo.yml
 targets:
@@ -11,11 +14,35 @@ $ cat pilgo.yml
 targets:
 - bar
 
-$ plg init -force -include=foo
+$ plg init -f -include=foo
 $ cat pilgo.yml
 targets:
 - foo
 
-$ cp pilgo.yml
+$ cp pilgo.yml .
 $ plg init --> FAIL
 plg: configuration file already exists
+
+$ plg init -help
+Initialize a configuration file.
+
+USAGE:
+    init [OPTIONS]
+
+OPTIONS:
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
+    -f, -force                              Override an already existing configuration file.
+    -h, -help                               Print this help message.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
+
+$ plg init -h
+Initialize a configuration file.
+
+USAGE:
+    init [OPTIONS]
+
+OPTIONS:
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
+    -f, -force                              Override an already existing configuration file.
+    -h, -help                               Print this help message.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.

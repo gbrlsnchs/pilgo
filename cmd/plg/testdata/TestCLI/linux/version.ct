@@ -1,2 +1,20 @@
 $ plg version
 plg test_version
+
+$ plg version -help
+Print version.
+
+USAGE:
+    version [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.
+
+$ plg version -h
+Print version.
+
+USAGE:
+    version [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.

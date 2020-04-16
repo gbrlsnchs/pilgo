@@ -1,10 +1,13 @@
+$ mkdir targets
+$ mkdir links
+$ cd targets
 $ plg config --> FAIL
 plg: open pilgo.yml: The system cannot find the file specified.
 
-$ cp pilgo.yml
-$ plg config -file=test -targets=foo,bar
+$ cp pilgo.yml .
+$ plg config -targets=foo,bar test
 $ cat pilgo.yml
-baseDir: /tmp
+baseDir: links
 targets:
 - test
 options:
@@ -13,9 +16,9 @@ options:
     - foo
     - bar
 
-$ plg config -file=test\foo -basedir=testdata
+$ plg config -basedir=testdata test\foo
 $ cat pilgo.yml
-baseDir: /tmp
+baseDir: links
 targets:
 - test
 options:
@@ -27,9 +30,9 @@ options:
       foo:
         baseDir: testdata
 
-$ plg config -file=test\bar -link=b4r
+$ plg config -link=b4r test\bar
 $ cat pilgo.yml
-baseDir: /tmp
+baseDir: links
 targets:
 - test
 options:
@@ -42,3 +45,27 @@ options:
         link: b4r
       foo:
         baseDir: testdata
+
+$ plg config -help
+Configure a dotfile in the configuration file.
+
+USAGE:
+    config [OPTIONS] [TARGET]
+
+OPTIONS:
+        -basedir <DIR>                      Set the file's base directory.
+    -h, -help                               Print this help message.
+        -link <NAME>                        Set the file's link name. An empty string skips the file.
+        -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.
+
+$ plg config -h
+Configure a dotfile in the configuration file.
+
+USAGE:
+    config [OPTIONS] [TARGET]
+
+OPTIONS:
+        -basedir <DIR>                      Set the file's base directory.
+    -h, -help                               Print this help message.
+        -link <NAME>                        Set the file's link name. An empty string skips the file.
+        -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.

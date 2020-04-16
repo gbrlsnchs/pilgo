@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -9,9 +10,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/andybalholm/crlf"
 	cmdtest "github.com/google/go-cmdtest"
-	"golang.org/x/text/transform"
 )
 
 const failureStatus = 0xDEADC0DE // 3735929054
@@ -19,7 +18,7 @@ const failureStatus = 0xDEADC0DE // 3735929054
 var update = flag.Bool("update", false, "update test files with results")
 
 func TestCLI(t *testing.T) {
-	pwd, err := os.Getwd()
+	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,63 +28,30 @@ func TestCLI(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Utility commands.
-	ts.Commands["cp"] = cmdtest.InProcessProgram("cp", cpCmd(filepath.Join(pwd, testdata)))
+	ts.Commands["cp"] = cpCmd(filepath.Join(cwd, testdata))
 
 	// Pilgo commands.
 	ts.Commands["plg"] = cmdtest.InProcessProgram("plg", run)
 	ts.Run(t, *update)
 }
 
-func cpCmd(pwd string) func() int {
-	return func() int {
-		var (
-			argv            = os.Args[1:]
-			argc            = len(argv)
-			original, clone string
-		)
-		if argc > 0 {
-			original = argv[0]
-			clone = original
-			if argc > 1 {
-				clone = argv[1]
-			}
+func cpCmd(pwd string) func([]string, string) ([]byte, error) {
+	return func(args []string, inputFile string) ([]byte, error) {
+		switch len(args) {
+		case 0:
+			return nil, errors.New("missing file operand")
+		case 1:
+			return nil, fmt.Errorf("missing file operand after %s", args[0])
 		}
-		if original == "" || clone == "" {
-			return 0 // NOP
+		orig, clone := args[0], args[1]
+		if clone == "." {
+			clone = orig
 		}
-		b, err := ioutil.ReadFile(filepath.Join(pwd, original))
+		b, err := ioutil.ReadFile(filepath.Join(pwd, orig))
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return failureStatus
+			return nil, err
 		}
-		dir, _ := filepath.Split(clone)
-		if dir != "" {
-			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return failureStatus
-			}
-		}
-		if err := ioutil.WriteFile(clone, b, 0o644); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return failureStatus
-		}
-		return 0
+		return nil, ioutil.WriteFile(clone, b, 0o600)
 	}
 
-}
-
-// misc
-func readFile(t *testing.T, name string) string {
-	golden, err := ioutil.ReadFile(name)
-	if err != nil {
-		t.Fatal(err)
-	}
-	goldenlf, _, err := transform.String(
-		new(crlf.Normalize),
-		filepath.FromSlash(string(golden)),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return goldenlf
 }

@@ -6,58 +6,50 @@ import (
 
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func TestConfig(t *testing.T) {
-	t.Run("Init", testConfigInit)
-	t.Run("Set", testConfigSet)
-}
+var ignoreUnexported = cmpopts.IgnoreUnexported(config.Config{})
 
-func testConfigInit(t *testing.T) {
+func TestNew(t *testing.T) {
 	testCases := []struct {
-		c        config.Config
-		targets  []string
-		includes map[string]struct{}
-		excludes map[string]struct{}
-		want     config.Config
+		targets []string
+		opts    []func(*config.Config)
+		want    config.Config
 	}{
 		{
-			c: config.Config{
-				BaseDir: "test",
-			},
 			targets: []string{"foo", "bar"},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+			},
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},
 			},
 		},
 		{
-			c: config.Config{
-				BaseDir: "test",
-			},
-			targets: []string{"foo", "bar", "pilgo.yml"},
-			want: config.Config{
-				BaseDir: "test",
-				Targets: []string{"foo", "bar"},
-			},
-		},
-		{
-			c: config.Config{
-				BaseDir: "test",
-			},
 			targets: []string{"foo", "bar", ".git"},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+			},
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"foo", "bar"},
 			},
 		},
 		{
-			c: config.Config{
-				BaseDir: "test",
-			},
 			targets: []string{"foo", "bar", ".git"},
-			excludes: map[string]struct{}{
-				"bar": struct{}{},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+				config.Exclude(map[string]struct{}{
+					"bar": struct{}{},
+				}),
 			},
 			want: config.Config{
 				BaseDir: "test",
@@ -65,27 +57,58 @@ func testConfigInit(t *testing.T) {
 			},
 		},
 		{
-			c: config.Config{
-				BaseDir: "test",
-			},
 			targets: []string{"foo", "bar", ".git"},
-			includes: map[string]struct{}{
-				"bar": struct{}{},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+				config.Include(map[string]struct{}{
+					"bar": struct{}{},
+				}),
 			},
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{"bar"},
 			},
 		},
+		{
+			targets: []string{"foo", "bar", ".git"},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+				config.IncludeHidden,
+			},
+			want: config.Config{
+				BaseDir: "test",
+				Targets: []string{"foo", "bar", ".git"},
+			},
+		},
+		{
+			targets: []string{"foo", "", "baz"},
+			opts: []func(*config.Config){
+				config.MergeWith(config.Config{
+					BaseDir: "test",
+				}),
+			},
+			want: config.Config{
+				BaseDir: "test",
+				Targets: []string{"foo", "baz"},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
-			c := tc.c.Init(tc.targets, tc.includes, tc.excludes)
-			if want, got := tc.want, c; !cmp.Equal(got, want) {
-				t.Errorf("Config.Init mismatch (-want +got):\n%s", cmp.Diff(want, got))
+			c := config.New(tc.targets, tc.opts...)
+			if want, got := tc.want, c; !cmp.Equal(got, want, ignoreUnexported) {
+				t.Errorf("Config.Init mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
 			}
 		})
 	}
+}
+
+func TestConfig(t *testing.T) {
+	t.Run("Set", testConfigSet)
 }
 
 func testConfigSet(t *testing.T) {
@@ -220,8 +243,8 @@ func testConfigSet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			tc.c.Set(tc.name, tc.o)
-			if want, got := tc.want, tc.c; !cmp.Equal(got, want) {
-				t.Errorf("Config.Set mismatch (-want +got):\n%s", cmp.Diff(want, got))
+			if want, got := tc.want, tc.c; !cmp.Equal(got, want, ignoreUnexported) {
+				t.Errorf("Config.Set mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
 			}
 		})
 	}

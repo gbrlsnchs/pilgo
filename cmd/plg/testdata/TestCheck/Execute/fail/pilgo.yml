@@ -1,4 +1,0 @@
-targets:
-- $MY_ENV_VAR
-- nonexistent
-- test

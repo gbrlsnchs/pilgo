@@ -1,126 +1,283 @@
 package main
 
 import (
-	"context"
 	"errors"
-	"flag"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
-	"github.com/gbrlsnchs/pilgo/fs/fsutil"
+	"github.com/gbrlsnchs/cli/clitest"
+	"github.com/gbrlsnchs/pilgo/config"
+	"github.com/gbrlsnchs/pilgo/fs/fstest"
 	"github.com/gbrlsnchs/pilgo/linker"
 	"github.com/google/go-cmp/cmp"
 )
 
-var _ command.Interface = new(checkCmd)
-
 func TestCheck(t *testing.T) {
-	t.Run("Execute", testCheckExecute)
-	t.Run("SetFlags", testCheckSetFlags)
-}
-
-func testCheckExecute(t *testing.T) {
-	os.Setenv("MY_ENV_VAR", "home")
+	os.Setenv("MY_ENV_VAR", "check.txt")
 	defer os.Unsetenv("MY_ENV_VAR")
 	testCases := []struct {
 		name      string
+		drv       fstest.InMemoryDriver
 		cmd       checkCmd
+		want      fstest.InMemoryDriver
 		conflicts bool
+		err       error
 	}{
 		{
-			name:      "default",
-			cmd:       checkCmd{},
+			name: "default",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"default.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: checkCmd{},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"default.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
 			conflicts: false,
+			err:       nil,
 		},
 		{
-			name:      "fail",
-			cmd:       checkCmd{fail: true},
+			name: "fail",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"fail.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"nonexistent",
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: checkCmd{fail: true},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"fail.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"nonexistent",
+												"test",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
 			conflicts: true,
+			err:       nil,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config := filepath.Join("testdata", t.Name(), defaultConfig)
-			cwd := filepath.Join("testdata", t.Name(), "targets")
-			before, err := ioutil.ReadFile(config)
-			if err != nil {
-				t.Fatal(err)
-			}
 			var (
-				bd  strings.Builder
-				ctx = context.WithValue(context.Background(), command.OptsCtxKey, opts{
-					config:        config,
-					fsDriver:      fsutil.OSDriver{},
-					getwd:         func() (string, error) { return cwd, nil },
-					userConfigDir: func() (string, error) { return "user_config_dir", nil },
+				appcfg = appConfig{
+					conf:          tc.name + ".yml",
+					fs:            &tc.drv,
+					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
+					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
+				}
+				exec = tc.cmd.register(appcfg.copy)
+				prg  = clitest.NewProgram("check")
+				err  = exec(prg)
+			)
+			var rcv *linker.ConflictError
+			conflicts := errors.As(err, &rcv)
+			if !conflicts {
+				if want, got := tc.err, err; !errors.Is(got, want) {
+					t.Fatalf("want %v, got %v", want, got)
+				}
+			} else {
+				if want, got := tc.conflicts, conflicts; got != want {
+					t.Fatalf("want %t, got %t", want, got)
+				}
+			}
+			outputs := []string{"stdout", "stderr", "combined"}
+			gots := map[string]string{
+				"stdout":   prg.Output(),
+				"stderr":   prg.ErrOutput(),
+				"combined": prg.CombinedOutput(),
+			}
+			for _, out := range outputs {
+				t.Run(out, func(t *testing.T) {
+					golden := filepath.Join(testdir, t.Name()+".golden")
+					b, err := readFile(golden)
+					if err != nil {
+						t.Log(err) // err means output should be empty
+					}
+					if want, got := string(b), gots[out]; got != want {
+						t.Fatalf("\"check\" command %s output mismatch (-want +got):\n%s",
+							out,
+							cmp.Diff(want, got))
+					}
 				})
-			)
-			err = tc.cmd.Execute(context.WithValue(ctx, command.ErrCtxKey, "plg"), &bd, &bd)
-			if want, got := tc.conflicts, errors.As(err, new(*linker.ConflictError)); got != want {
-				t.Fatalf("want %t, got %t", want, got)
 			}
-			golden := readFile(t, filepath.Join("testdata", t.Name())+".golden")
-			if want, got := golden, bd.String(); got != want {
-				t.Errorf("\nwant:\n%s\ngot:\n%s\n", want, got)
-				t.Logf(
-					"\"check\" command output mismatch (-want +got):\n%s",
-					cmp.Diff(want, got),
-				)
-			}
-			after, err := ioutil.ReadFile(config)
-			if err != nil {
-				t.Fatal(err)
-			}
-			// This guarantees the config file has only been read, not written.
-			if want, got := before, after; string(got) != string(want) {
-				t.Errorf("%s has been modified after command", config)
-			}
-		})
-	}
-}
-
-func testCheckSetFlags(t *testing.T) {
-	allowUnexported := cmp.AllowUnexported(checkCmd{})
-	testCases := []struct {
-		flags map[string]string
-		want  checkCmd
-	}{
-		{
-			flags: nil,
-			want:  checkCmd{},
-		},
-		{
-			flags: map[string]string{
-				"fail": "true",
-			},
-			want: checkCmd{fail: true},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run("", func(t *testing.T) {
-			var (
-				cmd  checkCmd
-				fset = flag.NewFlagSet("show", flag.PanicOnError)
-				args = make([]string, 0, len(tc.flags))
-			)
-			for name, value := range tc.flags {
-				args = append(args, fmt.Sprintf("-%s=%s", name, value))
-			}
-			cmd.SetFlags(fset)
-			t.Logf("args: %v", args)
-			if err := fset.Parse(args); err != nil {
-				t.Fatal(err)
-			}
-			if want, got := tc.want, cmd; !cmp.Equal(got, want, allowUnexported) {
-				t.Errorf(
-					"(*showCmd).SetFlags mismatch (-want +got):\n%s",
-					cmp.Diff(want, got, allowUnexported),
-				)
+			if want, got := tc.want, tc.drv; !cmp.Equal(got, want) {
+				t.Fatalf("\"check\" command has unintended effects in the file system: (-want +got):\n%s",
+					cmp.Diff(want, got))
 			}
 		})
 	}

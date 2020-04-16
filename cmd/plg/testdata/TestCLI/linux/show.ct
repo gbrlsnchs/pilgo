@@ -1,4 +1,25 @@
-$ cp pilgo.yml
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ cp pilgo.yml .
 $ plg show
 .
-└── test <- /tmp/test
+└── test <- links/test
+
+$ plg show -help
+Show your dotfiles in a tree view.
+
+USAGE:
+    show [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.
+
+$ plg show -h
+Show your dotfiles in a tree view.
+
+USAGE:
+    show [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.

@@ -2,6 +2,7 @@ package fstest_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,6 +13,14 @@ import (
 )
 
 var _ fs.Driver = new(fstest.InMemoryDriver)
+
+func TestAbsPath(t *testing.T) {
+	want := fmt.Sprintf("~%s", filepath.Join("foo", "bar"))
+	got := fstest.AbsPath("foo", "bar")
+	if got != want {
+		t.Fatalf("want %q, got %q", want, got)
+	}
+}
 
 func TestInMemoryDriver(t *testing.T) {
 	t.Run("MkdirAll", testInMemoryDriverMkdirAll)
@@ -55,6 +64,66 @@ func testInMemoryDriverMkdirAll(t *testing.T) {
 			},
 			dirname: filepath.Join("foo", "bar"),
 			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: make(map[string]fstest.File, 0),
+					},
+				},
+			},
+			dirname: "bar",
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Children: make(map[string]fstest.File, 0),
+					},
+				},
+			},
+			dirname: fstest.AbsPath("foo", "bar"),
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
 				Files: map[string]fstest.File{
 					"foo": fstest.File{
 						Linkname: "",
@@ -209,6 +278,102 @@ func testInMemoryDriverReadDir(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "test",
+				Files: map[string]fstest.File{
+					"test": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+							"foo": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_foo"),
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			dirname: "",
+			want: []fs.FileInfo{
+				fstest.FileStat{
+					Label: "bar",
+					File: fstest.File{
+						Linkname: "foo",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+				fstest.FileStat{
+					Label: "foo",
+					File: fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "test",
+				Files: map[string]fstest.File{
+					"test": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+							"foo": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_foo"),
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			dirname: fstest.AbsPath("test"),
+			want: []fs.FileInfo{
+				fstest.FileStat{
+					Label: "bar",
+					File: fstest.File{
+						Linkname: "foo",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+				fstest.FileStat{
+					Label: "foo",
+					File: fstest.File{
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.dirname, func(t *testing.T) {
@@ -267,6 +432,50 @@ func testInMemoryDriverReadFile(t *testing.T) {
 				},
 			},
 			filename: filepath.Join("foo", "bar"),
+			want:     []byte("test_bar"),
+			err:      nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_bar"),
+							},
+						},
+					},
+				},
+			},
+			filename: "bar",
+			want:     []byte("test_bar"),
+			err:      nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_bar"),
+							},
+						},
+					},
+				},
+			},
+			filename: fstest.AbsPath("foo", "bar"),
 			want:     []byte("test_bar"),
 			err:      nil,
 		},
@@ -351,6 +560,64 @@ func testInMemoryDriverStat(t *testing.T) {
 				},
 			},
 			filename: filepath.Join("foo", "bar"),
+			want: fstest.FileStat{
+				Label: "bar",
+				File: fstest.File{
+					Linkname: "",
+					Perm:     os.ModePerm,
+					Data:     []byte("test_bar"),
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_bar"),
+							},
+						},
+					},
+				},
+			},
+			filename: "bar",
+			want: fstest.FileStat{
+				Label: "bar",
+				File: fstest.File{
+					Linkname: "",
+					Perm:     os.ModePerm,
+					Data:     []byte("test_bar"),
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test_foo"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     []byte("test_bar"),
+							},
+						},
+					},
+				},
+			},
+			filename: fstest.AbsPath("foo", "bar"),
 			want: fstest.FileStat{
 				Label: "bar",
 				File: fstest.File{
@@ -472,6 +739,145 @@ func testInMemoryDriverSymlink(t *testing.T) {
 			},
 			err: fstest.ErrExist,
 		},
+		{
+			drv: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			oldname: filepath.Join("foo", "bar"),
+			newname: "bar",
+			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+					"bar": {
+						Linkname: filepath.Join("foo", "bar"),
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			oldname: "bar",
+			newname: fstest.AbsPath("bar"), // XXX: empty, non-absolute path also works
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "foo",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+					"bar": {
+						Linkname: filepath.Join("foo", "bar"),
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: fstest.AbsPath("foo", "bar"),
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			oldname: fstest.AbsPath("foo", "bar"),
+			newname: fstest.AbsPath("bar"),
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     []byte("test"),
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: fstest.AbsPath("foo", "bar"),
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: nil,
+							},
+						},
+					},
+					"bar": {
+						Linkname: filepath.Join("foo", "bar"),
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: nil,
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.oldname+" "+tc.newname, func(t *testing.T) {
@@ -579,6 +985,76 @@ func testInMemoryDriverWriteFile(t *testing.T) {
 			data:     []byte("bar"),
 			perm:     0o644,
 			want: fstest.InMemoryDriver{
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     0o644,
+								Data:     []byte("bar"),
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: make(map[string]fstest.File),
+					},
+				},
+			},
+			filename: "bar",
+			data:     []byte("bar"),
+			perm:     0o644,
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"bar": {
+								Linkname: "",
+								Perm:     0o644,
+								Data:     []byte("bar"),
+								Children: nil,
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "foo",
+				Files: map[string]fstest.File{
+					"foo": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: make(map[string]fstest.File),
+					},
+				},
+			},
+			filename: fstest.AbsPath("foo", "bar"),
+			data:     []byte("bar"),
+			perm:     0o644,
+			want: fstest.InMemoryDriver{
+				CurrentDir: "foo",
 				Files: map[string]fstest.File{
 					"foo": {
 						Linkname: "",

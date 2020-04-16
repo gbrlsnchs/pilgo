@@ -16,6 +16,8 @@ type createOpts int
 const (
 	mkdirOpt createOpts = 1 << iota
 	overwriteOpt
+
+	absPrefix = "~"
 )
 
 var (
@@ -32,18 +34,21 @@ var (
 // InMemoryDriver is a synthetic file system that mimics
 // simple behaviors of a real file system in memory.
 type InMemoryDriver struct {
-	Files map[string]File
+	CurrentDir string
+	Files      map[string]File
 }
 
 // MkdirAll simulates the creation of a directory. It also creates the parents of
 // such directory, if needed.
 func (drv *InMemoryDriver) MkdirAll(dirname string) error {
+	dirname = drv.resolvePath(dirname)
 	_, err := drv.mkdirAll(dirname)
 	return err
 }
 
 // ReadDir simulates a directory read. If returns an error if it can't find dirname.
 func (drv *InMemoryDriver) ReadDir(dirname string) ([]fs.FileInfo, error) {
+	dirname = drv.resolvePath(dirname)
 	fstat, err := drv.find(dirname)
 	if err != nil {
 		return nil, err
@@ -63,6 +68,7 @@ func (drv *InMemoryDriver) ReadDir(dirname string) ([]fs.FileInfo, error) {
 // ReadFile simulates a file read. It returns data associated with a file or an error
 // if the file can't be found.
 func (drv *InMemoryDriver) ReadFile(filename string) ([]byte, error) {
+	filename = drv.resolvePath(filename)
 	fstat, err := drv.find(filename)
 	if err != nil {
 		return nil, err
@@ -73,6 +79,7 @@ func (drv *InMemoryDriver) ReadFile(filename string) ([]byte, error) {
 // Stat simulates reading information about filename. If filename doesn't exist, instead of
 // returning an error, Stat returns an empty FileStat object.
 func (drv *InMemoryDriver) Stat(filename string) (fs.FileInfo, error) {
+	filename = drv.resolvePath(filename)
 	fstat, err := drv.find(filename)
 	if errors.Is(err, ErrNotExist) {
 		return FileStat{}, nil
@@ -83,6 +90,8 @@ func (drv *InMemoryDriver) Stat(filename string) (fs.FileInfo, error) {
 // Symlink simulates a symlink creation. It creates a symlink if newname doesn't exist,
 // or return an error instead.
 func (drv *InMemoryDriver) Symlink(oldname, newname string) error {
+	oldname = drv.resolvePath(oldname)
+	newname = drv.resolvePath(newname)
 	f := File{
 		Linkname: oldname,
 		Perm:     os.ModePerm,
@@ -95,6 +104,7 @@ func (drv *InMemoryDriver) Symlink(oldname, newname string) error {
 // WriteFile simulates a file write by associating data and perm with filename.
 // It overwrites files that are not directories, but still preserve the file perm.
 func (drv *InMemoryDriver) WriteFile(filename string, data []byte, perm os.FileMode) error {
+	filename = drv.resolvePath(filename)
 	f := File{
 		Linkname: "",
 		Perm:     perm,
@@ -187,12 +197,25 @@ func (drv *InMemoryDriver) mkdirAll(dirname string) (FileStat, error) {
 	return fstat, nil
 }
 
+func (drv *InMemoryDriver) resolvePath(name string) string {
+	if strings.HasPrefix(name, absPrefix) { // absolute path
+		return name[1:]
+	}
+	return filepath.Join(drv.CurrentDir, name)
+}
+
 // File is a representation of a file in a file system.
 type File struct {
 	Perm     os.FileMode
 	Linkname string
 	Data     []byte
 	Children map[string]File
+}
+
+// AbsPath returns an absolute path with the proper prefix.
+func AbsPath(path ...string) string {
+	p := filepath.Join(path...)
+	return fmt.Sprintf("%s%s", absPrefix, p)
 }
 
 // FileStat is an abstraction of information about a file,

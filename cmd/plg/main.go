@@ -1,78 +1,146 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"os"
-	"path/filepath"
 
+	"github.com/gbrlsnchs/cli"
 	"github.com/gbrlsnchs/pilgo/cmd/internal"
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"github.com/gbrlsnchs/pilgo/fs/fsutil"
-	"github.com/google/subcommands"
 )
 
-const defaultConfig = config.DefaultName
+type appConfig struct {
+	conf          string
+	fs            fs.Driver
+	getwd         func() (string, error)
+	userConfigDir func() (string, error)
+	version       string
+}
+
+func (cfg *appConfig) copy() appConfig { return *cfg }
+
+type rootCmd struct {
+	// store
+	check   checkCmd
+	config  configCmd
+	init    initCmd
+	link    linkCmd
+	show    showCmd
+	version versionCmd
+}
 
 func main() {
 	os.Exit(run())
 }
 
 func run() int {
-	exe := filepath.Base(os.Args[0])
-	// NOTE: subcommands.NewCommander must be used in order to avoid bugs
-	// when this function is tested using "go-cmdtest".
-	//
-	// The bug consists of having subcommands.DefaultCommand register homonymous
-	// commands more than once for a single ".ct" file.
-	//
-	// Since subcommands.DefaultCommand is global, those commands are appended to the same command
-	// slice and, when subcommands.Execute is called, each command is checked by name within that
-	// command is checked by name within that slice and, since they're homonyms, only the first one
-	// is picked. Because each individual command in a ".ct" file gets new stdout and stderr
-	// redirection in order to be checked, each run writes to writers from the first run.
-	//
-	// This note can be removed when https://github.com/google/subcommands/issues/32 gets resolved.
-	cmd := subcommands.NewCommander(flag.CommandLine, exe)
-	commands := []struct {
-		command.Interface
-		name     string
-		synopsis string
-	}{
-		{showCmd{}, "show", "show tree view of files to be symlinked"},
-		{&checkCmd{}, "check", "check symlinks and show them in a tree view"},
-		{&initCmd{}, "init", "initialize a configuration file"},
-		{&configCmd{}, "config", "configure a file's options"},
-		{linkCmd{}, "link", "create symlinks"},
-		{versionCmd{internal.Version()}, "version", "show version"},
-	}
-	for _, c := range commands {
-		cmd.Register(command.New(
-			c.Interface,
-			command.Name(c.name),
-			command.Synopsis(c.synopsis),
-			command.Stdout(os.Stdout),
-			command.Stderr(os.Stderr),
-		), "")
-	}
-	flag.Parse()
-	ctx := context.TODO()
-	ctx = context.WithValue(ctx, command.ErrCtxKey, exe)
-	ctx = context.WithValue(ctx, command.OptsCtxKey, opts{
-		config:        defaultConfig,
-		fsDriver:      fsutil.OSDriver{},
-		getwd:         os.Getwd,
-		userConfigDir: os.UserConfigDir,
+	var (
+		root   rootCmd
+		appcfg = appConfig{
+			fs:            fsutil.OSDriver{},
+			getwd:         os.Getwd,
+			userConfigDir: os.UserConfigDir,
+			version:       internal.Version(),
+		}
+	)
+	cli := cli.New(&cli.Command{
+		Options: map[string]cli.Option{
+			"config": cli.StringOption{
+				OptionDetails: cli.OptionDetails{
+					Description: "Use a different configuration file.",
+				},
+				DefValue:  config.DefaultName,
+				Recipient: &appcfg.conf,
+			},
+		},
+		Subcommands: map[string]*cli.Command{
+			"check": {
+				Description: "Check the status of your dotfiles.",
+				Options: map[string]cli.Option{
+					"fail": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Short:       'f',
+							Description: "Fail when there are one or more conflicts.",
+						},
+						DefValue:  false,
+						Recipient: &root.check.fail,
+					},
+				},
+				Exec: root.check.register(appcfg.copy),
+			},
+			"config": {
+				Description: "Configure a dotfile in the configuration file.",
+				Options: map[string]cli.Option{
+					"basedir": cli.StringOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Set the file's base directory.",
+							ArgLabel:    "DIR",
+						},
+						Recipient: &root.config.baseDir,
+					},
+					"link": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Set the file's link name. An empty string skips the file.",
+							ArgLabel:    "NAME",
+						},
+						Recipient: &root.config.link,
+					},
+					"targets": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of the file's targets.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.config.targets,
+					},
+				},
+				Arg: cli.StringArg{
+					Label:     "TARGET",
+					Required:  false,
+					Recipient: &root.config.file,
+				},
+				Exec: root.config.register(appcfg.copy),
+			},
+			"init": {
+				Description: "Initialize a configuration file.",
+				Options: map[string]cli.Option{
+					"force": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Override an already existing configuration file.",
+							Short:       'f',
+						},
+						Recipient: &root.init.force,
+					},
+					"include": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be included.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.init.include,
+					},
+					"exclude": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be excluded.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.init.exclude,
+					},
+				},
+				Exec: root.init.register(appcfg.copy),
+			},
+			"link": {
+				Description: "Link your dotfiles as set in the configuration file.",
+				Exec:        root.link.register(appcfg.copy),
+			},
+			"show": {
+				Description: "Show your dotfiles in a tree view.",
+				Exec:        root.show.register(appcfg.copy),
+			},
+			"version": {
+				Description: "Print version.",
+				Exec:        root.version.register(appcfg.copy),
+			},
+		},
 	})
-	status := cmd.Execute(ctx)
-	return int(status)
-}
-
-type opts struct {
-	config        string
-	fsDriver      fs.Driver
-	getwd         func() (string, error)
-	userConfigDir func() (string, error)
+	return cli.ParseAndRun(os.Args)
 }

@@ -1,26 +1,22 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
-	"io"
 
-	"github.com/gbrlsnchs/pilgo/cmd/internal/command"
+	"github.com/gbrlsnchs/cli"
 )
 
-type versionCmd struct {
-	v string
-}
+type versionCmd struct{}
 
-func (cmd versionCmd) Execute(ctx context.Context, stdout, _ io.Writer) error {
-	exe := ctx.Value(command.ErrCtxKey).(string)
-	version := cmd.v
-	if version == "" {
-		version = "unknown version"
+func (*versionCmd) register(getcfg func() appConfig) func(cli.Program) error {
+	return func(prg cli.Program) error {
+		appcfg := getcfg()
+		exe := prg.Name()
+		v := appcfg.version
+		if v == "" {
+			v = "unknown version"
+		}
+		fmt.Fprintf(prg.Stdout(), "%s %s\n", exe, v)
+		return nil
 	}
-	fmt.Fprintf(stdout, "%s %s\n", exe, version)
-	return nil
 }
-
-func (versionCmd) SetFlags(_ *flag.FlagSet) { /* NOP */ }

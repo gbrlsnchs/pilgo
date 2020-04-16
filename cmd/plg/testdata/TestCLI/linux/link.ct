@@ -1,9 +1,28 @@
+$ mkdir targets
 $ mkdir links
-$ cp link_config.yml targets/pilgo.yml
+$ cp pilgo.yml targets/pilgo.yml
 $ cd targets
 $ plg link --> FAIL
 plg: linker: there is 1 conflict
 plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
 
-$ cp test
+$ fecho test
 $ plg link
+
+$ plg link -help
+Link your dotfiles as set in the configuration file.
+
+USAGE:
+    link [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.
+
+$ plg link -h
+Link your dotfiles as set in the configuration file.
+
+USAGE:
+    link [OPTIONS]
+
+OPTIONS:
+    -h, -help    Print this help message.
