@@ -90,12 +90,6 @@ func (OSDriver) Symlink(oldname, newname string) error {
 	return os.Symlink(oldname, newname)
 }
 
-// WriteFile writes data to filename with permission perm.
-func (OSDriver) WriteFile(filename string, data []byte, perm os.FileMode) error {
-	// TODO(gbrlsnchs): use package "renameio"
-	return ioutil.WriteFile(filename, data, perm)
-}
-
 type fileInfo struct {
 	name     string
 	exists   bool
