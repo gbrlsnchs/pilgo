@@ -1,5 +1,5 @@
 # Pilgo
-![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgo/workflows/Linux,%20macOS%20and%20Windows/badge.svg)
+[![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgo/workflows/Linux,%20macOS%20and%20Windows/badge.svg)](https://github.com/gbrlsnchs/pilgo/actions)
 
 ## What
 Pilgo is a tool for managing dotfiles via symlinks either through a CLI (`plg`) or a Go framework.
