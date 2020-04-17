@@ -4,6 +4,9 @@
 ## What
 Pilgo is a tool for managing dotfiles via symlinks either through a CLI (`plg`) or a Go framework.
 
+### Installation
+For now, binaries for Linux, macOS and Windows are available as assets in [releases](https://github.com/gbrlsnchs/pilgo/releases).
+
 ## Why
 Because using GNU Stow is limiting and you want visual feedback of how things are configured.
 
