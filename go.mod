@@ -7,7 +7,6 @@ require (
 	github.com/gbrlsnchs/cli v0.6.0
 	github.com/google/go-cmdtest v0.2.0
 	github.com/google/go-cmp v0.4.0
-	github.com/google/subcommands v1.0.1
 	github.com/magefile/mage v1.9.0
 	github.com/sergi/go-diff v1.1.0 // indirect
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
