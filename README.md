@@ -11,7 +11,7 @@ For now, binaries for Linux, macOS and Windows are available as assets in [relea
 #### Installing using Go
 You need Go 1.13 or greater in order to build and install Pilgo:
 
-```shell
+```console
 $ go get -u github.com/gbrlsnchs/pilgo/cmd/plg
 ```
 
@@ -23,7 +23,7 @@ Because using GNU Stow is limiting and you want visual feedback of how things ar
 
 ### Use case
 Imagine you organize your dotfiles with the following structure:
-```shell
+```console
 $ tree
 .
 ├── alacritty
@@ -61,13 +61,13 @@ Pilgo uses a configuration file to manage your dotfiles. The configuration file 
 
 Pilgo can initialize a configuration file for you, and by default includes all eligible files in the current directory ():
 
-```shell
+```console
 $ plg init
 ```
 <kbd>**Hint:**</kbd> To list all possible flags, run `plg init -h`.
 
 Now, here's our repository structure after running `plg init`:
-```shell
+```console
 $ tree
 .
 ├── alacritty
@@ -102,7 +102,7 @@ targets:
 
 ### Listing files
 OK, configuration created, let's **visualize** what is going to happen with the current configuration we have:
-```shell
+```console
 $ plg show
 .
 ├── alacritty <- /home/me/.config/alacritty
@@ -126,7 +126,7 @@ So, for `zsh`, we need to change the following:
 - It should have two targets, `zprofile` and `zshrc`
 
 To do so, we run:
-```shell
+```console
 $ plg config -basedir='$HOME' -link='' -targets=zprofile,zshrc zsh
 ```
 
@@ -135,13 +135,13 @@ $ plg config -basedir='$HOME' -link='' -targets=zprofile,zshrc zsh
 As said before, one advantage of using Pilgo is that you can name files however you want and then configure them in `pilgo.yml` to have a custom symlink name, not needing to name files with an initial dot.
 
 For both `zprofile` and `zshrc`, we'll need to configure them to have a custom name when symlinked:
-```shell
+```console
 $ plg config -link=.zprofile zsh/zprofile
 $ plg config -link=.zshrc zsh/zshrc
 ```
 
 And now, if we run the `show` command again:
-```shell
+```console
 $ plg show
 .
 ├── alacritty    <- /home/me/.config/alacritty
@@ -157,7 +157,7 @@ $ plg show
 All good, but this is just a projection of what will be done. Can those files really be symlinked without any further issues, like, for example, does a file already exist where we wish to create a link?
 
 Let's run the `check` command to, well... check our tree:
-```shell
+```console
 $ plg check
 .
 ├── alacritty    <- /home/me/.config/alacritty     (READY)
@@ -184,7 +184,7 @@ Finally, after you visualized what's going to be done, it's time to symlink. Not
 
 
 It's a two step process, first check, then symlink:
-```shell
+```console
 $ plg link
 ```
 
