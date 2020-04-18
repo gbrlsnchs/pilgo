@@ -16,7 +16,20 @@ $ go get -u github.com/gbrlsnchs/pilgo/cmd/plg
 ```
 
 #### Installing via package managers
-Currently, Pilgo is not available on any package repositories. If you manage to publish it on the respective repository for the platform you use, please open an issue or a pull request in order for this section to be updated!
+Currently, Pilgo is available on Archlinux repositories. If you manage to publish it on the respective repository for the platform you use, please open an issue or a pull request in order for this section to be updated!
+
+##### Archlinux
+
+Pilgo is available from AUR:
+ * [pilgo](https://aur.archlinux.org/packages/pilgo/)
+ * [pilgo-bin](https://aur.archlinux.org/packages/pilgo-bin/) (binary package)
+
+You can install it using your [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers) of choice.
+
+Example:
+```
+yay -Sy pilgo
+```
 
 ## Why
 Because using GNU Stow is limiting and you want visual feedback of how things are configured.
