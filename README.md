@@ -15,6 +15,9 @@ You need Go 1.13 or greater in order to build and install Pilgo:
 $ go get -u github.com/gbrlsnchs/pilgo/cmd/plg
 ```
 
+#### Installing via package managers
+Currently, Pilgo is not available on any package repositories. If you manage to publish it on the respective repository for the platform you use, please open an issue or a pull request in order for this section to be updated!
+
 ## Why
 Because using GNU Stow is limiting and you want visual feedback of how things are configured.
 
