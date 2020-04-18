@@ -17,6 +17,7 @@ type initCmd struct {
 	force   bool
 	include cliutil.CommaSepOptionSet
 	exclude cliutil.CommaSepOptionSet
+	hidden  bool
 }
 
 func (cmd *initCmd) register(getcfg func() appConfig) func(cli.Program) error {
@@ -59,10 +60,15 @@ func (cmd *initCmd) register(getcfg func() appConfig) func(cli.Program) error {
 			targets[i] = fi.Name()
 		}
 		cmd.exclude.Set(appcfg.conf)
-		c = config.New(targets,
+		opts := []func(*config.Config){
 			config.Include(cmd.include),
 			config.Exclude(cmd.exclude),
-			config.MergeWith(c))
+			config.MergeWith(c),
+		}
+		if cmd.hidden {
+			opts = append(opts, config.IncludeHidden)
+		}
+		c = config.New(targets, opts...)
 		b, err := marshalYAML(c)
 		if err != nil {
 			return err

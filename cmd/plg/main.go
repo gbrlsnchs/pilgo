@@ -125,6 +125,13 @@ func run() int {
 						},
 						Recipient: &root.init.exclude,
 					},
+					"hidden": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Include hidden files.",
+							Short:       'H',
+						},
+						Recipient: &root.init.hidden,
+					},
 				},
 				Exec: root.init.register(appcfg.copy),
 			},

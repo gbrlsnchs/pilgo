@@ -3,6 +3,7 @@ $ mkdir links
 $ cd targets
 $ fecho foo
 $ fecho bar
+$ fecho .hidden
 $ plg init
 $ cat pilgo.yml
 targets:
@@ -19,6 +20,26 @@ $ cat pilgo.yml
 targets:
 - foo
 
+$ plg init -f -hidden
+$ cat pilgo.yml
+targets:
+- .hidden
+- bar
+- foo
+
+$ plg init -force
+$ cat pilgo.yml
+targets:
+- bar
+- foo
+
+$ plg init -f -H
+$ cat pilgo.yml
+targets:
+- .hidden
+- bar
+- foo
+
 $ cp pilgo.yml .
 $ plg init --> FAIL
 plg: configuration file already exists
@@ -33,6 +54,7 @@ OPTIONS:
         -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
     -f, -force                              Override an already existing configuration file.
     -h, -help                               Print this help message.
+    -H, -hidden                             Include hidden files.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
 
 $ plg init -h
@@ -45,4 +67,5 @@ OPTIONS:
         -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
     -f, -force                              Override an already existing configuration file.
     -h, -help                               Print this help message.
+    -H, -hidden                             Include hidden files.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
