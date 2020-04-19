@@ -14,6 +14,7 @@ type Config struct {
 	Link    *string           `yaml:"link,omitempty"`
 	Targets []string          `yaml:"targets,omitempty"`
 	Options map[string]Config `yaml:"options,omitempty"`
+	UseHome *bool             `yaml:"useHome,omitempty"`
 
 	opts internalOpts
 }
