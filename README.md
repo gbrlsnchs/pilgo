@@ -121,13 +121,13 @@ Well, it seems right except for `zsh`. Let's fix it, shall we?
 
 ### Configuring files
 So, for `zsh`, we need to change the following:
-- Its base directory must be set to `$HOME`
-- Its link name should be empty (in order for its children to get promoted one dir up)
+- Its base directory must be set to home directory
+- It shouldn't be symlinked (only its children, individually)
 - It should have two targets, `zprofile` and `zshrc`
 
 To do so, we run:
 ```console
-$ plg config -basedir='$HOME' -link='' -targets=zprofile,zshrc zsh
+$ plg config -home -flatten zsh
 ```
 
 <kbd>**Hint:**</kbd> Pilgo substitutes environment variables in order for your `pilgo.yml` to be more portable.
