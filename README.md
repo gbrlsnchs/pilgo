@@ -1,27 +1,77 @@
 # Pilgo
 [![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgo/workflows/Linux,%20macOS%20and%20Windows/badge.svg)](https://github.com/gbrlsnchs/pilgo/actions)
+[![Latest release](https://img.shields.io/github/v/release/gbrlsnchs/pilgo?include_prereleases)](https://github.com/gbrlsnchs/pilgo/releases/latest)
+[![License](https://img.shields.io/github/license/gbrlsnchs/pilgo)](https://github.com/gbrlsnchs/pilgo/blob/master/LICENSE)
 
-## What
-Pilgo is a tool for managing dotfiles via symlinks either through a CLI (`plg`) or a Go framework.
+1. [Overview](#overview)
+    1. [Introduction](#introduction)
+    2. [Main features](#main-features)
+    3. [Roadmap](#roadmap)
+    4. [FAQ](#faq)
+1. [Installation](#installation)
+    1. [Download from releases](#download-from-releases)
+    2. [Install using Go](#install-using-go)
+    3. [Linux](#linux)
+        1. [Arch Linux](#arch-linux)
+2. [Instructions](#instructions)
+    1. [Problem](#problem)
+    2. [Solution](#solution)
+        1. [`init`](#init)
+        2. [`show`](#show)
+        3. [`config`](#config)
+        4. [`check`](#check)
+        5. [`link`](#link)
 
-### Installation
-#### Downloading binary from releases
-For now, binaries for Linux, macOS and Windows are available as assets in [releases](https://github.com/gbrlsnchs/pilgo/releases).
+## Overview
+### Introduction
+Pilgo is a configuration-based dotfiles manager. That means it'll manage your dotfiles based on what's written in a configuration file, more specifically, a YAML file.
 
-#### Installing using Go
-You need Go 1.13 or greater in order to build and install Pilgo:
+It contains a set of commands to configure the YAML file and, of course, manage your dotfiles.
 
+### Main features
+- Everything is expressed via a configuration file
+    - Flexibility to choose any directory layout for your dotfiles
+- Visualization of the configuration in a nice tree view
+- Atomic symlinking
+
+### Roadmap
+Progress is being tracked using [GitHub Projects](https://help.github.com/en/github/managing-your-work-on-github/about-project-boards). You can check the roadmap [here](https://github.com/gbrlsnchs/pilgo/projects/1).
+
+### FAQ
+The FAQ is part of [Pilgo's Wiki](https://github.com/gbrlsnchs/pilgo/wiki). You can check FAQ [here](https://github.com/gbrlsnchs/pilgo/wiki/FAQ).
+
+## Installation
+Pilgo is available to download via a few ways. If you feel Pilgo is missing from a specific repository from some OS, please, feel free to open an issue or a PR.
+
+If you manage to publish it on an OS's repository, please, create an issue or a PR in order for the respective section to be updated.
+
+### Download from releases
+There are binaries for Linux, macOS and Windows available as assets in [releases](https://github.com/gbrlsnchs/pilgo/releases).
+
+### Install using Go
+You can install using Go 1.13 or greater:
 ```console
 $ go get -u github.com/gbrlsnchs/pilgo/cmd/plg
 ```
 
-#### Installing via package managers
-Currently, Pilgo is not available on any package repositories. If you manage to publish it on the respective repository for the platform you use, please open an issue or a pull request in order for this section to be updated!
+### Linux
+#### Arch Linux
+[![pilgo on AUR](https://img.shields.io/aur/version/pilgo?label=pilgo)](https://aur.archlinux.org/packages/pilgo/)
+[![pilgo-bin on AUR](https://img.shields.io/aur/version/pilgo-bin?label=pilgo-bin)](https://aur.archlinux.org/packages/pilgo-bin/)
 
-## Why
-Because using GNU Stow is limiting and you want visual feedback of how things are configured.
+Pilgo is available on the [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository):
+- [pilgo](https://aur.archlinux.org/packages/pilgo/)
+- [pilgo-bin](https://aur.archlinux.org/packages/pilgo-bin/) (binary package)
 
-### Use case
+You can install it using your [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers) of choice.
+
+Example:
+```console
+$ yay -Sy pilgo
+```
+
+## Instructions
+### Problem
 Imagine you organize your dotfiles with the following structure:
 ```console
 $ tree
@@ -43,53 +93,22 @@ $ tree
 6 directories, 7 files
 ```
 
-You back up your dotfiles using Git and, when you clone the repository to restore them, you either use other tools or custom scripts.
+You back up your dotfiles using Git and, when you clone the repository to restore them, you want to create symlinks of your dotfiles in the appropriate places. Also, you want it to be reproducible across anywhere you clone your dotfiles.
 
-### The problem
-You wish to correctly symlink those files, but you don't want to limit yourself for naming them (like when using GNU Stow).
+### Solution
+#### `init`
+You can use Pilgo to create symlinks for you. If you were to use GNU Stow, you'd have to restructure your directory layout. That's not the case for Pilgo, because it is a configuration-based tool.
 
-Also, you want it to be reproducible across anywhere you're installing your configuration, including on Windows (why though).
-
-## How
-
-OK, in the previous example, for all directories except `zsh`, you want to symlink them inside `$XDG_CONFIG_HOME` (or your OS equivalent).
-
-For `zsh`, you can't symlink the whole directory, since you're going to put files in `$HOME`. Therefore, you need to symlink them individually (no, you don't want to symlink `zsh` as your `$HOME`, please no).
-
-### Creating a configuration file
-Pilgo uses a configuration file to manage your dotfiles. The configuration file is a simple YAML file called `pilgo.yml`.
-
-Pilgo can initialize a configuration file for you, and by default includes all eligible files in the current directory ():
-
+For that reason, you'll need to initialize a configuration file in your dotfiles directory:
 ```console
 $ plg init
 ```
-<kbd>**Hint:**</kbd> To list all possible flags, run `plg init -h`.
 
-Now, here's our repository structure after running `plg init`:
+<kbd>**Hint:**</kbd> <small>Run `plg init -h` to check all options for `init`.</small>
+
+After running the `init` command, Pilgo creates a YAML file called `pilgo.yml`. It has read the dotfiles directory and listed all files inside it as targets to be symlinked:
 ```console
-$ tree
-.
-├── alacritty
-│   └── alacritty.yml
-├── bspwm
-│   └── bspwmrc
-├── dunst
-│   └── dunstrc
-├── mpd
-│   └── mpd.conf
-├── mpv
-│   └── mpv.conf
-├── pilgo.yml
-└── zsh
-    ├── zprofile
-    └── zshrc
-
-6 directories, 8 files
-```
-
-Notice that we now have a file called `pilgo.yml`, and here's what's within it:
-```yaml
+$ cat pilgo.yml
 targets:
 - alacritty
 - bspwm
@@ -99,9 +118,8 @@ targets:
 - zsh
 ```
 
-
-### Listing files
-OK, configuration created, let's **visualize** what is going to happen with the current configuration we have:
+#### `show`
+After the configuration has been created, you can visualize it in a tree view:
 ```console
 $ plg show
 .
@@ -113,35 +131,59 @@ $ plg show
 └── zsh       <- /home/me/.config/zsh
 ```
 
-The output is very self-explanatory: the tree structure shows your dotfiles listed in the `pilgo.yml` file, the arrow shows to where links will point after you create symlinks using Pilgo.
+#### `config`
+If you have ever used Zsh, you'll notice that the configuration is not quite right. That happens because Pilgo creates the configuration file following sane defaults, that is:
+- It uses `~/.config` (or the equivalent for other OSes) as the base directory for symlinks
+- It assumes symlinks have the same name as their targets
 
-<kbd>**Hint:**</kbd> The default base directory is `$XDG_BASE_DIRECTORY` for Linux distros, `$HOME/Library/Application Support` for macOS and `%AppData%` on Windows.
-
-Well, it seems right except for `zsh`. Let's fix it, shall we?
-
-### Configuring files
-So, for `zsh`, we need to change the following:
-- Its base directory must be set to home directory
-- It shouldn't be symlinked (only its children, individually)
-- It should have two targets, `zprofile` and `zshrc`
-
-To do so, we run:
+The nice part is you don't need to change your directory layout because of that. You simply fine-tune your Pilgo configuration using the proper command:
 ```console
 $ plg config -home -flatten zsh
 ```
 
-<kbd>**Hint:**</kbd> Pilgo substitutes environment variables in order for your `pilgo.yml` to be more portable.
+With the `config` command, we set two things for the `zsh` directory:
+- `-home` sets it to use the home directory as the base directory (instead of `~/.config` or equivalent)
+- `-flatten` skips symlinking the `zsh` directory itself and sets its children to be symlinked individually instead
 
-As said before, one advantage of using Pilgo is that you can name files however you want and then configure them in `pilgo.yml` to have a custom symlink name, not needing to name files with an initial dot.
+Note that `config` modifies `pilgo.yml` for you. Here's how it is after the modification:
+```console
+$ cat pilgo.yml
+targets:
+- alacritty
+- bspwm
+- dunst
+- mpd
+- mpv
+- zsh
+options:
+  zsh:
+    link: ''
+    useHome: true
+    targets:
+    - zprofile
+    - zshrc
+```
 
-For both `zprofile` and `zshrc`, we'll need to configure them to have a custom name when symlinked:
+You can also visualize the new configuration:
+```console
+$ plg show
+.
+├── alacritty    <- /home/me/.config/alacritty
+├── bspwm        <- /home/me/.config/bspwm
+├── dunst        <- /home/me/.config/dunst
+├── mpd          <- /home/me/.config/mpd
+├── mpv          <- /home/me/.config/mpv
+└── zsh       
+    ├── zprofile <- /home/me/zprofile
+    └── zshrc    <- /home/me/zshrc
+```
+
+<kbd>**Hint**:</kbd> <small>If you're not sure what has been configured, you can always run `plg show` or even open `pilgo.yml` and check its content.</small>
+
+However, we need to set one last thing. Both `zprofile` and `zshrc` need to have their symlinks prepended with a dot:
 ```console
 $ plg config -link=.zprofile zsh/zprofile
 $ plg config -link=.zshrc zsh/zshrc
-```
-
-And now, if we run the `show` command again:
-```console
 $ plg show
 .
 ├── alacritty    <- /home/me/.config/alacritty
@@ -154,9 +196,10 @@ $ plg show
     └── zshrc    <- /home/me/.zshrc
 ```
 
-All good, but this is just a projection of what will be done. Can those files really be symlinked without any further issues, like, for example, does a file already exist where we wish to create a link?
+You're done with fine-tuning the configuration. You'll probably not have to change it again for some time. You'll only need to fine-tune it again if you add files with restrictions similar to Zsh's.
 
-Let's run the `check` command to, well... check our tree:
+#### `check`
+Finally, you can link your dotfiles. But before that, you can also check whether your dotfiles are ready to be symlinked, which means there are no conflicts. You can check your files by using the `check` command:
 ```console
 $ plg check
 .
@@ -171,23 +214,41 @@ $ plg check
     └── zshrc    <- /home/me/.zshrc                (CONFLICT)
 ```
 
-OK, some statuses showed up in the right part of the output. Here is what these statuses mean:
-  - `READY` means everything is OK for the file to be symlinked
-  - `DONE` means the file is already symlinked to the target configured in `pilgo.yml`
-  - `EXPAND` means a directory already exists where we want to create our symlink, so it recursively creates symlinks for the target's children if it's a directory and puts them inside the existing directory
-  - `SKIP` means the file is just a directory to hold other targets, so it doesn't get symlinked (like in the `zsh` example, where the directory `zsh` was just used to wrap ZSH-related files)
-  - `CONFLICT` means it's impossible to expand either the target, the link or both, and the file in place of where our symlink should be created has no relation with it
-  - `ERROR` means things broke and gone wrong
+`check` is just a preview of how Pilgo will handle your dotfiles. We can note some changes in the output, specially after each symlink name.
 
-### Creating symlinks
-Finally, after you visualized what's going to be done, it's time to symlink. Note that, before symlinking, Pilgo checks for conflicts and errors, so you won't have only half of your dotfiles directory symlinked.
+Those are states. Each state means something different:
+- `READY` means the target can be symlinked without further issues
+- `DONE` means the targets is already correctly symlinked, that is, the symlink already points to the same target configured in your Pilgo configuration
+- `EXPAND` means a directory exists where Pilgo would create the symlink, but since the target is also a directory, Pilgo can expand it and then symlink files inside it
+- `ERROR` means there's something wrong with your target or with your symlink
+- `CONFLICT` means one of the following occured:
+    - A regular file already exists where your target would be symlinked and it can't be expanded
+    - A regular file already exists where your target would be symlinked and your target can't be expanded
 
+Note that Pilgo doesn't solve conflicts automatically, since it could be a destructive action prone to user error. You have to manually resolve conflicts, which consists of removing files from where symlinks would be created.
 
-It's a two step process, first check, then symlink:
+<kbd>**Hint:**</kbd> <small>You can have more details for errors by running `plg check -fail`.</small>
+
+#### `link`
+Lastly, if there are no conflicts or errors, you can simply run:
 ```console
 $ plg link
 ```
 
-If there's an error, the command above should fail and return an exit code greater than zero.
+<kbd>**Hint:**</kbd> <small>The `link` command always checks all dotfiles before linking, so you don't end up with only half of them symlinked. If there are conflicts or errors, it will return an error status and abort.</small>
 
-Otherwise, you're done! You only need to configure `pilgo.yml` once. After that, commit it along your dotfiles (in the root directory) and use Pilgo to deal with your dotfiles in other environments.
+And if you check again, you'll see:
+```console
+.
+├── alacritty    <- /home/me/.config/alacritty     (DONE)
+├── bspwm        <- /home/me/.config/bspwm         (DONE)
+├── dunst                                          (EXPAND)
+│   └── dunstrc  <- /home/me/.config/dunst/dunstrc (DONE)
+├── mpd          <- /home/me/.config/mpd           (DONE)
+├── mpv          <- /home/me/.config/mpv           (DONE)
+└── zsh                                            (SKIP)
+    ├── zprofile <- /home/me/.zprofile             (DONE)
+    └── zshrc    <- /home/me/.zshrc                (DONE)
+```
+
+You can commit `pilgo.yml` to your dotfiles repository and, since you have already configured everything, next time you have to symlink things, you just have to run `plg link`.
