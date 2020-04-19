@@ -16,6 +16,7 @@ type configCmd struct {
 	link    strptr
 	targets cliutil.CommaSepOptionList
 	useHome boolptr
+	flatten bool
 }
 
 func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error {
@@ -26,16 +27,28 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 		if err != nil {
 			return err
 		}
+		if cmd.flatten {
+			files, err := fs.ReadDir(cmd.file)
+			if err != nil {
+				return err
+			}
+			cmd.targets = make([]string, len(files))
+			for i, f := range files {
+				cmd.targets[i] = f.Name()
+			}
+			s := ""
+			cmd.link.addr = &s // TODO: make link string, not pointer
+		}
 		var c config.Config
 		if err := yaml.Unmarshal(b, &c); err != nil {
 			return err
 		}
-		c.Set(cmd.file, config.Config{
+		cc := config.Config{
 			BaseDir: cmd.baseDir,
 			Link:    cmd.link.addr,
-			Targets: cmd.targets,
 			UseHome: cmd.useHome.addr,
-		})
+		}
+		c.Set(cmd.file, config.New(cmd.targets, config.MergeWith(cc)))
 		if b, err = marshalYAML(c); err != nil {
 			return err
 		}

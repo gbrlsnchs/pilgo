@@ -101,6 +101,12 @@ func run() int {
 						},
 						Recipient: &root.config.useHome,
 					},
+					"flatten": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Flatten a directory and promote its children up.",
+						},
+						Recipient: &root.config.flatten,
+					},
 				},
 				Arg: cli.StringArg{
 					Label:     "TARGET",

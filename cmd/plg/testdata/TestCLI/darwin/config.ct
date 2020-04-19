@@ -54,6 +54,7 @@ USAGE:
 
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
+        -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
         -home                               Use home directory as base directory.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
@@ -67,6 +68,7 @@ USAGE:
 
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
+        -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
         -home                               Use home directory as base directory.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
