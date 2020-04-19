@@ -261,6 +261,7 @@ func TestLink(t *testing.T) {
 					fs:            &tc.drv,
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
+					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("link")

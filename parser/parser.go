@@ -7,10 +7,21 @@ import (
 	"github.com/gbrlsnchs/pilgo/config"
 )
 
+// Mode is the type of configuration.
+// Each configuration has a distinct base directory.
+type Mode int
+
+const (
+	// UserMode refers to the default user configuration directory.
+	UserMode Mode = iota
+	// HomeMode refers to the home directory.
+	HomeMode
+)
+
 // Parser is a configuration parser.
 type Parser struct {
 	cwd      string
-	baseDir  string
+	baseDirs map[Mode]string
 	envsubst bool
 }
 
@@ -21,14 +32,11 @@ func (p *Parser) Parse(c config.Config, opts ...ParseOption) (*Tree, error) {
 			return nil, err
 		}
 	}
-	if c.BaseDir != "" {
-		p.baseDir = c.BaseDir
-	}
-	root := &Node{Children: p.parseChildren(p.baseDir, nil, nil, c)}
+	root := &Node{Children: p.parseChildren(c, nil, nil)}
 	return &Tree{root}, nil
 }
 
-func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string, c config.Config) []*Node {
+func (p *Parser) parseChildren(c config.Config, ptargets, plinks []string) []*Node {
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
@@ -36,35 +44,45 @@ func (p *Parser) parseChildren(baseDir string, parentTarget, parentLink []string
 		children = make([]*Node, tglen)
 		for i, tg := range c.Targets {
 			tg = p.expandVar(tg)
-			children[i] = p.parseTarget(
-				p.expandVar(baseDir),
-				append(parentTarget, tg),
-				append(parentLink, tg),
-				c.Options[tg],
-			)
+			cc := c.Options[tg]
+			if cc.UseHome == nil {
+				cc.UseHome = c.UseHome
+			}
+			if cc.BaseDir == "" {
+				cc.BaseDir = c.BaseDir
+			}
+			cc.BaseDir = p.expandVar(cc.BaseDir)
+			children[i] = p.parseTarget(cc,
+				append(ptargets, tg),
+				append(plinks, tg))
 		}
 	}
 	return children
 }
 
-func (p *Parser) parseTarget(baseDir string, target, link []string, c config.Config) *Node {
-	n := &Node{Target: File{p.cwd, target}}
-	if c.BaseDir != "" {
-		baseDir = c.BaseDir
-	}
+func (p *Parser) parseTarget(c config.Config, targets, links []string) *Node {
+	n := &Node{Target: File{p.cwd, targets}}
 	if c.Link != nil {
-		lnlen := len(link)
+		// Replace last element from links. This is a link rename.
+		lnlen := len(links)
 		linkname := *c.Link
-		link[lnlen-1] = linkname
+		links[lnlen-1] = linkname
 		if linkname == "" {
-			s := link[:lnlen-1]
+			s := links[:lnlen-1]
 			// We need to create a new slice to avoid reusing the
 			// same underlying array between children.
-			link = append(make([]string, 0, len(s)), s...)
+			links = append(make([]string, 0, len(s)), s...)
 		}
 	}
-	n.Link = File{baseDir, link}
-	n.Children = p.parseChildren(baseDir, target, link, c)
+	if c.BaseDir == "" {
+		mode := UserMode
+		if c.UseHome != nil && *c.UseHome {
+			mode = HomeMode
+		}
+		c.BaseDir = p.baseDirs[mode]
+	}
+	n.Link = File{c.BaseDir, links}
+	n.Children = p.parseChildren(c, targets, links)
 	return n
 }
 
@@ -78,10 +96,9 @@ func (p *Parser) expandVar(s string) string {
 // ParseOption is a funcional option that intend to modify a Parser.
 type ParseOption func(*Parser) error
 
-// BaseDir sets the default base directory when none is provided.
-func BaseDir(dirname string) ParseOption {
+func BaseDirs(dirs map[Mode]string) ParseOption {
 	return func(p *Parser) error {
-		p.baseDir = dirname
+		p.baseDirs = dirs
 		return nil
 	}
 }

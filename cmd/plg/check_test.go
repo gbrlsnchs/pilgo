@@ -127,6 +127,110 @@ func TestCheck(t *testing.T) {
 			err:       nil,
 		},
 		{
+			name: "home",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"home.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											UseHome: newBool(true),
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: checkCmd{},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"check.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"home.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											UseHome: newBool(true),
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			conflicts: false,
+			err:       nil,
+		},
+		{
 			name: "fail",
 			drv: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -239,6 +343,7 @@ func TestCheck(t *testing.T) {
 					fs:            &tc.drv,
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
+					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("check")

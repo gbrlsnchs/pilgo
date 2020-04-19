@@ -173,16 +173,122 @@ func testParserParse(t *testing.T) {
 					"bar",
 				},
 			},
-			opts: []parser.ParseOption{parser.BaseDir("test")},
+			opts: []parser.ParseOption{
+				parser.BaseDirs(map[parser.Mode]string{
+					parser.UserMode: "user",
+					parser.HomeMode: "home",
+				}),
+			},
 			tr: &parser.Tree{
 				Root: &parser.Node{Children: []*parser.Node{
 					{
 						Target: parser.File{"", []string{"bar"}},
-						Link:   parser.File{"test", []string{"bar"}},
+						Link:   parser.File{"user", []string{"bar"}},
 					},
 					{
 						Target: parser.File{"", []string{"foo"}},
-						Link:   parser.File{"test", []string{"foo"}},
+						Link:   parser.File{"user", []string{"foo"}},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				Link: nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+				UseHome: newBool(true),
+			},
+			opts: []parser.ParseOption{
+				parser.BaseDirs(map[parser.Mode]string{
+					parser.UserMode: "user",
+					parser.HomeMode: "home",
+				}),
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"bar"}},
+						Link:   parser.File{"home", []string{"bar"}},
+					},
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{"foo"}},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				Link: nil,
+				Targets: []string{
+					"test",
+				},
+				Options: map[string]config.Config{
+					"test": {
+						Targets: []string{
+							"foo",
+							"bar",
+						},
+						UseHome: newBool(true),
+					},
+				},
+			},
+			opts: []parser.ParseOption{
+				parser.BaseDirs(map[parser.Mode]string{
+					parser.UserMode: "user",
+					parser.HomeMode: "home",
+				}),
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"test"}},
+						Link:   parser.File{"home", []string{"test"}},
+						Children: []*parser.Node{
+							{
+								Target: parser.File{"", []string{"test", "bar"}},
+								Link:   parser.File{"home", []string{"test", "bar"}},
+							},
+							{
+								Target: parser.File{"", []string{"test", "foo"}},
+								Link:   parser.File{"home", []string{"test", "foo"}},
+							},
+						},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				Link: nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+				BaseDir: "testing",
+				UseHome: newBool(true), // this is overridden
+			},
+			opts: []parser.ParseOption{
+				parser.BaseDirs(map[parser.Mode]string{
+					parser.UserMode: "user",
+					parser.HomeMode: "home",
+				}),
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"bar"}},
+						Link:   parser.File{"testing", []string{"bar"}},
+					},
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"testing", []string{"foo"}},
 					},
 				}},
 			},
@@ -265,7 +371,12 @@ func testParserParse(t *testing.T) {
 					"bar",
 				},
 			},
-			opts: []parser.ParseOption{parser.BaseDir("test")},
+			opts: []parser.ParseOption{
+				parser.BaseDirs(map[parser.Mode]string{
+					parser.UserMode: "user",
+					parser.HomeMode: "home",
+				}),
+			},
 			tr: &parser.Tree{
 				Root: &parser.Node{Children: []*parser.Node{
 					{
@@ -374,3 +485,4 @@ func testParserParse(t *testing.T) {
 }
 
 func newString(s string) *string { return &s }
+func newBool(b bool) *bool       { return &b }

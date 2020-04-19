@@ -99,6 +99,85 @@ func TestShow(t *testing.T) {
 			cmd: showCmd{},
 			err: nil,
 		},
+		{
+			name: "home",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"home.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											UseHome: newBool(true),
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"home.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											UseHome: newBool(true),
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: showCmd{},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -106,8 +185,9 @@ func TestShow(t *testing.T) {
 				appcfg = appConfig{
 					conf:          tc.name + ".yml",
 					fs:            &tc.drv,
-					getwd:         func() (string, error) { return fstest.AbsPath("home", "/dotfiles"), nil },
-					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "/config"), nil },
+					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
+					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
+					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("show")

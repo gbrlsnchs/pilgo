@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/gbrlsnchs/cli"
 	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
@@ -13,6 +15,7 @@ type configCmd struct {
 	baseDir string
 	link    strptr
 	targets cliutil.CommaSepOptionList
+	useHome boolptr
 }
 
 func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error {
@@ -31,6 +34,7 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 			BaseDir: cmd.baseDir,
 			Link:    cmd.link.addr,
 			Targets: cmd.targets,
+			UseHome: cmd.useHome.addr,
 		})
 		if b, err = marshalYAML(c); err != nil {
 			return err
@@ -58,3 +62,25 @@ func (sp strptr) String() string {
 	}
 	return *sp.addr
 }
+
+type boolptr struct {
+	addr *bool
+}
+
+func (bp *boolptr) Set(value string) error {
+	b, err := strconv.ParseBool(value)
+	if err != nil {
+		return err
+	}
+	bp.addr = &b
+	return nil
+}
+
+func (bp *boolptr) String() string {
+	if bp.addr == nil {
+		return ""
+	}
+	return strconv.FormatBool(*bp.addr)
+}
+
+func (bp *boolptr) IsBoolFlag() bool { return true }

@@ -31,12 +31,21 @@ func (*linkCmd) register(getcfg func() appConfig) func(cli.Program) error {
 		if yaml.Unmarshal(b, &c); err != nil {
 			return err
 		}
-		baseDir, err := appcfg.userConfigDir()
+		userConfigDir, err := appcfg.userConfigDir()
+		if err != nil {
+			return err
+		}
+		homeConfigDir, err := appcfg.userHomeDir()
 		if err != nil {
 			return err
 		}
 		var p parser.Parser
-		tr, err := p.Parse(c, parser.BaseDir(baseDir), parser.Cwd(cwd), parser.Envsubst)
+		tr, err := p.Parse(c,
+			parser.BaseDirs(map[parser.Mode]string{
+				parser.UserMode: userConfigDir,
+				parser.HomeMode: homeConfigDir,
+			}),
+			parser.Cwd(cwd), parser.Envsubst)
 		if err != nil {
 			return err
 		}

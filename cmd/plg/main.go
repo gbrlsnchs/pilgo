@@ -15,6 +15,7 @@ type appConfig struct {
 	fs            fs.Driver
 	getwd         func() (string, error)
 	userConfigDir func() (string, error)
+	userHomeDir   func() (string, error)
 	version       string
 }
 
@@ -41,6 +42,7 @@ func run() int {
 			fs:            fsutil.OSDriver{},
 			getwd:         os.Getwd,
 			userConfigDir: os.UserConfigDir,
+			userHomeDir:   os.UserHomeDir,
 			version:       internal.Version(),
 		}
 	)
@@ -92,6 +94,12 @@ func run() int {
 							ArgLabel:    "TARGET 1,...,TARGET n",
 						},
 						Recipient: &root.config.targets,
+					},
+					"home": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Use home directory as base directory.",
+						},
+						Recipient: &root.config.useHome,
 					},
 				},
 				Arg: cli.StringArg{

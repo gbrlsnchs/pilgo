@@ -55,6 +55,7 @@ USAGE:
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
     -h, -help                               Print this help message.
+        -home                               Use home directory as base directory.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
         -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.
 
@@ -67,5 +68,6 @@ USAGE:
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
     -h, -help                               Print this help message.
+        -home                               Use home directory as base directory.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
         -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.
