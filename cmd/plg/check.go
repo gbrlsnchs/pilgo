@@ -24,8 +24,8 @@ func (cmd *checkCmd) register(getcfg func() appConfig) cli.ExecFunc {
 		if err != nil {
 			return err
 		}
-		var c config.Config
-		if yaml.Unmarshal(b, &c); err != nil {
+		c := new(config.Config)
+		if yaml.Unmarshal(b, c); err != nil {
 			return err
 		}
 		userConfigDir, err := appcfg.userConfigDir()

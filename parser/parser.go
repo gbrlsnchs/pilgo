@@ -26,7 +26,7 @@ type Parser struct {
 }
 
 // Parse parses a configuration file and returns its tree representation.
-func (p *Parser) Parse(c config.Config, opts ...ParseOption) (*Tree, error) {
+func (p *Parser) Parse(c *config.Config, opts ...ParseOption) (*Tree, error) {
 	for _, opt := range opts {
 		if err := opt(p); err != nil {
 			return nil, err
@@ -36,7 +36,7 @@ func (p *Parser) Parse(c config.Config, opts ...ParseOption) (*Tree, error) {
 	return &Tree{root}, nil
 }
 
-func (p *Parser) parseChildren(c config.Config, ptargets, plinks []string) []*Node {
+func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*Node {
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
@@ -45,6 +45,9 @@ func (p *Parser) parseChildren(c config.Config, ptargets, plinks []string) []*No
 		for i, tg := range c.Targets {
 			tg = p.expandVar(tg)
 			cc := c.Options[tg]
+			if cc == nil {
+				cc = new(config.Config) // use default config
+			}
 			if cc.UseHome == nil {
 				cc.UseHome = c.UseHome
 			}
@@ -60,7 +63,7 @@ func (p *Parser) parseChildren(c config.Config, ptargets, plinks []string) []*No
 	return children
 }
 
-func (p *Parser) parseTarget(c config.Config, targets, links []string) *Node {
+func (p *Parser) parseTarget(c *config.Config, targets, links []string) *Node {
 	n := &Node{Target: File{p.cwd, targets}}
 	if c.Link != nil {
 		// Replace last element from links. This is a link rename.

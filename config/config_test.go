@@ -121,7 +121,7 @@ func testConfigSet(t *testing.T) {
 		{
 			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -138,7 +138,7 @@ func testConfigSet(t *testing.T) {
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "test",
 						Targets: []string{
@@ -161,7 +161,7 @@ func testConfigSet(t *testing.T) {
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "test",
 						Targets: []string{
@@ -174,7 +174,7 @@ func testConfigSet(t *testing.T) {
 		{
 			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -188,7 +188,7 @@ func testConfigSet(t *testing.T) {
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "test",
 					},
@@ -198,7 +198,7 @@ func testConfigSet(t *testing.T) {
 		{
 			c: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
@@ -212,12 +212,12 @@ func testConfigSet(t *testing.T) {
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
 						},
-						Options: map[string]config.Config{
+						Options: map[string]*config.Config{
 							"bar": {
 								Targets: []string{
 									"baz",
@@ -238,6 +238,60 @@ func testConfigSet(t *testing.T) {
 				Targets: []string{"foo"},
 				Options: nil,
 			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			name: "foo",
+			o:    config.Config{},
+			want: config.Config{
+				Targets: []string{"foo"},
+				Options: nil,
+			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			name: filepath.Join("foo", "bar"),
+			o:    config.Config{},
+			want: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+						Options: nil,
+					},
+				},
+			},
+		},
+		{
+			c:    config.Config{},
+			name: filepath.Join("foo", "bar"),
+			o: config.Config{
+				BaseDir: "test",
+				Targets: []string{
+					"baz",
+				},
+			},
+			want: config.Config{Options: nil},
 		},
 	}
 	for _, tc := range testCases {

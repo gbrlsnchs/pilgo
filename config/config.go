@@ -8,13 +8,15 @@ import (
 // DefaultName is the default name of the configuration file for Pilgo.
 const DefaultName = "pilgo.yml"
 
+const sep = string(filepath.Separator)
+
 // Config is a configuration format for Pilgo.
 type Config struct {
-	BaseDir string            `yaml:"baseDir,omitempty"`
-	Link    *string           `yaml:"link,omitempty"`
-	Targets []string          `yaml:"targets,omitempty"`
-	Options map[string]Config `yaml:"options,omitempty"`
-	UseHome *bool             `yaml:"useHome,omitempty"`
+	BaseDir string             `yaml:"baseDir,omitempty"`
+	Link    *string            `yaml:"link,omitempty"`
+	Targets []string           `yaml:"targets,omitempty"`
+	Options map[string]*Config `yaml:"options,omitempty"`
+	UseHome *bool              `yaml:"useHome,omitempty"`
 
 	opts internalOpts
 }
@@ -52,42 +54,48 @@ func New(targets []string, opts ...func(*Config)) Config {
 	return c
 }
 
-// Set sets o to the resolved option in path.
+// Set sets o to path. The path may be nested, but will be a no-op if the
+// parent paths don't exist already. An empty path sets the root configuration.
 func (c *Config) Set(path string, o Config) {
-	var last string
-	path, last = filepath.Split(path)
 	if path == "" {
-		if last == "" {
-			*c = o
+		*c = o
+		return
+	}
+	targets := strings.Split(path, sep)
+	for i, tg := range targets {
+		if i != len(targets)-1 {
+			if c.Options == nil {
+				return
+			}
+			next, ok := c.Options[tg]
+			if !ok {
+				// Don't change what's not set.
+				return
+			}
+			c = next
+			continue
+		}
+		if o.isEmpty() {
+			// Don't let empty maps (garbage) in the configuration file.
+			delete(c.Options, tg)
+			if len(c.Options) == 0 {
+				c.Options = nil
+			}
 			return
 		}
 		if c.Options == nil {
-			c.Options = make(map[string]Config, 1)
+			c.Options = make(map[string]*Config, 1)
 		}
-		c.Options[last] = o
-		return
+		c.Options[tg] = &o
 	}
-	path = path[:len(path)-1] // trim suffix separator
-	var (
-		keys = strings.Split(path, string(filepath.Separator))
-		oo   Config
-		ok   bool
-	)
-	for _, k := range keys {
-		if oo, ok = c.Options[k]; !ok {
-			return
-		}
-		if oo.Options == nil {
-			oo = Config{
-				BaseDir: oo.BaseDir,
-				Link:    oo.Link,
-				Targets: oo.Targets,
-				Options: make(map[string]Config, 1),
-			}
-			c.Options[k] = oo
-		}
-	}
-	oo.Options[last] = o
+}
+
+func (c *Config) isEmpty() bool {
+	return c.BaseDir == "" &&
+		c.Link == nil &&
+		len(c.Targets) == 0 &&
+		len(c.Options) == 0 &&
+		c.UseHome == nil
 }
 
 type internalOpts struct {

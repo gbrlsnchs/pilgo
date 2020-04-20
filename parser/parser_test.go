@@ -71,7 +71,7 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {Link: newString("bar")},
 				},
 			},
@@ -92,13 +92,13 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Targets: []string{
 							"bar",
 						},
-						Options: map[string]config.Config{
-							"bar": config.Config{
+						Options: map[string]*config.Config{
+							"bar": {
 								Targets: []string{
 									"baz",
 								},
@@ -228,7 +228,7 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"test",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"test": {
 						Targets: []string{
 							"foo",
@@ -301,7 +301,7 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
 						Link:    newString(""),
@@ -335,7 +335,7 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
 						Link:    newString("golang"),
@@ -398,7 +398,7 @@ func testParserParse(t *testing.T) {
 				Targets: []string{
 					"foo",
 				},
-				Options: map[string]config.Config{
+				Options: map[string]*config.Config{
 					"foo": {
 						Link: newString(""),
 						Targets: []string{
@@ -470,7 +470,7 @@ func testParserParse(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			var p parser.Parser
-			tr, err := p.Parse(tc.c, tc.opts...)
+			tr, err := p.Parse(&tc.c, tc.opts...)
 			if want, got := tc.err, err; !errors.Is(got, want) {
 				t.Fatalf("want %v, got %v", want, got)
 			}

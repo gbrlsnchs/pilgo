@@ -116,7 +116,7 @@ func TestConfig(t *testing.T) {
 												"foo",
 												"bar",
 											},
-											Options: map[string]config.Config{
+											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
 													Link:    newString("f00"),
@@ -240,7 +240,7 @@ func TestConfig(t *testing.T) {
 												"foo",
 												"bar",
 											},
-											Options: map[string]config.Config{
+											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
 													Link:    newString("f00"),
@@ -370,7 +370,7 @@ func TestConfig(t *testing.T) {
 											Targets: []string{
 												"test",
 											},
-											Options: map[string]config.Config{
+											Options: map[string]*config.Config{
 												"test": {
 													Link: newString(""),
 													Targets: []string{
@@ -498,7 +498,7 @@ func TestConfig(t *testing.T) {
 											Targets: []string{
 												"test",
 											},
-											Options: map[string]config.Config{
+											Options: map[string]*config.Config{
 												"test": {
 													Link: newString(""),
 													Targets: []string{
