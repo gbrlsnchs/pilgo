@@ -41,10 +41,12 @@ func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*N
 	var children []*Node
 	tglen := len(c.Targets)
 	if tglen > 0 {
+		for i, tg := range c.Targets {
+			c.Targets[i] = p.expandVar(tg)
+		}
 		sort.Strings(c.Targets)
 		children = make([]*Node, 0, tglen)
 		for _, tg := range c.Targets {
-			tg = p.expandVar(tg)
 			cc := c.Options[tg]
 			if cc == nil {
 				cc = new(config.Config) // use default config
