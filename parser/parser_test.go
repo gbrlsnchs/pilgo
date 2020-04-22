@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gbrlsnchs/pilgo/config"
+	"github.com/gbrlsnchs/pilgo/internal"
 	"github.com/gbrlsnchs/pilgo/parser"
 	"github.com/google/go-cmp/cmp"
 )
@@ -72,7 +73,7 @@ func testParserParse(t *testing.T) {
 					"foo",
 				},
 				Options: map[string]*config.Config{
-					"foo": {Link: newString("bar")},
+					"foo": {Link: internal.NewString("bar")},
 				},
 			},
 			tr: &parser.Tree{
@@ -200,7 +201,7 @@ func testParserParse(t *testing.T) {
 					"foo",
 					"bar",
 				},
-				UseHome: newBool(true),
+				UseHome: internal.NewBool(true),
 			},
 			opts: []parser.ParseOption{
 				parser.BaseDirs(map[parser.Mode]string{
@@ -234,7 +235,7 @@ func testParserParse(t *testing.T) {
 							"foo",
 							"bar",
 						},
-						UseHome: newBool(true),
+						UseHome: internal.NewBool(true),
 					},
 				},
 			},
@@ -272,7 +273,7 @@ func testParserParse(t *testing.T) {
 					"bar",
 				},
 				BaseDir: "testing",
-				UseHome: newBool(true), // this is overridden
+				UseHome: internal.NewBool(true), // this is overridden
 			},
 			opts: []parser.ParseOption{
 				parser.BaseDirs(map[parser.Mode]string{
@@ -304,7 +305,7 @@ func testParserParse(t *testing.T) {
 				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
-						Link:    newString(""),
+						Link:    internal.NewString(""),
 						Targets: []string{
 							"bar",
 						},
@@ -338,7 +339,7 @@ func testParserParse(t *testing.T) {
 				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
-						Link:    newString("golang"),
+						Link:    internal.NewString("golang"),
 						Targets: []string{
 							"bar",
 						},
@@ -400,7 +401,7 @@ func testParserParse(t *testing.T) {
 				},
 				Options: map[string]*config.Config{
 					"foo": {
-						Link: newString(""),
+						Link: internal.NewString(""),
 						Targets: []string{
 							"foobar",
 							"footest",
@@ -466,6 +467,92 @@ func testParserParse(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			c: config.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+				Options: map[string]*config.Config{
+					"bar": {
+						Tags: []string{"test"},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+				Options: map[string]*config.Config{
+					"bar": {
+						Tags: []string{"test"},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"bar"}},
+						Link:   parser.File{"test", []string{"bar"}},
+					},
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
+					},
+				}},
+			},
+			opts: []parser.ParseOption{parser.Tags(map[string]struct{}{
+				"test": struct{}{},
+			})},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				BaseDir: "test",
+				Link:    nil,
+				Targets: []string{
+					"foo",
+					"bar",
+				},
+				Options: map[string]*config.Config{
+					"bar": {
+						Tags: []string{"test", "test_tag"},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"bar"}},
+						Link:   parser.File{"test", []string{"bar"}},
+					},
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"test", []string{"foo"}},
+					},
+				}},
+			},
+			opts: []parser.ParseOption{parser.Tags(map[string]struct{}{
+				"test_tag": struct{}{},
+			})},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
@@ -483,6 +570,3 @@ func testParserParse(t *testing.T) {
 		})
 	}
 }
-
-func newString(s string) *string { return &s }
-func newBool(b bool) *bool       { return &b }

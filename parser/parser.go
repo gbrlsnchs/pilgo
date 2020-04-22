@@ -23,6 +23,7 @@ type Parser struct {
 	cwd      string
 	baseDirs map[Mode]string
 	envsubst bool
+	tags     map[string]struct{}
 }
 
 // Parse parses a configuration file and returns its tree representation.
@@ -41,12 +42,27 @@ func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*N
 	tglen := len(c.Targets)
 	if tglen > 0 {
 		sort.Strings(c.Targets)
-		children = make([]*Node, tglen)
-		for i, tg := range c.Targets {
+		children = make([]*Node, 0, tglen)
+		for _, tg := range c.Targets {
 			tg = p.expandVar(tg)
 			cc := c.Options[tg]
 			if cc == nil {
 				cc = new(config.Config) // use default config
+			}
+			if len(cc.Tags) > 0 {
+				if len(p.tags) == 0 {
+					continue
+				}
+				shouldInclude := false
+				for _, t := range cc.Tags {
+					if _, ok := p.tags[t]; ok {
+						shouldInclude = true
+						break
+					}
+				}
+				if !shouldInclude {
+					continue
+				}
 			}
 			if cc.UseHome == nil {
 				cc.UseHome = c.UseHome
@@ -55,9 +71,9 @@ func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*N
 				cc.BaseDir = c.BaseDir
 			}
 			cc.BaseDir = p.expandVar(cc.BaseDir)
-			children[i] = p.parseTarget(cc,
+			children = append(children, p.parseTarget(cc,
 				append(ptargets, tg),
-				append(plinks, tg))
+				append(plinks, tg)))
 		}
 	}
 	return children
@@ -118,4 +134,12 @@ func Cwd(dirname string) ParseOption {
 func Envsubst(p *Parser) error {
 	p.envsubst = true
 	return nil
+}
+
+// Tags filters targets by their tags.
+func Tags(tags map[string]struct{}) ParseOption {
+	return func(p *Parser) error {
+		p.tags = tags
+		return nil
+	}
 }
