@@ -1,51 +1,3 @@
-$ mkdir targets
-$ mkdir links
-$ cd targets
-$ plg config --> FAIL
-plg: open pilgo.yml: no such file or directory
-
-$ cp pilgo.yml .
-$ plg config -targets=foo,bar test
-$ cat pilgo.yml
-baseDir: links
-targets:
-- test
-options:
-  test:
-    targets:
-    - foo
-    - bar
-
-$ plg config -basedir=testdata test/foo
-$ cat pilgo.yml
-baseDir: links
-targets:
-- test
-options:
-  test:
-    targets:
-    - foo
-    - bar
-    options:
-      foo:
-        baseDir: testdata
-
-$ plg config -link=b4r test/bar
-$ cat pilgo.yml
-baseDir: links
-targets:
-- test
-options:
-  test:
-    targets:
-    - foo
-    - bar
-    options:
-      bar:
-        link: b4r
-      foo:
-        baseDir: testdata
-
 $ plg config -help
 Configure a dotfile in the configuration file.
 
@@ -54,11 +6,14 @@ USAGE:
 
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
         -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
+    -H, -hidden                             Include hidden files.
         -home                               Use home directory as base directory.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
-        -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.
+    -s, -scandir                            Scan the directory to set targets.
 
 $ plg config -h
 Configure a dotfile in the configuration file.
@@ -68,8 +23,116 @@ USAGE:
 
 OPTIONS:
         -basedir <DIR>                      Set the file's base directory.
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
         -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
+    -H, -hidden                             Include hidden files.
         -home                               Use home directory as base directory.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
-        -targets <TARGET 1,...,TARGET n>    Comma-separated list of the file's targets.
+    -s, -scandir                            Scan the directory to set targets.
+
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ plg config --> FAIL
+plg: open pilgo.yml: no such file or directory
+
+$ cp pilgo.yml .
+$ plg config -basedir rootdir
+$ cat pilgo.yml
+baseDir: rootdir
+
+$ plg config -basedir testdata test
+$ cat pilgo.yml
+baseDir: rootdir
+options:
+  test:
+    baseDir: testdata
+
+$ plg config -flatten test
+$ cat pilgo.yml
+baseDir: rootdir
+options:
+  test:
+    link: ""
+
+$ plg config -scandir test --> FAIL
+plg: open test: no such file or directory
+
+$ fecho test
+$ plg config -scandir test --> FAIL
+plg: fdopendir: not a directory
+
+$ mkdir testdir
+$ cd testdir
+$ fecho test_1
+$ fecho test_2
+$ cd ..
+$ plg config -s
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+
+$ plg config -s testdir
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_1
+    - test_2
+
+$ plg config -s -include test_1 testdir
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_1
+
+$ plg config -s -exclude test_1 testdir
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_2
+
+$ cp pilgo_tags.yml .
+$ plg -config pilgo_tags.yml config -link testlink test
+$ cat pilgo_tags.yml
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    link: testlink
+
+$ plg -c pilgo_tags.yml config -home test
+$ cat pilgo_tags.yml
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    useHome: true

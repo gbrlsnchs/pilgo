@@ -98,13 +98,6 @@ func run() int {
 						},
 						Recipient: &root.config.link,
 					},
-					"targets": cli.VarOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of the file's targets.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
-						},
-						Recipient: &root.config.targets,
-					},
 					"home": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Use home directory as base directory.",
@@ -117,6 +110,16 @@ func run() int {
 						},
 						Recipient: &root.config.flatten,
 					},
+					"scandir": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Scan the directory to set targets.",
+							Short:       's',
+						},
+						Recipient: &root.config.scanDir,
+					},
+					"include": root.config.read.option("include"),
+					"exclude": root.config.read.option("exclude"),
+					"hidden":  root.config.read.option("hidden"),
 				},
 				Arg: cli.StringArg{
 					Label:     "TARGET",

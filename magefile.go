@@ -79,7 +79,16 @@ type testPatch struct {
 func GenCLITests() error {
 	const linuxdir = "linux"
 	oses := map[string]map[string][]testPatch{
-		"darwin": {},
+		"darwin": {
+			".*": {
+				{
+					reps: replacement{
+						old: readDirErr,
+						new: "fdopendir: not a directory",
+					},
+				},
+			},
+		},
 		"windows": {
 			".*": {
 				{
@@ -92,6 +101,23 @@ func GenCLITests() error {
 					reps: replacement{
 						old: fileNotFound,
 						new: "The system cannot find the file specified.",
+					},
+				},
+			},
+			"config.ct": {
+				{
+					reps: replacement{
+						old: readDirErr,
+						new: "Readdir {{.scandir}}: The system cannot find the path specified.",
+					},
+					buildData: func(b []byte) map[string]interface{} {
+						r := regexp.MustCompile(`plg config -scandir (\w+) --> FAIL`)
+						subs := r.FindSubmatch(b)
+						t := make(map[string]interface{})
+						if len(subs) > 1 {
+							t["scandir"] = string(subs[1])
+						}
+						return t
 					},
 				},
 			},
