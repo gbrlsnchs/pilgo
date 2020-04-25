@@ -4,7 +4,7 @@ $ cp pilgo.yml targets/pilgo.yml
 $ cd targets
 $ plg link --> FAIL
 plg: linker: there is 1 conflict
-plg: linker: /private${ROOTDIR}/targets/test: target doesn't exist
+plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
 
 $ fecho test
 $ plg link
