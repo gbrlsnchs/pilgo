@@ -9,14 +9,14 @@ import (
 )
 
 var (
-	// ErrLinkExists means an unrelated file exists in place of a link.
-	ErrLinkExists = errors.New("file exists in place of link")
-	// ErrLinkNotExpands means a file in place of a link can't be expanded.
-	ErrLinkNotExpands = errors.New("file exists in place of link and is not expandable")
-	// ErrTargetNotExists means a target doesn't exist and thus can't be symlinked.
-	ErrTargetNotExists = errors.New("target doesn't exist")
-	// ErrTargetNotExpands means a target is not a directory and therefore can't be expanded.
-	ErrTargetNotExpands = errors.New("target can't be expanded")
+	// ErrLinkExist means an unrelated file exists in place of a link.
+	ErrLinkExist = errors.New("file exists in place of link")
+	// ErrLinkNotExpand means a file in place of a link can't be expanded.
+	ErrLinkNotExpand = errors.New("file exists in place of link and is not expandable")
+	// ErrTargetNotExist means a target doesn't exist and thus can't be symlinked.
+	ErrTargetNotExist = errors.New("target doesn't exist")
+	// ErrTargetNotExpand means a target is not a directory and therefore can't be expanded.
+	ErrTargetNotExpand = errors.New("target can't be expanded")
 )
 
 // Linker is a file symlinker.
@@ -69,13 +69,13 @@ func (ln *Linker) Resolve(tr *parser.Tree) error {
 	err := tr.Walk(func(n *parser.Node) error {
 		err := ln.resolve(n)
 		switch {
-		case errors.Is(err, ErrLinkExists):
+		case errors.Is(err, ErrLinkExist):
 			fallthrough
-		case errors.Is(err, ErrLinkNotExpands):
+		case errors.Is(err, ErrLinkNotExpand):
 			fallthrough
-		case errors.Is(err, ErrTargetNotExists):
+		case errors.Is(err, ErrTargetNotExist):
 			fallthrough
-		case errors.Is(err, ErrTargetNotExpands):
+		case errors.Is(err, ErrTargetNotExpand):
 			cft.Errs = append(cft.Errs, err)
 			return nil
 		default:
@@ -99,7 +99,7 @@ func (ln *Linker) resolve(n *parser.Node) error {
 	}
 	if !target.Exists() {
 		n.Status = parser.StatusError
-		return errWithPath(tgpath, ErrTargetNotExists)
+		return errWithPath(tgpath, ErrTargetNotExist)
 	}
 	if len(n.Children) > 0 || len(n.Link.Path) == 0 {
 		n.Status = parser.StatusSkip
@@ -120,15 +120,15 @@ func (ln *Linker) resolve(n *parser.Node) error {
 			return nil
 		}
 		n.Status = parser.StatusConflict
-		return errWithPath(lnpath, ErrLinkExists)
+		return errWithPath(lnpath, ErrLinkExist)
 	}
 	if !target.IsDir() {
 		n.Status = parser.StatusConflict
-		return errWithPath(tgpath, ErrTargetNotExpands)
+		return errWithPath(tgpath, ErrTargetNotExpand)
 	}
 	if !link.IsDir() {
 		n.Status = parser.StatusConflict
-		return errWithPath(lnpath, ErrLinkNotExpands)
+		return errWithPath(lnpath, ErrLinkNotExpand)
 	}
 	children, err := ln.fs.ReadDir(tgpath)
 	if err != nil {

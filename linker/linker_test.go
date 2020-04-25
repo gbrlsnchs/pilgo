@@ -555,7 +555,7 @@ func testResolve(t *testing.T) {
 				Children: nil,
 			},
 			err:       (*linker.ConflictError)(nil),
-			conflicts: []error{linker.ErrLinkExists},
+			conflicts: []error{linker.ErrLinkExist},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -598,7 +598,7 @@ func testResolve(t *testing.T) {
 				Children: nil,
 			},
 			err:       (*linker.ConflictError)(nil),
-			conflicts: []error{linker.ErrLinkNotExpands},
+			conflicts: []error{linker.ErrLinkNotExpand},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -639,7 +639,7 @@ func testResolve(t *testing.T) {
 				Children: nil,
 			},
 			err:       (*linker.ConflictError)(nil),
-			conflicts: []error{linker.ErrTargetNotExists},
+			conflicts: []error{linker.ErrTargetNotExist},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
@@ -814,7 +814,7 @@ func testResolve(t *testing.T) {
 				Children: nil,
 			},
 			err:       (*linker.ConflictError)(nil),
-			conflicts: []error{linker.ErrTargetNotExpands},
+			conflicts: []error{linker.ErrTargetNotExpand},
 			want: &parser.Node{
 				Target: parser.File{
 					BaseDir: "",
