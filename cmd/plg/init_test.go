@@ -354,9 +354,9 @@ func TestInit(t *testing.T) {
 				},
 			},
 			cmd: initCmd{
-				include: cliutil.CommaSepOptionSet{
+				read: readMode{include: cliutil.CommaSepOptionSet{
 					"bar": struct{}{},
-				},
+				}},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -448,9 +448,9 @@ func TestInit(t *testing.T) {
 				},
 			},
 			cmd: initCmd{
-				exclude: cliutil.CommaSepOptionSet{
+				read: readMode{exclude: cliutil.CommaSepOptionSet{
 					"bar": struct{}{},
-				},
+				}},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -547,7 +547,9 @@ func TestInit(t *testing.T) {
 					},
 				},
 			},
-			cmd: initCmd{hidden: true},
+			cmd: initCmd{
+				read: readMode{hidden: true},
+			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -754,9 +756,11 @@ func TestInit(t *testing.T) {
 				},
 			},
 			cmd: initCmd{
-				hidden: true,
-				exclude: cliutil.CommaSepOptionSet{
-					".git": struct{}{},
+				read: readMode{
+					hidden: true,
+					exclude: cliutil.CommaSepOptionSet{
+						".git": struct{}{},
+					},
 				},
 			},
 			want: fstest.InMemoryDriver{

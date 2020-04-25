@@ -125,27 +125,9 @@ func run() int {
 						},
 						Recipient: &root.init.force,
 					},
-					"include": cli.VarOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be included.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
-						},
-						Recipient: &root.init.include,
-					},
-					"exclude": cli.VarOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be excluded.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
-						},
-						Recipient: &root.init.exclude,
-					},
-					"hidden": cli.BoolOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Include hidden files.",
-							Short:       'H',
-						},
-						Recipient: &root.init.hidden,
-					},
+					"include": root.init.read.option("include"),
+					"exclude": root.init.read.option("exclude"),
+					"hidden":  root.init.read.option("hidden"),
 				},
 				Exec: root.init.register(appcfg.copy),
 			},

@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "bar"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 			},
@@ -32,7 +32,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "bar", ".git"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 			},
@@ -44,7 +44,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "bar", ".git"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 				config.Exclude(map[string]struct{}{
@@ -59,7 +59,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "bar", ".git"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 				config.Include(map[string]struct{}{
@@ -74,7 +74,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "bar", ".git"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 				config.IncludeHidden,
@@ -87,7 +87,7 @@ func TestNew(t *testing.T) {
 		{
 			targets: []string{"foo", "", "baz"},
 			opts: []func(*config.Config){
-				config.MergeWith(config.Config{
+				config.MergeWith(&config.Config{
 					BaseDir: "test",
 				}),
 			},
@@ -100,7 +100,7 @@ func TestNew(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
 			c := config.New(tc.targets, tc.opts...)
-			if want, got := tc.want, c; !cmp.Equal(got, want, ignoreUnexported) {
+			if want, got := &tc.want, c; !cmp.Equal(got, want, ignoreUnexported) {
 				t.Errorf("Config.Init mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
 			}
 		})
@@ -296,9 +296,9 @@ func testConfigSet(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
-			tc.c.Set(tc.name, tc.o)
+			tc.c.Set(tc.name, &tc.o)
 			if want, got := tc.want, tc.c; !cmp.Equal(got, want, ignoreUnexported) {
-				t.Errorf("Config.Set mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
+				t.Errorf("(*Config).Set mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
 			}
 		})
 	}

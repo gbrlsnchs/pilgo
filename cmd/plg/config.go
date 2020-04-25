@@ -43,12 +43,13 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 		if err := yaml.Unmarshal(b, &c); err != nil {
 			return err
 		}
-		cc := config.Config{
+		cc := &config.Config{
+			Targets: cmd.targets,
 			BaseDir: cmd.baseDir,
 			Link:    cmd.link.addr,
 			UseHome: cmd.useHome.addr,
 		}
-		c.Set(cmd.file, config.New(cmd.targets, config.MergeWith(cc)))
+		c.Set(cmd.file, cc)
 		if b, err = marshalYAML(c); err != nil {
 			return err
 		}

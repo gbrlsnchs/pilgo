@@ -24,10 +24,10 @@ type Config struct {
 
 // New creates a new configuration with given targets. Functional options can be
 // passed to configure which targets should be included or excluded.
-func New(targets []string, opts ...func(*Config)) Config {
-	var c Config
+func New(targets []string, opts ...func(*Config)) *Config {
+	c := new(Config)
 	for _, o := range opts {
-		o(&c)
+		o(c)
 	}
 	eligible := make([]string, 0, len(targets))
 	for _, tg := range targets {
@@ -57,9 +57,9 @@ func New(targets []string, opts ...func(*Config)) Config {
 
 // Set sets o to path. The path may be nested, but will be a no-op if the
 // parent paths don't exist already. An empty path sets the root configuration.
-func (c *Config) Set(path string, o Config) {
+func (c *Config) Set(path string, o *Config) {
 	if path == "" {
-		*c = o
+		*c = *o
 		return
 	}
 	targets := strings.Split(path, sep)
@@ -87,7 +87,7 @@ func (c *Config) Set(path string, o Config) {
 		if c.Options == nil {
 			c.Options = make(map[string]*Config, 1)
 		}
-		c.Options[tg] = &o
+		c.Options[tg] = o
 	}
 }
 
@@ -108,10 +108,10 @@ type internalOpts struct {
 
 // MergeWith is an option to use an existing configuration when
 // building a new one, thus inheriting all fields from the existing one.
-func MergeWith(c Config) func(*Config) {
+func MergeWith(c *Config) func(*Config) {
 	return func(src *Config) {
 		opts := src.opts
-		*src = c
+		*src = *c
 		src.opts = opts
 	}
 }
