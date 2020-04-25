@@ -1,0 +1,13 @@
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    tags:
+    - test

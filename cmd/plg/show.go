@@ -42,7 +42,9 @@ func (*showCmd) register(getcfg func() appConfig) func(cli.Program) error {
 				parser.UserMode: userConfigDir,
 				parser.HomeMode: homeConfigDir,
 			}),
-			parser.Cwd(cwd), parser.Envsubst)
+			parser.Cwd(cwd),
+			parser.Envsubst,
+			parser.Tags(appcfg.tags))
 		if err != nil {
 			return err
 		}

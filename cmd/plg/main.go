@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/cmd/internal"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
@@ -17,6 +18,7 @@ type appConfig struct {
 	userConfigDir func() (string, error)
 	userHomeDir   func() (string, error)
 	version       string
+	tags          cliutil.CommaSepOptionSet
 }
 
 func (cfg *appConfig) copy() appConfig { return *cfg }
@@ -51,9 +53,17 @@ func run() int {
 			"config": cli.StringOption{
 				OptionDetails: cli.OptionDetails{
 					Description: "Use a different configuration file.",
+					Short:       'c',
 				},
 				DefValue:  config.DefaultName,
 				Recipient: &appcfg.conf,
+			},
+			"tags": cli.VarOption{
+				OptionDetails: cli.OptionDetails{
+					Description: "Parse targets using specific tags.",
+					Short:       't',
+				},
+				Recipient: &appcfg.tags,
 			},
 		},
 		Subcommands: map[string]*cli.Command{

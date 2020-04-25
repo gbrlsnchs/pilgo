@@ -46,7 +46,9 @@ func (cmd *checkCmd) register(getcfg func() appConfig) cli.ExecFunc {
 				parser.UserMode: userConfigDir,
 				parser.HomeMode: homeConfigDir,
 			}),
-			parser.Cwd(cwd), parser.Envsubst)
+			parser.Cwd(cwd),
+			parser.Envsubst,
+			parser.Tags(appcfg.tags))
 		if err != nil {
 			return err
 		}
@@ -64,6 +66,9 @@ func (cmd *checkCmd) register(getcfg func() appConfig) cli.ExecFunc {
 				}
 			}
 			return err
+		}
+		if cmd.fail {
+			return nil
 		}
 	printtree:
 		fmt.Fprint(prg.Stdout(), tr)

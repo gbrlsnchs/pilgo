@@ -1,24 +1,3 @@
-$ mkdir targets
-$ mkdir links
-$ cd targets
-$ cp pilgo.yml .
-$ plg check
-.
-└── test <- links/test (ERROR)
-
-$ plg check -fail --> FAIL
-plg: linker: there is 1 conflict
-plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
-
-$ plg check -f --> FAIL
-plg: linker: there is 1 conflict
-plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
-
-$ fecho test
-$ plg check
-.
-└── test <- links/test (READY)
-
 $ plg check -help
 Check the status of your dotfiles.
 
@@ -38,3 +17,63 @@ USAGE:
 OPTIONS:
     -f, -fail    Fail when there are one or more conflicts.
     -h, -help    Print this help message.
+
+$ plg check --> FAIL
+plg: open pilgo.yml: no such file or directory
+
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ cp pilgo.yml .
+$ plg check
+.
+└── test <- links/test (ERROR)
+
+$ plg check -fail --> FAIL
+plg: linker: there is 1 conflict
+plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
+
+$ plg check -f --> FAIL
+plg: linker: there is 1 conflict
+plg: linker: ${ROOTDIR}/targets/test: target doesn't exist
+
+$ plg check
+.
+└── test <- links/test (ERROR)
+
+$ fecho test
+$ plg check -f
+
+$ plg check
+.
+└── test <- links/test (READY)
+
+$ cp pilgo_tags.yml .
+$ plg -config pilgo_tags.yml check -f --> FAIL
+plg: linker: there is 1 conflict
+plg: linker: ${ROOTDIR}/targets/foo: target doesn't exist
+
+$ fecho foo
+$ plg -config pilgo_tags.yml check -f
+
+$ plg -c pilgo_tags.yml -tags bar check -f --> FAIL
+plg: linker: there is 1 conflict
+plg: linker: ${ROOTDIR}/targets/bar: target doesn't exist
+
+$ fecho bar
+$ plg -c pilgo_tags.yml -t bar check -f
+
+$ plg -c pilgo_tags.yml check
+.
+└── foo <- links/foo (READY)
+
+$ plg -c pilgo_tags.yml -t bar check
+.
+├── bar <- links/bar (READY)
+└── foo <- links/foo (READY)
+
+$ plg -c pilgo_tags.yml -t bar,test check
+.
+├── bar  <- links/bar  (READY)
+├── foo  <- links/foo  (READY)
+└── test <- links/test (READY)

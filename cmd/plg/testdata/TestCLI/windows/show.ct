@@ -1,11 +1,3 @@
-$ mkdir targets
-$ mkdir links
-$ cd targets
-$ cp pilgo.yml .
-$ plg show
-.
-└── test <- links\test
-
 $ plg show -help
 Show your dotfiles in a tree view.
 
@@ -23,3 +15,30 @@ USAGE:
 
 OPTIONS:
     -h, -help    Print this help message.
+
+$ plg show --> FAIL
+plg: open pilgo.yml: The system cannot find the file specified.
+
+$ mkdir targets
+$ mkdir links
+$ cd targets
+$ cp pilgo.yml .
+$ plg show
+.
+└── test <- links\test
+
+$ cp pilgo_tags.yml .
+$ plg -config pilgo_tags.yml show
+.
+└── foo <- links\foo
+
+$ plg -c pilgo_tags.yml -tags bar show
+.
+├── bar <- links\bar
+└── foo <- links\foo
+
+$ plg -c pilgo_tags.yml -t bar,test show
+.
+├── bar  <- links\bar
+├── foo  <- links\foo
+└── test <- links\test

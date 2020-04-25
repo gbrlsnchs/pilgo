@@ -1,0 +1,4 @@
+.
+├── foo      <- ~home/config/foo
+├── show.txt <- ~home/config/show.txt
+└── test     <- ~home/config/test

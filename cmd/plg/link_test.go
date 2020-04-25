@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gbrlsnchs/cli/clitest"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs/fstest"
 	"github.com/gbrlsnchs/pilgo/linker"
@@ -20,6 +21,7 @@ func TestLink(t *testing.T) {
 		name string
 		drv  fstest.InMemoryDriver
 		cmd  linkCmd
+		tags cliutil.CommaSepOptionSet
 		want fstest.InMemoryDriver
 		err  error
 	}{
@@ -252,16 +254,263 @@ func TestLink(t *testing.T) {
 			},
 			err: (*linker.ConflictError)(nil),
 		},
+		{
+			name: "tags exclude",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"link.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"tags_exclude.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											Options: map[string]*config.Config{
+												"test": {
+													Tags: []string{"test"},
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd:  linkCmd{},
+			tags: nil,
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"link.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"tags_exclude.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											Options: map[string]*config.Config{
+												"test": {
+													Tags: []string{"test"},
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"link.txt": {
+										Linkname: filepath.Join("home", "dotfiles", "link.txt"),
+										Data:     nil,
+										Perm:     os.ModePerm,
+										Children: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			name: "tags include",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"link.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"tags_include.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											Options: map[string]*config.Config{
+												"test": {
+													Tags: []string{"test"},
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: linkCmd{},
+			tags: cliutil.CommaSepOptionSet{
+				"test": struct{}{},
+			},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"link.txt": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"tags_include.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"$MY_ENV_VAR",
+												"test",
+											},
+											Options: map[string]*config.Config{
+												"test": {
+													Tags: []string{"test"},
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"test": {
+										Linkname: filepath.Join("home", "dotfiles", "test"),
+										Data:     nil,
+										Perm:     os.ModePerm,
+										Children: nil,
+									},
+									"link.txt": {
+										Linkname: filepath.Join("home", "dotfiles", "link.txt"),
+										Data:     nil,
+										Perm:     os.ModePerm,
+										Children: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var (
 				appcfg = appConfig{
-					conf:          tc.name + ".yml",
+					conf:          filepath.Base(t.Name()) + ".yml",
 					fs:            &tc.drv,
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
 					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
+					tags:          tc.tags,
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("link")
