@@ -10,6 +10,7 @@ import (
 	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs/fstest"
+	"github.com/gbrlsnchs/pilgo/internal"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -124,7 +125,7 @@ func TestShow(t *testing.T) {
 												"$MY_ENV_VAR",
 												"test",
 											},
-											UseHome: newBool(true),
+											UseHome: internal.NewBool(true),
 										}),
 										Children: nil,
 									},
@@ -161,7 +162,7 @@ func TestShow(t *testing.T) {
 												"$MY_ENV_VAR",
 												"test",
 											},
-											UseHome: newBool(true),
+											UseHome: internal.NewBool(true),
 										}),
 										Children: nil,
 									},

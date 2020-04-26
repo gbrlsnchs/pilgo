@@ -10,6 +10,7 @@ import (
 	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs/fstest"
+	"github.com/gbrlsnchs/pilgo/internal"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -75,7 +76,7 @@ func TestConfig(t *testing.T) {
 			cmd: configCmd{
 				file:    "foo",
 				baseDir: "test_foo",
-				link:    strptr{addr: newString("f00")},
+				link:    strptr{addr: internal.NewString("f00")},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -114,7 +115,7 @@ func TestConfig(t *testing.T) {
 											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
-													Link:    newString("f00"),
+													Link:    internal.NewString("f00"),
 													Targets: nil,
 												},
 											},
@@ -189,8 +190,8 @@ func TestConfig(t *testing.T) {
 			cmd: configCmd{
 				file:    "foo",
 				baseDir: "test_foo",
-				link:    strptr{addr: newString("f00")},
-				useHome: boolptr{addr: newBool(true)},
+				link:    strptr{addr: internal.NewString("f00")},
+				useHome: boolptr{addr: internal.NewBool(true)},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -229,9 +230,9 @@ func TestConfig(t *testing.T) {
 											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
-													Link:    newString("f00"),
+													Link:    internal.NewString("f00"),
 													Targets: nil,
-													UseHome: newBool(true),
+													UseHome: internal.NewBool(true),
 												},
 											},
 										}),
@@ -354,7 +355,7 @@ func TestConfig(t *testing.T) {
 											},
 											Options: map[string]*config.Config{
 												"test": {
-													Link: newString(""),
+													Link: internal.NewString(""),
 												},
 											},
 										}),
@@ -433,7 +434,7 @@ func TestConfig(t *testing.T) {
 			},
 			cmd: configCmd{
 				file:    "test",
-				useHome: boolptr{addr: newBool(true)},
+				useHome: boolptr{addr: internal.NewBool(true)},
 				flatten: true,
 			},
 			want: fstest.InMemoryDriver{
@@ -478,8 +479,8 @@ func TestConfig(t *testing.T) {
 											},
 											Options: map[string]*config.Config{
 												"test": {
-													Link:    newString(""),
-													UseHome: newBool(true),
+													Link:    internal.NewString(""),
+													UseHome: internal.NewBool(true),
 												},
 											},
 										}),
@@ -1082,8 +1083,3 @@ func TestConfig(t *testing.T) {
 		})
 	}
 }
-
-// TODO(gbrlsnchs): create reusable helper
-func newString(s string) *string { return &s }
-
-func newBool(b bool) *bool { return &b }

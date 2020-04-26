@@ -10,6 +10,7 @@ import (
 	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs/fstest"
+	"github.com/gbrlsnchs/pilgo/internal"
 	"github.com/gbrlsnchs/pilgo/linker"
 	"github.com/google/go-cmp/cmp"
 )
@@ -163,7 +164,7 @@ func TestCheck(t *testing.T) {
 												"$MY_ENV_VAR",
 												"test",
 											},
-											UseHome: newBool(true),
+											UseHome: internal.NewBool(true),
 										}),
 										Children: nil,
 									},
@@ -213,7 +214,7 @@ func TestCheck(t *testing.T) {
 												"$MY_ENV_VAR",
 												"test",
 											},
-											UseHome: newBool(true),
+											UseHome: internal.NewBool(true),
 										}),
 										Children: nil,
 									},
