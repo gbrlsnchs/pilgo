@@ -98,9 +98,10 @@ func run() int {
 						},
 						Recipient: &root.config.link,
 					},
-					"home": cli.VarOption{
+					"usehome": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Use home directory as base directory.",
+							Short:       'u',
 						},
 						Recipient: &root.config.useHome,
 					},

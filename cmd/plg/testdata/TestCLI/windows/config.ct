@@ -10,10 +10,10 @@ OPTIONS:
         -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
     -H, -hidden                             Include hidden files.
-        -home                               Use home directory as base directory.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
     -s, -scandir                            Scan the directory to set targets.
+    -u, -usehome                            Use home directory as base directory.
 
 $ plg config -h
 Configure a dotfile in the configuration file.
@@ -27,10 +27,10 @@ OPTIONS:
         -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
     -H, -hidden                             Include hidden files.
-        -home                               Use home directory as base directory.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
         -link <NAME>                        Set the file's link name. An empty string skips the file.
     -s, -scandir                            Scan the directory to set targets.
+    -u, -usehome                            Use home directory as base directory.
 
 $ mkdir targets
 $ mkdir links
@@ -122,7 +122,7 @@ options:
   test:
     link: testlink
 
-$ plg -c pilgo_tags.yml config -home test
+$ plg -c pilgo_tags.yml config -usehome test
 $ cat pilgo_tags.yml
 baseDir: links
 targets:
@@ -136,3 +136,15 @@ options:
     - test
   test:
     useHome: true
+
+$ plg config -u test
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  test:
+    useHome: true
+  testdir:
+    targets:
+    - test_2
