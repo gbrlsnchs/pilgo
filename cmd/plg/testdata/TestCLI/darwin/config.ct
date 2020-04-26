@@ -5,13 +5,13 @@ USAGE:
     config [OPTIONS] [TARGET]
 
 OPTIONS:
-        -basedir <DIR>                      Set the file's base directory.
+    -b, -basedir <DIR>                      Set the file's base directory.
         -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
-        -flatten                            Flatten a directory and promote its children up.
+    -f, -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
     -H, -hidden                             Include hidden files.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
-        -link <NAME>                        Set the file's link name. An empty string skips the file.
+    -l, -link <NAME>                        Set the file's link name. An empty string skips the file.
     -s, -scandir                            Scan the directory to set targets.
     -u, -usehome                            Use home directory as base directory.
 
@@ -22,13 +22,13 @@ USAGE:
     config [OPTIONS] [TARGET]
 
 OPTIONS:
-        -basedir <DIR>                      Set the file's base directory.
+    -b, -basedir <DIR>                      Set the file's base directory.
         -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
-        -flatten                            Flatten a directory and promote its children up.
+    -f, -flatten                            Flatten a directory and promote its children up.
     -h, -help                               Print this help message.
     -H, -hidden                             Include hidden files.
         -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
-        -link <NAME>                        Set the file's link name. An empty string skips the file.
+    -l, -link <NAME>                        Set the file's link name. An empty string skips the file.
     -s, -scandir                            Scan the directory to set targets.
     -u, -usehome                            Use home directory as base directory.
 

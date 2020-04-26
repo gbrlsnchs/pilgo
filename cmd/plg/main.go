@@ -88,6 +88,7 @@ func run() int {
 						OptionDetails: cli.OptionDetails{
 							Description: "Set the file's base directory.",
 							ArgLabel:    "DIR",
+							Short:       'b',
 						},
 						Recipient: &root.config.baseDir,
 					},
@@ -95,6 +96,7 @@ func run() int {
 						OptionDetails: cli.OptionDetails{
 							Description: "Set the file's link name. An empty string skips the file.",
 							ArgLabel:    "NAME",
+							Short:       'l',
 						},
 						Recipient: &root.config.link,
 					},
@@ -108,6 +110,7 @@ func run() int {
 					"flatten": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Flatten a directory and promote its children up.",
+							Short:       'f',
 						},
 						Recipient: &root.config.flatten,
 					},
