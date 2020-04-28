@@ -24,6 +24,9 @@ func (OSDriver) MkdirAll(dirname string) error {
 
 // ReadDir lists names of files from dirname.
 func (OSDriver) ReadDir(dirname string) ([]fs.FileInfo, error) {
+	if dirname == "" {
+		dirname = "."
+	}
 	files, err := ioutil.ReadDir(dirname)
 	if err != nil {
 		return nil, err
