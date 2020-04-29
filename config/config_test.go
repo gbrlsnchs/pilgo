@@ -56,6 +56,24 @@ func testConfigSet(t *testing.T) {
 			c: config.Config{
 				Targets: []string{"foo"},
 			},
+			name: "",
+			o: config.Config{
+				BaseDir: "test",
+				Targets: []string{
+					"bar",
+				},
+			},
+			want: config.Config{
+				BaseDir: "test",
+				Targets: []string{
+					"bar",
+				},
+			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+			},
 			name: "foo",
 			o: config.Config{
 				BaseDir: "test",
