@@ -8,7 +8,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"text/template"
 
 	"github.com/google/renameio"
 	"github.com/magefile/mage/sh"
@@ -68,19 +70,34 @@ type replacement struct {
 	new string
 }
 
+type testPatch struct {
+	reps      replacement
+	buildData func([]byte) map[string]interface{}
+}
+
 // GenCLITests copies Linux E2E CLI tests and properly adapts it to other platforms.
 func GenCLITests() error {
 	const linuxdir = "linux"
-	oses := map[string][]replacement{
-		"darwin": {
-			{old: readDirErr, new: "fdopendir: not a directory"},
-		},
+	oses := map[string]map[string][]testPatch{
+		"darwin": {},
 		"windows": {
-			{old: slash, new: "\\"},
-			{old: fileNotFound, new: "The system cannot find the file specified."},
+			".*": {
+				{
+					reps: replacement{
+						old: slash,
+						new: "\\",
+					},
+				},
+				{
+					reps: replacement{
+						old: fileNotFound,
+						new: "The system cannot find the file specified.",
+					},
+				},
+			},
 		},
 	}
-	for sys, rep := range oses {
+	for sys, regexes := range oses {
 		testdir := filepath.Join("cmd", "plg", "testdata", "TestCLI")
 		windir := filepath.Join(testdir, sys)
 		if err := os.RemoveAll(windir); err != nil {
@@ -100,8 +117,28 @@ func GenCLITests() error {
 			if err != nil {
 				return err
 			}
-			for _, r := range rep {
-				b = bytes.ReplaceAll(b, []byte(r.old), []byte(r.new))
+			for rgx, repls := range regexes {
+				match, err := regexp.MatchString(rgx, fname)
+				if err != nil {
+					return err
+				}
+				if !match {
+					continue
+				}
+				for _, p := range repls {
+					r := p.reps
+					b = bytes.ReplaceAll(b, []byte(r.old), []byte(r.new))
+					if p.buildData != nil {
+						data := p.buildData(b)
+						tmpl := template.Must(
+							template.New(fname).Parse(string(b)))
+						buf := bytes.NewBuffer(make([]byte, 0, len(b)))
+						if err = tmpl.Execute(buf, data); err != nil {
+							return err
+						}
+						b = buf.Bytes()
+					}
+				}
 			}
 			if err := renameio.WriteFile(filepath.Join(windir, fname),
 				b, fi.Mode().Perm()); err != nil {
