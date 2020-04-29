@@ -30,6 +30,7 @@ func testConfigSet(t *testing.T) {
 						Targets: []string{
 							"bar",
 						},
+						Flatten: true,
 					},
 				},
 			},
@@ -39,6 +40,7 @@ func testConfigSet(t *testing.T) {
 				Targets: []string{
 					"bar",
 				},
+				Flatten: false,
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
@@ -48,6 +50,7 @@ func testConfigSet(t *testing.T) {
 						Targets: []string{
 							"bar",
 						},
+						Flatten: false,
 					},
 				},
 			},
@@ -55,6 +58,7 @@ func testConfigSet(t *testing.T) {
 		{
 			c: config.Config{
 				Targets: []string{"foo"},
+				Flatten: true,
 			},
 			name: "",
 			o: config.Config{
@@ -62,12 +66,14 @@ func testConfigSet(t *testing.T) {
 				Targets: []string{
 					"bar",
 				},
+				Flatten: false,
 			},
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{
 					"bar",
 				},
+				Flatten: false,
 			},
 		},
 		{
@@ -177,6 +183,54 @@ func testConfigSet(t *testing.T) {
 			want: config.Config{
 				Targets: []string{"foo"},
 				Options: nil,
+			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			name: "foo",
+			o:    config.Config{
+				Flatten: true,
+			},
+			want: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Flatten: true,
+					},
+				},
+			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			name: "foo",
+			o:    config.Config{
+				Tags: []string{"test"},
+			},
+			want: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Tags: []string{"test"},
+					},
+				},
 			},
 		},
 		{

@@ -16,6 +16,7 @@ type Config struct {
 	Link    *string            `yaml:"link,omitempty"`
 	Targets []string           `yaml:"targets,omitempty"`
 	Options map[string]*Config `yaml:"options,omitempty"`
+	Flatten bool               `yaml:"flatten,omitempty"`
 	UseHome *bool              `yaml:"useHome,omitempty"`
 	Tags    []string           `yaml:"tags,omitempty"`
 }
@@ -68,5 +69,7 @@ func (c *Config) isEmpty() bool {
 		c.Link == nil &&
 		len(c.Targets) == 0 &&
 		len(c.Options) == 0 &&
-		c.UseHome == nil
+		c.UseHome == nil &&
+		!c.Flatten &&
+		len(c.Tags) == 0
 }
