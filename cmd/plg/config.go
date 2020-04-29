@@ -12,7 +12,7 @@ import (
 type configCmd struct {
 	file    string
 	baseDir string
-	link    strptr
+	link    string
 	useHome boolptr
 	flatten bool
 	scanDir bool
@@ -41,14 +41,11 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 		if err := yaml.Unmarshal(b, &c); err != nil {
 			return err
 		}
-		if cmd.flatten {
-			s := ""
-			cmd.link.addr = &s // TODO: make link string, not pointer
-		}
 		cc := &config.Config{
 			Targets: targets,
 			BaseDir: cmd.baseDir,
-			Link:    cmd.link.addr,
+			Link:    cmd.link,
+			Flatten: cmd.flatten,
 			UseHome: cmd.useHome.addr,
 		}
 		c.Set(cmd.file, cc)

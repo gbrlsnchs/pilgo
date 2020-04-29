@@ -83,17 +83,17 @@ func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*N
 
 func (p *Parser) parseTarget(c *config.Config, targets, links []string) *Node {
 	n := &Node{Target: File{p.cwd, targets}}
-	if c.Link != nil {
+	lnlen := len(links)
+	if c.Link != "" {
 		// Replace last element from links. This is a link rename.
-		lnlen := len(links)
-		linkname := *c.Link
+		linkname := c.Link
 		links[lnlen-1] = linkname
-		if linkname == "" {
-			s := links[:lnlen-1]
-			// We need to create a new slice to avoid reusing the
-			// same underlying array between children.
-			links = append(make([]string, 0, len(s)), s...)
-		}
+	}
+	if c.Flatten {
+		s := links[:lnlen-1]
+		// We need to create a new slice to avoid reusing the
+		// same underlying array between children.
+		links = append(make([]string, 0, len(s)), s...)
 	}
 	if c.BaseDir == "" {
 		mode := UserMode

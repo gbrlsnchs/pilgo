@@ -55,7 +55,7 @@ $ cat pilgo.yml
 baseDir: rootdir
 options:
   test:
-    link: ""
+    flatten: true
 
 $ plg config -scandir test --> FAIL
 plg: open test: no such file or directory

@@ -76,7 +76,7 @@ func TestConfig(t *testing.T) {
 			cmd: configCmd{
 				file:    "foo",
 				baseDir: "test_foo",
-				link:    strptr{addr: internal.NewString("f00")},
+				link:    "f00",
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -115,7 +115,7 @@ func TestConfig(t *testing.T) {
 											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
-													Link:    internal.NewString("f00"),
+													Link:    "f00",
 													Targets: nil,
 												},
 											},
@@ -190,7 +190,7 @@ func TestConfig(t *testing.T) {
 			cmd: configCmd{
 				file:    "foo",
 				baseDir: "test_foo",
-				link:    strptr{addr: internal.NewString("f00")},
+				link:    "f00",
 				useHome: boolptr{addr: internal.NewBool(true)},
 			},
 			want: fstest.InMemoryDriver{
@@ -230,7 +230,7 @@ func TestConfig(t *testing.T) {
 											Options: map[string]*config.Config{
 												"foo": {
 													BaseDir: "test_foo",
-													Link:    internal.NewString("f00"),
+													Link:    "f00",
 													Targets: nil,
 													UseHome: internal.NewBool(true),
 												},
@@ -355,7 +355,7 @@ func TestConfig(t *testing.T) {
 											},
 											Options: map[string]*config.Config{
 												"test": {
-													Link: internal.NewString(""),
+													Flatten: true,
 												},
 											},
 										}),
@@ -479,7 +479,7 @@ func TestConfig(t *testing.T) {
 											},
 											Options: map[string]*config.Config{
 												"test": {
-													Link:    internal.NewString(""),
+													Flatten: true,
 													UseHome: internal.NewBool(true),
 												},
 											},

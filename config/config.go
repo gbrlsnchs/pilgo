@@ -13,7 +13,7 @@ const sep = string(filepath.Separator)
 // Config is a configuration format for Pilgo.
 type Config struct {
 	BaseDir string             `yaml:"baseDir,omitempty"`
-	Link    *string            `yaml:"link,omitempty"`
+	Link    string             `yaml:"link,omitempty"`
 	Targets []string           `yaml:"targets,omitempty"`
 	Options map[string]*Config `yaml:"options,omitempty"`
 	Flatten bool               `yaml:"flatten,omitempty"`
@@ -66,7 +66,7 @@ func (c *Config) Set(path string, new *Config) {
 
 func (c *Config) isEmpty() bool {
 	return c.BaseDir == "" &&
-		c.Link == nil &&
+		c.Link == "" &&
 		len(c.Targets) == 0 &&
 		len(c.Options) == 0 &&
 		c.UseHome == nil &&

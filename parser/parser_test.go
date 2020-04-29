@@ -27,7 +27,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
@@ -45,7 +45,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -68,12 +68,12 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
 				Options: map[string]*config.Config{
-					"foo": {Link: internal.NewString("bar")},
+					"foo": {Link: "bar"},
 				},
 			},
 			tr: &parser.Tree{
@@ -89,7 +89,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
@@ -145,7 +145,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -168,7 +168,7 @@ func testParserParse(t *testing.T) {
 		},
 		{
 			c: config.Config{
-				Link: nil,
+				Link: "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -196,7 +196,7 @@ func testParserParse(t *testing.T) {
 		},
 		{
 			c: config.Config{
-				Link: nil,
+				Link: "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -225,7 +225,7 @@ func testParserParse(t *testing.T) {
 		},
 		{
 			c: config.Config{
-				Link: nil,
+				Link: "",
 				Targets: []string{
 					"test",
 				},
@@ -267,7 +267,7 @@ func testParserParse(t *testing.T) {
 		},
 		{
 			c: config.Config{
-				Link: nil,
+				Link: "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -298,14 +298,48 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
 				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
-						Link:    internal.NewString(""),
+						Link:    "",
+						Targets: []string{
+							"bar",
+						},
+					},
+				},
+			},
+			tr: &parser.Tree{
+				Root: &parser.Node{Children: []*parser.Node{
+					{
+						Target: parser.File{"", []string{"foo"}},
+						Link:   parser.File{"home", []string{"foo"}},
+						Children: []*parser.Node{
+							{
+								Target:   parser.File{"", []string{"foo", "bar"}},
+								Link:     parser.File{"home", []string{"foo", "bar"}},
+								Children: nil,
+							},
+						},
+					},
+				}},
+			},
+			err: nil,
+		},
+		{
+			c: config.Config{
+				BaseDir: "test",
+				Link:    "",
+				Targets: []string{
+					"foo",
+				},
+				Options: map[string]*config.Config{
+					"foo": {
+						BaseDir: "home",
+						Flatten: true,
 						Targets: []string{
 							"bar",
 						},
@@ -332,14 +366,14 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
 				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "home",
-						Link:    internal.NewString("golang"),
+						Link:    "golang",
 						Targets: []string{
 							"bar",
 						},
@@ -366,7 +400,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "/tmp",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -395,13 +429,13 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
 				Options: map[string]*config.Config{
 					"foo": {
-						Link: internal.NewString(""),
+						Flatten: true,
 						Targets: []string{
 							"foobar",
 							"footest",
@@ -432,7 +466,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "$MY_ENV_VAR",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 				},
@@ -451,7 +485,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"$MY_ENV_VAR",
 				},
@@ -470,7 +504,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -494,7 +528,7 @@ func testParserParse(t *testing.T) {
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -518,14 +552,14 @@ func testParserParse(t *testing.T) {
 				}},
 			},
 			opts: []parser.ParseOption{parser.Tags(map[string]struct{}{
-				"test": struct{}{},
+				"test": {},
 			})},
 			err: nil,
 		},
 		{
 			c: config.Config{
 				BaseDir: "test",
-				Link:    nil,
+				Link:    "",
 				Targets: []string{
 					"foo",
 					"bar",
@@ -549,7 +583,7 @@ func testParserParse(t *testing.T) {
 				}},
 			},
 			opts: []parser.ParseOption{parser.Tags(map[string]struct{}{
-				"test_tag": struct{}{},
+				"test_tag": {},
 			})},
 			err: nil,
 		},

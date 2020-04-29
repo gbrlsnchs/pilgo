@@ -92,7 +92,7 @@ func run() int {
 						},
 						Recipient: &root.config.baseDir,
 					},
-					"link": cli.VarOption{
+					"link": cli.StringOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Set the file's link name. An empty string skips the file.",
 							ArgLabel:    "NAME",
