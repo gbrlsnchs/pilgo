@@ -12,6 +12,7 @@ import (
 )
 
 type appConfig struct {
+	name          string
 	conf          string
 	fs            fs.Driver
 	getwd         func() (string, error)
@@ -41,6 +42,7 @@ func run() int {
 	var (
 		root   rootCmd
 		appcfg = appConfig{
+			name:          "Pilgo",
 			fs:            fsutil.OSDriver{},
 			getwd:         os.Getwd,
 			userConfigDir: os.UserConfigDir,

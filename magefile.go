@@ -182,7 +182,7 @@ func GenCLITests() error {
 }
 
 func Test() error {
-	ldflags := ldflagsVar("internal.version", "test_version")
+	ldflags := ldflagsVar("internal.version", "refs/tags/v0.0.0-test")
 	return sh.RunWith(env, "go", "test", "-race", "-ldflags", ldflags, "./...")
 }
 

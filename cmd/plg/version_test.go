@@ -20,14 +20,28 @@ func TestVersion(t *testing.T) {
 			desc:    "unknown version",
 			version: "",
 			cmd:     versionCmd{},
-			want:    "version unknown version\n",
+			want:    "version_cmd unknown version\n",
+			err:     nil,
+		},
+		{
+			desc:    "show raw version",
+			version: "refs/tags/0.0.0-test",
+			cmd:     versionCmd{},
+			want:    "version_cmd 0.0.0-test\n",
 			err:     nil,
 		},
 		{
 			desc:    "show version",
-			version: "v0.0.0",
+			version: "0.0.0-test",
 			cmd:     versionCmd{},
-			want:    "version v0.0.0\n",
+			want:    "version_cmd 0.0.0-test\n",
+			err:     nil,
+		},
+		{
+			desc:    "show version with prefix",
+			version: "0.0.0-test",
+			cmd:     versionCmd{},
+			want:    "version_cmd 0.0.0-test\n",
 			err:     nil,
 		},
 	}
@@ -35,10 +49,11 @@ func TestVersion(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			var (
 				appcfg = appConfig{
+					name:    "version_cmd",
 					version: tc.version,
 				}
 				exec = tc.cmd.register(appcfg.copy)
-				prg  = clitest.NewProgram("version")
+				prg  = clitest.NewProgram("cmd")
 				err  = exec(prg)
 			)
 			if want, got := tc.err, err; !errors.Is(got, want) {
