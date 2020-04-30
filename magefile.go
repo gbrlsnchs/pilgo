@@ -4,12 +4,13 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"text/template"
 
 	"github.com/google/renameio"
@@ -17,18 +18,15 @@ import (
 )
 
 const (
-	module         = "github.com/gbrlsnchs/pilgo"
-	versionEnvName = "PILGO_VERSION"
-	dstdir         = ".bin"
-	sep            = string(filepath.Separator)
+	module = "github.com/gbrlsnchs/pilgo"
+	dstdir = ".bin"
+	sep    = string(filepath.Separator)
 )
 
 var (
-	ldflags = fmt.Sprintf("-X %s/cmd/internal.version=$%s", module, versionEnvName)
-	env     = map[string]string{
-		versionEnvName: pilgoVersion(),
-		"CGO":          "0",
-		"GOARCH":       "amd64",
+	env = map[string]string{
+		"CGO":    "0",
+		"GOARCH": "amd64",
 	}
 	exes      = []string{"plg"}
 	platforms = []string{
@@ -41,12 +39,20 @@ var (
 var Default = Build
 
 func Build() error {
+	tag, err := exec.Command("git", "tag", "--points-at=HEAD").Output() // git tag --points-at=HEAD
+	if err != nil {
+		return err
+	}
+	if string(tag) == "" {
+		return errors.New("aborting build: no tag found")
+	}
 	for _, ptf := range platforms {
 		env["GOOS"] = ptf
 		for _, x := range exes {
 			fmt.Printf("Building %q for %q...\n", x, ptf)
 			src := filepath.Join(module, "cmd", x)
 			dst := filepath.Join(dstdir, ptf, executable(x, ptf))
+			ldflags := ldflagsVar("internal.version", string(tag))
 			err := sh.RunWith(env, "go", "build", "-o", dst, "-ldflags", ldflags, src)
 			if err != nil {
 				return err
@@ -176,15 +182,8 @@ func GenCLITests() error {
 }
 
 func Test() error {
+	ldflags := ldflagsVar("internal.version", "test_version")
 	return sh.RunWith(env, "go", "test", "-race", "-ldflags", ldflags, "./...")
-}
-
-func pilgoVersion() string {
-	v := os.Getenv(versionEnvName)
-	if v != "" {
-		return strings.TrimPrefix(v, "refs/tags/")
-	}
-	return "test_version"
 }
 
 func executable(x string, platform string) string {
@@ -192,4 +191,8 @@ func executable(x string, platform string) string {
 		return x + ".exe"
 	}
 	return x
+}
+
+func ldflagsVar(name, value string) string {
+	return fmt.Sprintf("-X %s/cmd/%s=%s", module, name, value)
 }
