@@ -51,11 +51,11 @@ USAGE:
     init [OPTIONS]
 
 OPTIONS:
-        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
-    -f, -force                              Override an already existing configuration file.
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded from initialization.
+    -f, -force                              Overwrite the existing configuration file.
     -h, -help                               Print this help message.
-    -H, -hidden                             Include hidden files.
-        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
+    -H, -hidden                             Include hidden files on initialization.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included from initialization.
 
 $ plg init -h
 Initialize a configuration file.
@@ -64,8 +64,8 @@ USAGE:
     init [OPTIONS]
 
 OPTIONS:
-        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded.
-    -f, -force                              Override an already existing configuration file.
+        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded from initialization.
+    -f, -force                              Overwrite the existing configuration file.
     -h, -help                               Print this help message.
-    -H, -hidden                             Include hidden files.
-        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included.
+    -H, -hidden                             Include hidden files on initialization.
+        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included from initialization.

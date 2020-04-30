@@ -73,7 +73,7 @@ func run() int {
 					"fail": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
 							Short:       'f',
-							Description: "Fail when there are one or more conflicts.",
+							Description: "Return an error if there are any conflicts.",
 						},
 						DefValue:  false,
 						Recipient: &root.check.fail,
@@ -86,7 +86,7 @@ func run() int {
 				Options: map[string]cli.Option{
 					"basedir": cli.StringOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Set the file's base directory.",
+							Description: "Set the target's base directory. Works recursively for all nested targets, unless overridden.",
 							ArgLabel:    "DIR",
 							Short:       'b',
 						},
@@ -94,7 +94,7 @@ func run() int {
 					},
 					"link": cli.StringOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Set the file's link name. An empty string skips the file.",
+							Description: "Set the target's link name.",
 							ArgLabel:    "NAME",
 							Short:       'l',
 						},
@@ -102,28 +102,47 @@ func run() int {
 					},
 					"usehome": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Use home directory as base directory.",
-							Short:       'u',
+							Description: "Use home directory as the target's base directory and recursively for all nested targets, unless overridden.",
+							Short:       'H',
 						},
 						Recipient: &root.config.useHome,
 					},
 					"flatten": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Flatten a directory and promote its children up.",
+							Description: "Prevent the target from being included in the link name.",
 							Short:       'f',
 						},
 						Recipient: &root.config.flatten,
 					},
 					"scandir": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Scan the directory to set targets.",
+							Description: "Scan the target and set its files as its own targets.",
 							Short:       's',
 						},
 						Recipient: &root.config.scanDir,
 					},
-					"include": root.config.read.option("include"),
-					"exclude": root.config.read.option("exclude"),
-					"hidden":  root.config.read.option("hidden"),
+					"include": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be included when scanning the target.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.config.read.include,
+					},
+					"exclude": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be excluded when scanning the target.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.config.read.exclude,
+					},
+
+					"scanhidden": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Include hidden files when scanning the target.",
+							Short:       'S',
+						},
+						Recipient: &root.config.read.hidden,
+					},
 				},
 				Arg: cli.StringArg{
 					Label:     "TARGET",
@@ -137,14 +156,33 @@ func run() int {
 				Options: map[string]cli.Option{
 					"force": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Override an already existing configuration file.",
+							Description: "Overwrite the existing configuration file.",
 							Short:       'f',
 						},
 						Recipient: &root.init.force,
 					},
-					"include": root.init.read.option("include"),
-					"exclude": root.init.read.option("exclude"),
-					"hidden":  root.init.read.option("hidden"),
+					"include": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be included from initialization.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.init.read.include,
+					},
+					"exclude": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of targets to be excluded from initialization.",
+							ArgLabel:    "TARGET 1,...,TARGET n",
+						},
+						Recipient: &root.init.read.exclude,
+					},
+
+					"hidden": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Include hidden files on initialization.",
+							Short:       'H',
+						},
+						Recipient: &root.init.read.hidden,
+					},
 				},
 				Exec: root.init.register(appcfg.copy),
 			},

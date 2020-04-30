@@ -5,7 +5,7 @@ USAGE:
     check [OPTIONS]
 
 OPTIONS:
-    -f, -fail    Fail when there are one or more conflicts.
+    -f, -fail    Return an error if there are any conflicts.
     -h, -help    Print this help message.
 
 $ plg check -h
@@ -15,7 +15,7 @@ USAGE:
     check [OPTIONS]
 
 OPTIONS:
-    -f, -fail    Fail when there are one or more conflicts.
+    -f, -fail    Return an error if there are any conflicts.
     -h, -help    Print this help message.
 
 $ plg check --> FAIL
