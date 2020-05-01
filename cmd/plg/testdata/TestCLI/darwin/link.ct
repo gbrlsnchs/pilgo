@@ -5,8 +5,8 @@ USAGE:
     link [OPTIONS]
 
 OPTIONS:
-    -h, -help    Print this help message.
-    -t, -tags    Comma-separated list of tags. Targets with these tags will also be linked.
+    -h, -help                      Print this help message.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags. Targets with these tags will also be linked.
 
 $ plg link -h
 Link your dotfiles as set in the configuration file.
@@ -15,8 +15,8 @@ USAGE:
     link [OPTIONS]
 
 OPTIONS:
-    -h, -help    Print this help message.
-    -t, -tags    Comma-separated list of tags. Targets with these tags will also be linked.
+    -h, -help                      Print this help message.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags. Targets with these tags will also be linked.
 
 $ plg link --> FAIL
 plg: open pilgo.yml: no such file or directory

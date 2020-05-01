@@ -5,9 +5,9 @@ USAGE:
     check [OPTIONS]
 
 OPTIONS:
-    -f, -fail    Return an error if there are any conflicts.
-    -h, -help    Print this help message.
-    -t, -tags    Comma-separated list of tags. Targets with these tags will also be checked.
+    -f, -fail                      Return an error if there are any conflicts.
+    -h, -help                      Print this help message.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags. Targets with these tags will also be checked.
 
 $ plg check -h
 Check the status of your dotfiles.
@@ -16,9 +16,9 @@ USAGE:
     check [OPTIONS]
 
 OPTIONS:
-    -f, -fail    Return an error if there are any conflicts.
-    -h, -help    Print this help message.
-    -t, -tags    Comma-separated list of tags. Targets with these tags will also be checked.
+    -f, -fail                      Return an error if there are any conflicts.
+    -h, -help                      Print this help message.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags. Targets with these tags will also be checked.
 
 $ plg check --> FAIL
 plg: open pilgo.yml: no such file or directory

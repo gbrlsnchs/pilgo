@@ -75,6 +75,7 @@ func run() int {
 						OptionDetails: cli.OptionDetails{
 							Description: "Comma-separated list of tags. Targets with these tags will also be checked.",
 							Short:       't',
+							ArgLabel:    "TAG 1,...,TAG n",
 						},
 						Recipient: &root.check.tags,
 					},
@@ -123,19 +124,18 @@ func run() int {
 					},
 					"include": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be included when scanning the target.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
+							Description: "File to be included as a target. Repeat option to include more files.",
+							ArgLabel:    "FILE",
 						},
 						Recipient: &root.config.read.include,
 					},
 					"exclude": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be excluded when scanning the target.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
+							Description: "File to be excluded from targets. Repeat option to exclude more files.",
+							ArgLabel:    "FILE",
 						},
 						Recipient: &root.config.read.exclude,
 					},
-
 					"scanhidden": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Include hidden files when scanning the target.",
@@ -146,7 +146,8 @@ func run() int {
 					"tags": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Comma-separated list of tags to be set for the target.",
-							Short: 't',
+							Short:       't',
+							ArgLabel:    "TAG 1,...,TAG n",
 						},
 						Recipient: &root.config.tags,
 					},
@@ -170,19 +171,18 @@ func run() int {
 					},
 					"include": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be included from initialization.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
+							Description: "File to be included as a target. Repeat option to include more files.",
+							ArgLabel:    "FILE",
 						},
 						Recipient: &root.init.read.include,
 					},
 					"exclude": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "Comma-separated list of targets to be excluded from initialization.",
-							ArgLabel:    "TARGET 1,...,TARGET n",
+							Description: "File to be excluded from targets. Repeat option to exclude more files.",
+							ArgLabel:    "FILE",
 						},
 						Recipient: &root.init.read.exclude,
 					},
-
 					"hidden": cli.BoolOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Include hidden files on initialization.",
@@ -201,6 +201,7 @@ func run() int {
 						OptionDetails: cli.OptionDetails{
 							Description: "Comma-separated list of tags. Targets with these tags will also be linked.",
 							Short:       't',
+							ArgLabel:    "TAG 1,...,TAG n",
 						},
 						Recipient: &root.link.tags,
 					},
@@ -214,6 +215,7 @@ func run() int {
 						OptionDetails: cli.OptionDetails{
 							Description: "Comma-separated list of tags. Targets with these tags will also be shown.",
 							Short:       't',
+							ArgLabel:    "TAG 1,...,TAG n",
 						},
 						Recipient: &root.show.tags,
 					},

@@ -5,16 +5,16 @@ USAGE:
     config [OPTIONS] [TARGET]
 
 OPTIONS:
-    -b, -basedir <DIR>                      Set the target's base directory. Works recursively for all nested targets, unless overridden.
-        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded when scanning the target.
-    -f, -flatten                            Prevent the target from being included in the link name.
-    -h, -help                               Print this help message.
-        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included when scanning the target.
-    -l, -link <NAME>                        Set the target's link name.
-    -s, -scandir                            Scan the target and set its files as its own targets.
-    -S, -scanhidden                         Include hidden files when scanning the target.
-    -t, -tags                               Comma-separated list of tags to be set for the target.
-    -H, -usehome                            Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
+    -b, -basedir <DIR>             Set the target's base directory. Works recursively for all nested targets, unless overridden.
+        -exclude <FILE>            File to be excluded from targets. Repeat option to exclude more files.
+    -f, -flatten                   Prevent the target from being included in the link name.
+    -h, -help                      Print this help message.
+        -include <FILE>            File to be included as a target. Repeat option to include more files.
+    -l, -link <NAME>               Set the target's link name.
+    -s, -scandir                   Scan the target and set its files as its own targets.
+    -S, -scanhidden                Include hidden files when scanning the target.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags to be set for the target.
+    -H, -usehome                   Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
 $ plg config -h
 Configure a dotfile in the configuration file.
@@ -23,16 +23,16 @@ USAGE:
     config [OPTIONS] [TARGET]
 
 OPTIONS:
-    -b, -basedir <DIR>                      Set the target's base directory. Works recursively for all nested targets, unless overridden.
-        -exclude <TARGET 1,...,TARGET n>    Comma-separated list of targets to be excluded when scanning the target.
-    -f, -flatten                            Prevent the target from being included in the link name.
-    -h, -help                               Print this help message.
-        -include <TARGET 1,...,TARGET n>    Comma-separated list of targets to be included when scanning the target.
-    -l, -link <NAME>                        Set the target's link name.
-    -s, -scandir                            Scan the target and set its files as its own targets.
-    -S, -scanhidden                         Include hidden files when scanning the target.
-    -t, -tags                               Comma-separated list of tags to be set for the target.
-    -H, -usehome                            Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
+    -b, -basedir <DIR>             Set the target's base directory. Works recursively for all nested targets, unless overridden.
+        -exclude <FILE>            File to be excluded from targets. Repeat option to exclude more files.
+    -f, -flatten                   Prevent the target from being included in the link name.
+    -h, -help                      Print this help message.
+        -include <FILE>            File to be included as a target. Repeat option to include more files.
+    -l, -link <NAME>               Set the target's link name.
+    -s, -scandir                   Scan the target and set its files as its own targets.
+    -S, -scanhidden                Include hidden files when scanning the target.
+    -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags to be set for the target.
+    -H, -usehome                   Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
 $ mkdir targets
 $ mkdir links
