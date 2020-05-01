@@ -72,10 +72,12 @@ func (p *Parser) parseChildren(c *config.Config, ptargets, plinks []string) []*N
 			if cc.BaseDir == "" {
 				cc.BaseDir = c.BaseDir
 			}
+			tgs := append(make([]string, 0, len(ptargets)+1), ptargets...)
+			lns := append(make([]string, 0, len(plinks)+1), plinks...)
 			cc.BaseDir = p.expandVar(cc.BaseDir)
 			children = append(children, p.parseTarget(cc,
-				append(ptargets, tg),
-				append(plinks, tg)))
+				append(tgs, tg),
+				append(lns, tg)))
 		}
 	}
 	return children

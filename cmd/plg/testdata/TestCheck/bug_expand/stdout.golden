@@ -1,0 +1,9 @@
+.
+└── root                                             (SKIP)
+    └── dir                                          (SKIP)
+        └── subdir                                   (EXPAND)
+            ├── target_1                             (EXPAND)
+            │   ├── bar  <- ~etc/subdir/target_1/bar (CONFLICT)
+            │   └── foo  <- ~etc/subdir/target_1/foo (CONFLICT)
+            └── target_2                             (EXPAND)
+                └── baz  <- ~etc/subdir/target_2/baz (READY)

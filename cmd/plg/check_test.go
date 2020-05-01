@@ -973,6 +973,231 @@ func TestCheck(t *testing.T) {
 			conflicts: true,
 			err:       nil,
 		},
+		{
+			// NOTE(gbrlsnchs): Bug caught on my own dotfiles.
+			name: "bug expand",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"root": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"dir": {
+												Linkname: "",
+												Perm:     os.ModePerm,
+												Data:     nil,
+												Children: map[string]fstest.File{
+													"subdir": {
+														Linkname: "",
+														Perm:     os.ModePerm,
+														Data:     nil,
+														Children: map[string]fstest.File{
+															"target_1": {
+																Linkname: "",
+																Perm:     os.ModePerm,
+																Data:     nil,
+																Children: map[string]fstest.File{
+																	"foo": {Data: []byte("foo")},
+																	"bar": {Data: []byte("bar")},
+																},
+															},
+															"target_2": {
+																Linkname: "",
+																Perm:     os.ModePerm,
+																Data:     nil,
+																Children: map[string]fstest.File{
+																	"baz": {Data: []byte("baz")},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"bug_expand.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{"root"},
+											Options: map[string]*config.Config{
+												"root": {
+													BaseDir: fstest.AbsPath("etc"),
+													Targets: []string{"dir"},
+													Options: map[string]*config.Config{
+														"dir": {
+															Targets: []string{"subdir"},
+															Flatten: true,
+														},
+													},
+													Flatten: true,
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+						},
+					},
+					"etc": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"subdir": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"target_1": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"foo": {Data: []byte("foo")},
+											"bar": {Data: []byte("bar")},
+										},
+									},
+									"target_2": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"qux": {Data: []byte("qux")},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			cmd: checkCmd{},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"root": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"dir": {
+												Linkname: "",
+												Perm:     os.ModePerm,
+												Data:     nil,
+												Children: map[string]fstest.File{
+													"subdir": {
+														Linkname: "",
+														Perm:     os.ModePerm,
+														Data:     nil,
+														Children: map[string]fstest.File{
+															"target_1": {
+																Linkname: "",
+																Perm:     os.ModePerm,
+																Data:     nil,
+																Children: map[string]fstest.File{
+																	"foo": {Data: []byte("foo")},
+																	"bar": {Data: []byte("bar")},
+																},
+															},
+															"target_2": {
+																Linkname: "",
+																Perm:     os.ModePerm,
+																Data:     nil,
+																Children: map[string]fstest.File{
+																	"baz": {Data: []byte("baz")},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"bug_expand.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{"root"},
+											Options: map[string]*config.Config{
+												"root": {
+													BaseDir: fstest.AbsPath("etc"),
+													Targets: []string{"dir"},
+													Options: map[string]*config.Config{
+														"dir": {
+															Targets: []string{"subdir"},
+															Flatten: true,
+														},
+													},
+													Flatten: true,
+												},
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+						},
+					},
+					"etc": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"subdir": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"target_1": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"foo": {Data: []byte("foo")},
+											"bar": {Data: []byte("bar")},
+										},
+									},
+									"target_2": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     nil,
+										Children: map[string]fstest.File{
+											"qux": {Data: []byte("qux")},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			conflicts: false,
+			err:       nil,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

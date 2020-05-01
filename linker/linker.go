@@ -145,14 +145,16 @@ func expand(n *parser.Node, children []fs.FileInfo) {
 	}
 	n.Children = make([]*parser.Node, len(children))
 	for i, c := range children {
+		tg := append(make([]string, 0, len(n.Target.Path) + 1), n.Target.Path...)
+		ln := append(make([]string, 0, len(n.Link.Path) + 1), n.Link.Path...)
 		n.Children[i] = &parser.Node{
 			Target: parser.File{
 				BaseDir: n.Target.BaseDir,
-				Path:    append(n.Target.Path, c.Name()),
+				Path:    append(tg, c.Name()),
 			},
 			Link: parser.File{
 				BaseDir: n.Link.BaseDir,
-				Path:    append(n.Link.Path, c.Name()),
+				Path:    append(ln, c.Name()),
 			},
 			Children: nil,
 		}

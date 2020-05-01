@@ -678,9 +678,6 @@ func testResolve(t *testing.T) {
 					filepath.Join("test", "foo", "bar"): fstest.StubFile{
 						ExistsReturn: false,
 					},
-					filepath.Join("test", "foo", "bar"): fstest.StubFile{
-						ExistsReturn: false,
-					},
 					filepath.Join("test", "foo", "baz"): fstest.StubFile{
 						ExistsReturn: false,
 					},
@@ -868,6 +865,181 @@ func testResolve(t *testing.T) {
 				Status:   parser.StatusSkip,
 			},
 		},
+		{
+			drv: fstest.SpyDriver{
+				StatReturn: map[string]fs.FileInfo{
+					// targets
+					"foo": fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("foo", "bar"): fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("foo", "bar", "test"): fstest.StubFile{
+						ExistsReturn: true,
+					},
+					filepath.Join("foo", "qux"): fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("foo", "qux", "test"): fstest.StubFile{
+						ExistsReturn: true,
+					},
+					// links
+					filepath.Join("test", "foo"): fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo", "bar"): fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo", "bar", "test"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+					filepath.Join("test", "foo", "qux"): fstest.StubFile{
+						ExistsReturn: true,
+						IsDirReturn:  true,
+					},
+					filepath.Join("test", "foo", "qux", "test"): fstest.StubFile{
+						ExistsReturn: false,
+					},
+				},
+				StatErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+				ReadDirReturn: map[string][]fs.FileInfo{
+					"foo": {
+						fstest.StubFile{NameReturn: "bar"},
+						fstest.StubFile{NameReturn: "qux"},
+					},
+					filepath.Join("foo", "bar"): {
+						fstest.StubFile{NameReturn: "test"},
+					},
+					filepath.Join("foo", "qux"): {
+						fstest.StubFile{NameReturn: "test"},
+					},
+					filepath.Join("test", "foo"): {
+						fstest.StubFile{NameReturn: "bar", IsDirReturn: true},
+						fstest.StubFile{NameReturn: "qux", IsDirReturn: true},
+					},
+					filepath.Join("test", "foo", "bar"): {
+						fstest.StubFile{NameReturn: "test"},
+					},
+					filepath.Join("test", "foo", "qux"): {
+						fstest.StubFile{NameReturn: "test"},
+					},
+				},
+				ReadDirErr: map[string]error{
+					"foo":                        nil,
+					filepath.Join("test", "foo"): nil,
+				},
+			},
+			n: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: nil,
+			},
+			err: nil,
+			want: &parser.Node{
+				Target: parser.File{
+					BaseDir: "",
+					Path:    []string{"foo"},
+				},
+				Link: parser.File{
+					BaseDir: "test",
+					Path:    []string{"foo"},
+				},
+				Children: []*parser.Node{
+					{
+						Target: parser.File{
+							BaseDir: "",
+							Path: []string{
+								"foo",
+								"bar",
+							},
+						},
+						Link: parser.File{
+							BaseDir: "test",
+							Path: []string{
+								"foo",
+								"bar",
+							},
+						},
+						Children: []*parser.Node{
+							{
+								Target: parser.File{
+									BaseDir: "",
+									Path: []string{
+										"foo",
+										"bar",
+										"test",
+									},
+								},
+								Link: parser.File{
+									BaseDir: "test",
+									Path: []string{
+										"foo",
+										"bar",
+										"test",
+									},
+								},
+								Status: parser.StatusReady,
+							},
+						},
+						Status: parser.StatusExpand,
+					},
+					{
+						Target: parser.File{
+							BaseDir: "",
+							Path: []string{
+								"foo",
+								"qux",
+							},
+						},
+						Link: parser.File{
+							BaseDir: "test",
+							Path: []string{
+								"foo",
+								"qux",
+							},
+						},
+						Children: []*parser.Node{
+							{
+								Target: parser.File{
+									BaseDir: "",
+									Path: []string{
+										"foo",
+										"qux",
+										"test",
+									},
+								},
+								Link: parser.File{
+									BaseDir: "test",
+									Path: []string{
+										"foo",
+										"qux",
+										"test",
+									},
+								},
+								Status: parser.StatusReady,
+							},
+						},
+						Status: parser.StatusExpand,
+					},
+				},
+				Status: parser.StatusExpand,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
@@ -900,6 +1072,7 @@ func testResolve(t *testing.T) {
 					cmp.Diff(want, got),
 				)
 			}
+			t.Logf("\n%s", tr.String())
 		})
 	}
 }
