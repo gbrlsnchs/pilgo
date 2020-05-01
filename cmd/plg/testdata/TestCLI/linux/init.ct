@@ -61,7 +61,7 @@ OPTIONS:
     -f, -force             Overwrite the existing configuration file.
     -h, -help              Print this help message.
     -H, -hidden            Include hidden files on initialization.
-        -include <FILE>    File to be included as a target. Repeat option to include more files.
+        -include <FILE>    File to be exclusively included as a target. Repeat option to include more files.
 
 $ plg init -h
 Initialize a configuration file.
@@ -74,4 +74,4 @@ OPTIONS:
     -f, -force             Overwrite the existing configuration file.
     -h, -help              Print this help message.
     -H, -hidden            Include hidden files on initialization.
-        -include <FILE>    File to be included as a target. Repeat option to include more files.
+        -include <FILE>    File to be exclusively included as a target. Repeat option to include more files.

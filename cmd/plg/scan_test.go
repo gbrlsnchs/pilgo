@@ -10,15 +10,14 @@ import (
 	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs/fstest"
-	"github.com/gbrlsnchs/pilgo/internal"
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestConfig(t *testing.T) {
+func TestScan(t *testing.T) {
 	testCases := []struct {
 		name string
 		drv  fstest.InMemoryDriver
-		cmd  configCmd
+		cmd  scanCmd
 		want fstest.InMemoryDriver
 		err  error
 	}{
@@ -53,10 +52,15 @@ func TestConfig(t *testing.T) {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
+											Flatten: true,
+											Tags:    []string{"test"},
+											Options: map[string]*config.Config{
+												"foo": {
+													Link: "f00",
+												},
+											},
 											Targets: []string{
 												"foo",
-												"bar",
 											},
 										}),
 										Children: nil,
@@ -73,11 +77,8 @@ func TestConfig(t *testing.T) {
 					},
 				},
 			},
-			cmd: configCmd{
-				file:    "foo",
-				baseDir: "test_foo",
-				link:    "f00",
-				tags:    cliutil.CommaSepOptionList{"test", "tag"},
+			cmd: scanCmd{
+				file: "",
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -108,18 +109,16 @@ func TestConfig(t *testing.T) {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
-											Targets: []string{
-												"foo",
-												"bar",
-											},
+											Flatten: true,
+											Tags:    []string{"test"},
 											Options: map[string]*config.Config{
 												"foo": {
-													BaseDir: "test_foo",
-													Link:    "f00",
-													Targets: nil,
-													Tags:    []string{"test", "tag"},
+													Link: "f00",
 												},
+											},
+											Targets: []string{
+												"bar",
+												"foo",
 											},
 										}),
 										Children: nil,
@@ -139,7 +138,7 @@ func TestConfig(t *testing.T) {
 			err: nil,
 		},
 		{
-			name: "home",
+			name: "include",
 			drv: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -165,14 +164,12 @@ func TestConfig(t *testing.T) {
 										Data:     []byte("bar"),
 										Children: nil,
 									},
-									"home.yml": {
+									"include.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
 												"foo",
-												"bar",
 											},
 										}),
 										Children: nil,
@@ -189,11 +186,13 @@ func TestConfig(t *testing.T) {
 					},
 				},
 			},
-			cmd: configCmd{
-				file:    "foo",
-				baseDir: "test_foo",
-				link:    "f00",
-				useHome: boolptr{addr: internal.NewBool(true)},
+			cmd: scanCmd{
+				file: "",
+				read: readMode{
+					include: cliutil.MultiValueOptionSet{
+						"bar": struct{}{},
+					},
+				},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -220,22 +219,118 @@ func TestConfig(t *testing.T) {
 										Data:     []byte("bar"),
 										Children: nil,
 									},
-									"home.yml": {
+									"include.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
-												"foo",
 												"bar",
 											},
-											Options: map[string]*config.Config{
-												"foo": {
-													BaseDir: "test_foo",
-													Link:    "f00",
-													Targets: nil,
-													UseHome: internal.NewBool(true),
-												},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			err: nil,
+		},
+		{
+			name: "exclude",
+			drv: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"exclude.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"foo",
+											},
+										}),
+										Children: nil,
+									},
+								},
+							},
+							"config": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: make(map[string]fstest.File, 0),
+							},
+						},
+					},
+				},
+			},
+			cmd: scanCmd{
+				file: "",
+				read: readMode{
+					exclude: cliutil.MultiValueOptionSet{
+						"foo": struct{}{},
+					},
+				},
+			},
+			want: fstest.InMemoryDriver{
+				CurrentDir: "home/dotfiles",
+				Files: map[string]fstest.File{
+					"home": {
+						Linkname: "",
+						Perm:     os.ModePerm,
+						Data:     nil,
+						Children: map[string]fstest.File{
+							"dotfiles": {
+								Linkname: "",
+								Perm:     os.ModePerm,
+								Data:     nil,
+								Children: map[string]fstest.File{
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"exclude.yml": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data: yamlData(config.Config{
+											Targets: []string{
+												"bar",
 											},
 										}),
 										Children: nil,
@@ -255,7 +350,7 @@ func TestConfig(t *testing.T) {
 			err: nil,
 		},
 		{
-			name: "flatten",
+			name: "hidden",
 			drv: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -269,32 +364,30 @@ func TestConfig(t *testing.T) {
 								Perm:     os.ModePerm,
 								Data:     nil,
 								Children: map[string]fstest.File{
-									"test": {
+									".git": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data:     []byte("foo"),
-										Children: map[string]fstest.File{
-											"foo": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-											"bar": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-										},
+										Children: nil,
 									},
-									"flatten.yml": {
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"hidden.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
-												"test",
+												"foo",
 											},
 										}),
 										Children: nil,
@@ -311,9 +404,11 @@ func TestConfig(t *testing.T) {
 					},
 				},
 			},
-			cmd: configCmd{
-				file:    "test",
-				flatten: true,
+			cmd: scanCmd{
+				file: "",
+				read: readMode{
+					hidden: true,
+				},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -328,37 +423,32 @@ func TestConfig(t *testing.T) {
 								Perm:     os.ModePerm,
 								Data:     nil,
 								Children: map[string]fstest.File{
-									"test": {
+									".git": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data:     []byte("foo"),
-										Children: map[string]fstest.File{
-											"foo": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-											"bar": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-										},
+										Children: nil,
 									},
-									"flatten.yml": {
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"hidden.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
-												"test",
-											},
-											Options: map[string]*config.Config{
-												"test": {
-													Flatten: true,
-												},
+												".git",
+												"bar",
+												"foo",
 											},
 										}),
 										Children: nil,
@@ -378,7 +468,7 @@ func TestConfig(t *testing.T) {
 			err: nil,
 		},
 		{
-			name: "flatten to home",
+			name: "hidden exclude",
 			drv: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -392,32 +482,30 @@ func TestConfig(t *testing.T) {
 								Perm:     os.ModePerm,
 								Data:     nil,
 								Children: map[string]fstest.File{
-									"test": {
+									".git": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data:     []byte("foo"),
-										Children: map[string]fstest.File{
-											"foo": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-											"bar": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-										},
+										Children: nil,
 									},
-									"flatten_to_home.yml": {
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"hidden_exclude.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
-												"test",
+												"foo",
 											},
 										}),
 										Children: nil,
@@ -434,10 +522,14 @@ func TestConfig(t *testing.T) {
 					},
 				},
 			},
-			cmd: configCmd{
-				file:    "test",
-				useHome: boolptr{addr: internal.NewBool(true)},
-				flatten: true,
+			cmd: scanCmd{
+				file: "",
+				read: readMode{
+					hidden: true,
+					exclude: cliutil.MultiValueOptionSet{
+						".git": struct{}{},
+					},
+				},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -452,38 +544,31 @@ func TestConfig(t *testing.T) {
 								Perm:     os.ModePerm,
 								Data:     nil,
 								Children: map[string]fstest.File{
-									"test": {
+									".git": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data:     []byte("foo"),
-										Children: map[string]fstest.File{
-											"foo": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-											"bar": {
-												Linkname: "",
-												Perm:     os.ModePerm,
-												Data:     []byte("bar"),
-												Children: nil,
-											},
-										},
+										Children: nil,
 									},
-									"flatten_to_home.yml": {
+									"foo": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("foo"),
+										Children: nil,
+									},
+									"bar": {
+										Linkname: "",
+										Perm:     os.ModePerm,
+										Data:     []byte("bar"),
+										Children: nil,
+									},
+									"hidden_exclude.yml": {
 										Linkname: "",
 										Perm:     os.ModePerm,
 										Data: yamlData(config.Config{
-											BaseDir: "test",
 											Targets: []string{
-												"test",
-											},
-											Options: map[string]*config.Config{
-												"test": {
-													Flatten: true,
-													UseHome: internal.NewBool(true),
-												},
+												"bar",
+												"foo",
 											},
 										}),
 										Children: nil,

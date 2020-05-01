@@ -28,6 +28,7 @@ type rootCmd struct {
 	config  configCmd
 	init    initCmd
 	link    linkCmd
+	scan    scanCmd
 	show    showCmd
 	version versionCmd
 }
@@ -115,34 +116,6 @@ func run() int {
 						},
 						Recipient: &root.config.flatten,
 					},
-					"scandir": cli.BoolOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Scan the target and set its files as its own targets.",
-							Short:       's',
-						},
-						Recipient: &root.config.scanDir,
-					},
-					"include": cli.VarOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "File to be included as a target. Repeat option to include more files.",
-							ArgLabel:    "FILE",
-						},
-						Recipient: &root.config.read.include,
-					},
-					"exclude": cli.VarOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "File to be excluded from targets. Repeat option to exclude more files.",
-							ArgLabel:    "FILE",
-						},
-						Recipient: &root.config.read.exclude,
-					},
-					"scanhidden": cli.BoolOption{
-						OptionDetails: cli.OptionDetails{
-							Description: "Include hidden files when scanning the target.",
-							Short:       'S',
-						},
-						Recipient: &root.config.read.hidden,
-					},
 					"tags": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
 							Description: "Comma-separated list of tags to be set for the target.",
@@ -171,7 +144,7 @@ func run() int {
 					},
 					"include": cli.VarOption{
 						OptionDetails: cli.OptionDetails{
-							Description: "File to be included as a target. Repeat option to include more files.",
+							Description: "File to be exclusively included as a target. Repeat option to include more files.",
 							ArgLabel:    "FILE",
 						},
 						Recipient: &root.init.read.include,
@@ -206,6 +179,38 @@ func run() int {
 						Recipient: &root.link.tags,
 					},
 				},
+			},
+			"scan": {
+				Description: "Set targets by scanning a directory.",
+				Options: map[string]cli.Option{
+					"include": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "File to be exclusively included in the scan. Repeat option to include more files.",
+							ArgLabel:    "FILE",
+						},
+						Recipient: &root.scan.read.include,
+					},
+					"exclude": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "File to be excluded from the scan. Repeat option to exclude more files.",
+							ArgLabel:    "FILE",
+						},
+						Recipient: &root.scan.read.exclude,
+					},
+					"hidden": cli.BoolOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Include hidden files when scanning.",
+							Short:       'H',
+						},
+						Recipient: &root.scan.read.hidden,
+					},
+				},
+				Arg: cli.StringArg{
+					Label:     "TARGET",
+					Required:  false,
+					Recipient: &root.scan.file,
+				},
+				Exec: root.scan.register(appcfg.copy),
 			},
 			"show": {
 				Description: "Show your dotfiles in a tree view.",

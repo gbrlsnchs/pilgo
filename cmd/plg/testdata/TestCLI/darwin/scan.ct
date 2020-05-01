@@ -1,0 +1,114 @@
+$ plg scan -help
+Set targets by scanning a directory.
+
+USAGE:
+    scan [OPTIONS] [TARGET]
+
+OPTIONS:
+        -exclude <FILE>    File to be excluded from the scan. Repeat option to exclude more files.
+    -h, -help              Print this help message.
+    -H, -hidden            Include hidden files when scanning.
+        -include <FILE>    File to be exclusively included in the scan. Repeat option to include more files.
+
+$ plg scan -h
+Set targets by scanning a directory.
+
+USAGE:
+    scan [OPTIONS] [TARGET]
+
+OPTIONS:
+        -exclude <FILE>    File to be excluded from the scan. Repeat option to exclude more files.
+    -h, -help              Print this help message.
+    -H, -hidden            Include hidden files when scanning.
+        -include <FILE>    File to be exclusively included in the scan. Repeat option to include more files.
+
+$ plg scan --> FAIL
+plg: open pilgo.yml: no such file or directory
+
+$ cp pilgo.yml .
+$ plg scan test --> FAIL
+plg: open test: no such file or directory
+
+$ fecho test
+$ plg scan test --> FAIL
+plg: fdopendir: not a directory
+
+$ mkdir testdir
+$ cd testdir
+$ fecho test_1
+$ fecho test_2
+$ fecho test_3
+$ cd ..
+$ plg scan
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+
+$ plg scan testdir
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_1
+    - test_2
+    - test_3
+
+$ cd testdir
+$ fecho .hidden
+$ cd ..
+$ plg scan -hidden testdir
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - .hidden
+    - test_1
+    - test_2
+    - test_3
+
+$ plg scan -H testdir
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - .hidden
+    - test_1
+    - test_2
+    - test_3
+
+$ plg scan -include test_1 -include test_3 testdir
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_1
+    - test_3
+
+$ plg scan -exclude test_1 -exclude test_3 testdir
+$ cat pilgo.yml
+baseDir: links
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - test_2

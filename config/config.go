@@ -5,10 +5,21 @@ import (
 	"strings"
 )
 
-// DefaultName is the default name of the configuration file for Pilgo.
-const DefaultName = "pilgo.yml"
+const (
+	// DefaultName is the default name of the configuration file for Pilgo.
+	DefaultName = "pilgo.yml"
+	sep         = string(filepath.Separator)
+)
 
-const sep = string(filepath.Separator)
+// SetMode is a type for the mode used when setting a configuration.
+type SetMode int
+
+const (
+	// ModeConfig is the mode for setting every field except targets.
+	ModeConfig SetMode = iota
+	// ModeScan is the mode for setting only targets.
+	ModeScan
+)
 
 // Config is a configuration format for Pilgo.
 type Config struct {
@@ -26,9 +37,9 @@ type Config struct {
 //
 // All fields of the original configuration are overridden. If preserving fields
 // is the intention, use Merge instead.
-func (c *Config) Set(path string, new *Config) {
+func (c *Config) Set(path string, new *Config, m SetMode) {
 	if path == "" {
-		*c = *new
+		*c = *c.resolveNew(new, m)
 		return
 	}
 	targets := strings.Split(path, sep)
@@ -49,7 +60,7 @@ func (c *Config) Set(path string, new *Config) {
 			c.Options = make(map[string]*Config, 1)
 		}
 		if cc := c.Options[tg]; cc != nil {
-			*cc = *new
+			*cc = *cc.resolveNew(new, m)
 		} else {
 			c.Options[tg] = new
 		}
@@ -72,4 +83,19 @@ func (c *Config) isEmpty() bool {
 		c.UseHome == nil &&
 		!c.Flatten &&
 		len(c.Tags) == 0
+}
+
+func (c *Config) resolveNew(new *Config, m SetMode) *Config {
+	switch m {
+	case ModeConfig:
+		new.Targets = c.Targets
+	case ModeScan:
+		tgs := new.Targets
+		*new = *c
+		new.Targets = tgs
+	default:
+		// TODO(gbrlsnchs): add a free mode to overwrite everything.
+		panic("unknown mode")
+	}
+	return new
 }

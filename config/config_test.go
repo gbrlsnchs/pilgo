@@ -20,6 +20,7 @@ func testConfigSet(t *testing.T) {
 		c    config.Config
 		name string
 		o    config.Config
+		m    config.SetMode
 		want config.Config
 	}{
 		{
@@ -37,9 +38,6 @@ func testConfigSet(t *testing.T) {
 			name: "foo",
 			o: config.Config{
 				BaseDir: "test",
-				Targets: []string{
-					"bar",
-				},
 				Flatten: false,
 			},
 			want: config.Config{
@@ -71,7 +69,7 @@ func testConfigSet(t *testing.T) {
 			want: config.Config{
 				BaseDir: "test",
 				Targets: []string{
-					"bar",
+					"foo",
 				},
 				Flatten: false,
 			},
@@ -119,6 +117,9 @@ func testConfigSet(t *testing.T) {
 				Options: map[string]*config.Config{
 					"foo": {
 						BaseDir: "test",
+						Targets: []string{
+							"bar",
+						},
 					},
 				},
 			},
@@ -163,7 +164,6 @@ func testConfigSet(t *testing.T) {
 				Targets: []string{"foo"},
 			},
 			want: config.Config{
-				Targets: []string{"foo"},
 				Options: nil,
 			},
 		},
@@ -172,9 +172,7 @@ func testConfigSet(t *testing.T) {
 				Targets: []string{"foo"},
 				Options: map[string]*config.Config{
 					"foo": {
-						Targets: []string{
-							"bar",
-						},
+						BaseDir: "test",
 					},
 				},
 			},
@@ -197,7 +195,7 @@ func testConfigSet(t *testing.T) {
 				},
 			},
 			name: "foo",
-			o:    config.Config{
+			o: config.Config{
 				Flatten: true,
 			},
 			want: config.Config{
@@ -205,6 +203,9 @@ func testConfigSet(t *testing.T) {
 				Options: map[string]*config.Config{
 					"foo": {
 						Flatten: true,
+						Targets: []string{
+							"bar",
+						},
 					},
 				},
 			},
@@ -221,14 +222,19 @@ func testConfigSet(t *testing.T) {
 				},
 			},
 			name: "foo",
-			o:    config.Config{
+			o: config.Config{
 				Tags: []string{"test"},
 			},
 			want: config.Config{
 				Targets: []string{"foo"},
 				Options: map[string]*config.Config{
 					"foo": {
-						Tags: []string{"test"},
+						Targets: []string{
+							"bar",
+						},
+						Tags: []string{
+							"test",
+						},
 					},
 				},
 			},
@@ -269,10 +275,62 @@ func testConfigSet(t *testing.T) {
 			},
 			want: config.Config{Options: nil},
 		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"bar",
+						},
+						Flatten: true,
+					},
+				},
+			},
+			name: "foo",
+			o: config.Config{
+				BaseDir: "test",
+				Flatten: false,
+				Targets: []string{"test"},
+			},
+			m: config.ModeScan,
+			want: config.Config{
+				Targets: []string{"foo"},
+				Options: map[string]*config.Config{
+					"foo": {
+						Targets: []string{
+							"test",
+						},
+						Flatten: true,
+					},
+				},
+			},
+		},
+		{
+			c: config.Config{
+				Targets: []string{"foo"},
+				Flatten: true,
+			},
+			name: "",
+			o: config.Config{
+				BaseDir: "test",
+				Targets: []string{
+					"bar",
+				},
+				Flatten: false,
+			},
+			m: config.ModeScan,
+			want: config.Config{
+				Targets: []string{
+					"bar",
+				},
+				Flatten: true,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run("", func(t *testing.T) {
-			tc.c.Set(tc.name, &tc.o)
+			tc.c.Set(tc.name, &tc.o, tc.m)
 			if want, got := tc.want, tc.c; !cmp.Equal(got, want, ignoreUnexported) {
 				t.Errorf("(*Config).Set mismatch (-want +got):\n%s", cmp.Diff(want, got, ignoreUnexported))
 			}

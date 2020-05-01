@@ -110,14 +110,14 @@ func GenCLITests() error {
 					},
 				},
 			},
-			"config.ct": {
+			"scan.ct": {
 				{
 					reps: replacement{
 						old: readDirErr,
 						new: "Readdir {{.scandir}}: The system cannot find the path specified.",
 					},
 					buildData: func(b []byte) map[string]interface{} {
-						r := regexp.MustCompile(`plg config -scandir (\w+) --> FAIL`)
+						r := regexp.MustCompile(`plg scan (\w+) --> FAIL`)
 						subs := r.FindSubmatch(b)
 						t := make(map[string]interface{})
 						if len(subs) > 1 {

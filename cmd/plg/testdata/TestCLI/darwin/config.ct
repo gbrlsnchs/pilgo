@@ -6,13 +6,9 @@ USAGE:
 
 OPTIONS:
     -b, -basedir <DIR>             Set the target's base directory. Works recursively for all nested targets, unless overridden.
-        -exclude <FILE>            File to be excluded from targets. Repeat option to exclude more files.
     -f, -flatten                   Prevent the target from being included in the link name.
     -h, -help                      Print this help message.
-        -include <FILE>            File to be included as a target. Repeat option to include more files.
     -l, -link <NAME>               Set the target's link name.
-    -s, -scandir                   Scan the target and set its files as its own targets.
-    -S, -scanhidden                Include hidden files when scanning the target.
     -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags to be set for the target.
     -H, -usehome                   Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
@@ -24,13 +20,9 @@ USAGE:
 
 OPTIONS:
     -b, -basedir <DIR>             Set the target's base directory. Works recursively for all nested targets, unless overridden.
-        -exclude <FILE>            File to be excluded from targets. Repeat option to exclude more files.
     -f, -flatten                   Prevent the target from being included in the link name.
     -h, -help                      Print this help message.
-        -include <FILE>            File to be included as a target. Repeat option to include more files.
     -l, -link <NAME>               Set the target's link name.
-    -s, -scandir                   Scan the target and set its files as its own targets.
-    -S, -scanhidden                Include hidden files when scanning the target.
     -t, -tags <TAG 1,...,TAG n>    Comma-separated list of tags to be set for the target.
     -H, -usehome                   Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
@@ -44,10 +36,20 @@ $ cp pilgo.yml .
 $ plg config -basedir rootdir
 $ cat pilgo.yml
 baseDir: rootdir
+targets:
+- test
+
+$ plg config -b rootdir
+$ cat pilgo.yml
+baseDir: rootdir
+targets:
+- test
 
 $ plg config -basedir testdata test
 $ cat pilgo.yml
 baseDir: rootdir
+targets:
+- test
 options:
   test:
     baseDir: testdata
@@ -55,93 +57,56 @@ options:
 $ plg config -flatten test
 $ cat pilgo.yml
 baseDir: rootdir
+targets:
+- test
 options:
   test:
     flatten: true
 
-$ plg config -scandir test --> FAIL
-plg: open test: no such file or directory
-
-$ fecho test
-$ plg config -scandir test --> FAIL
-plg: fdopendir: not a directory
-
-$ mkdir testdir
-$ cd testdir
-$ fecho test_1
-$ fecho test_2
-$ fecho test_3
-$ cd ..
-$ plg config -s
+$ plg config -f test
 $ cat pilgo.yml
+baseDir: rootdir
 targets:
 - test
-- testdir
-
-$ plg config -s testdir
-$ cat pilgo.yml
-targets:
-- test
-- testdir
 options:
-  testdir:
-    targets:
-    - test_1
-    - test_2
-    - test_3
+  test:
+    flatten: true
 
-$ cd testdir
-$ fecho .hidden
-$ cd ..
-$ plg config -s -scanhidden testdir
+$ plg config -usehome test
 $ cat pilgo.yml
+baseDir: rootdir
 targets:
 - test
-- testdir
 options:
-  testdir:
-    targets:
-    - .hidden
-    - test_1
-    - test_2
-    - test_3
+  test:
+    useHome: true
 
-$ plg config -s -S testdir
+$ plg config -H test
 $ cat pilgo.yml
+baseDir: rootdir
 targets:
 - test
-- testdir
 options:
-  testdir:
-    targets:
-    - .hidden
-    - test_1
-    - test_2
-    - test_3
-
-$ plg config -s -include test_1 -include test_3 testdir
-$ cat pilgo.yml
-targets:
-- test
-- testdir
-options:
-  testdir:
-    targets:
-    - test_1
-    - test_3
-
-$ plg config -s -exclude test_1 -exclude test_3 testdir
-$ cat pilgo.yml
-targets:
-- test
-- testdir
-options:
-  testdir:
-    targets:
-    - test_2
+  test:
+    useHome: true
 
 $ cp pilgo_tags.yml .
 $ plg -config pilgo_tags.yml config -link testlink test
+$ cat pilgo_tags.yml
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    link: testlink
+
+$ plg -config pilgo_tags.yml config -l testlink test
 $ cat pilgo_tags.yml
 baseDir: links
 targets:
@@ -170,18 +135,6 @@ options:
     - test
   test:
     useHome: true
-
-$ plg config -H test
-$ cat pilgo.yml
-targets:
-- test
-- testdir
-options:
-  test:
-    useHome: true
-  testdir:
-    targets:
-    - test_2
 
 $ plg -config pilgo_tags.yml config -tags foo,bar test
 $ cat pilgo_tags.yml

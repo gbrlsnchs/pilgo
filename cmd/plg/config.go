@@ -16,8 +16,6 @@ type configCmd struct {
 	link    string
 	useHome boolptr
 	flatten bool
-	scanDir bool
-	read    readMode
 	tags    cliutil.CommaSepOptionList
 }
 
@@ -30,28 +28,18 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 		if err != nil {
 			return err
 		}
-		var targets []string
-		if cmd.scanDir {
-			files, err := fs.ReadDir(cmd.file)
-			if err != nil {
-				return err
-			}
-			cmd.read.exclude.Set(conf)
-			targets = cmd.read.resolve(files)
-		}
 		var c config.Config
 		if err := yaml.Unmarshal(b, &c); err != nil {
 			return err
 		}
 		cc := &config.Config{
-			Targets: targets,
 			BaseDir: cmd.baseDir,
 			Link:    cmd.link,
 			Flatten: cmd.flatten,
 			UseHome: cmd.useHome.addr,
 			Tags:    cmd.tags,
 		}
-		c.Set(cmd.file, cc)
+		c.Set(cmd.file, cc, config.ModeConfig)
 		if b, err = marshalYAML(c); err != nil {
 			return err
 		}
@@ -61,22 +49,6 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 		}
 		return fs.WriteFile(conf, b, fi.Perm())
 	}
-}
-
-type strptr struct {
-	addr *string
-}
-
-func (sp *strptr) Set(value string) error {
-	sp.addr = &value
-	return nil
-}
-
-func (sp strptr) String() string {
-	if sp.addr == nil {
-		return ""
-	}
-	return *sp.addr
 }
 
 type boolptr struct {
