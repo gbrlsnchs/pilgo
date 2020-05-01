@@ -90,6 +90,35 @@ options:
     - test_2
     - test_3
 
+$ cd testdir
+$ fecho .hidden
+$ cd ..
+$ plg config -s -scanhidden testdir
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - .hidden
+    - test_1
+    - test_2
+    - test_3
+
+$ plg config -s -S testdir
+$ cat pilgo.yml
+targets:
+- test
+- testdir
+options:
+  testdir:
+    targets:
+    - .hidden
+    - test_1
+    - test_2
+    - test_3
+
 $ plg config -s -include test_1 -include test_3 testdir
 $ cat pilgo.yml
 targets:
