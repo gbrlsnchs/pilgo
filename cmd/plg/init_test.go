@@ -354,7 +354,7 @@ func TestInit(t *testing.T) {
 				},
 			},
 			cmd: initCmd{
-				read: readMode{include: cliutil.CommaSepOptionSet{
+				read: readMode{include: cliutil.MultiValueOptionSet{
 					"bar": struct{}{},
 				}},
 			},
@@ -448,7 +448,7 @@ func TestInit(t *testing.T) {
 				},
 			},
 			cmd: initCmd{
-				read: readMode{exclude: cliutil.CommaSepOptionSet{
+				read: readMode{exclude: cliutil.MultiValueOptionSet{
 					"bar": struct{}{},
 				}},
 			},
@@ -758,7 +758,7 @@ func TestInit(t *testing.T) {
 			cmd: initCmd{
 				read: readMode{
 					hidden: true,
-					exclude: cliutil.CommaSepOptionSet{
+					exclude: cliutil.MultiValueOptionSet{
 						".git": struct{}{},
 					},
 				},

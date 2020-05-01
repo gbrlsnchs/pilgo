@@ -656,7 +656,7 @@ func TestConfig(t *testing.T) {
 				file:    "",
 				scanDir: true,
 				read: readMode{
-					include: cliutil.CommaSepOptionSet{
+					include: cliutil.MultiValueOptionSet{
 						"bar": struct{}{},
 					},
 				},
@@ -763,7 +763,7 @@ func TestConfig(t *testing.T) {
 				file:    "",
 				scanDir: true,
 				read: readMode{
-					exclude: cliutil.CommaSepOptionSet{
+					exclude: cliutil.MultiValueOptionSet{
 						"foo": struct{}{},
 					},
 				},
@@ -996,7 +996,7 @@ func TestConfig(t *testing.T) {
 				scanDir: true,
 				read: readMode{
 					hidden: true,
-					exclude: cliutil.CommaSepOptionSet{
+					exclude: cliutil.MultiValueOptionSet{
 						".git": struct{}{},
 					},
 				},

@@ -68,6 +68,7 @@ $ mkdir testdir
 $ cd testdir
 $ fecho test_1
 $ fecho test_2
+$ fecho test_3
 $ cd ..
 $ plg config -s
 $ cat pilgo.yml
@@ -85,8 +86,9 @@ options:
     targets:
     - test_1
     - test_2
+    - test_3
 
-$ plg config -s -include test_1 testdir
+$ plg config -s -include test_1 -include test_3 testdir
 $ cat pilgo.yml
 targets:
 - test
@@ -95,8 +97,9 @@ options:
   testdir:
     targets:
     - test_1
+    - test_3
 
-$ plg config -s -exclude test_1 testdir
+$ plg config -s -exclude test_1 -exclude test_3 testdir
 $ cat pilgo.yml
 targets:
 - test

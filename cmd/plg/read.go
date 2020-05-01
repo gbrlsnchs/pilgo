@@ -8,8 +8,8 @@ import (
 )
 
 type readMode struct {
-	include cliutil.CommaSepOptionSet
-	exclude cliutil.CommaSepOptionSet
+	include cliutil.MultiValueOptionSet
+	exclude cliutil.MultiValueOptionSet
 	hidden  bool
 }
 

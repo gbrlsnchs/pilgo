@@ -3,22 +3,25 @@ $ mkdir links
 $ cd targets
 $ fecho foo
 $ fecho bar
+$ fecho test
 $ fecho .hidden
 $ plg init
 $ cat pilgo.yml
 targets:
 - bar
 - foo
+- test
 
-$ plg init -force -exclude=foo
+$ plg init -force -exclude foo -exclude test
 $ cat pilgo.yml
 targets:
 - bar
 
-$ plg init -f -include=foo
+$ plg init -f -include foo -include test
 $ cat pilgo.yml
 targets:
 - foo
+- test
 
 $ plg init -f -hidden
 $ cat pilgo.yml
@@ -26,12 +29,14 @@ targets:
 - .hidden
 - bar
 - foo
+- test
 
-$ plg init -force
+$ plg init -f
 $ cat pilgo.yml
 targets:
 - bar
 - foo
+- test
 
 $ plg init -f -H
 $ cat pilgo.yml
@@ -39,6 +44,7 @@ targets:
 - .hidden
 - bar
 - foo
+- test
 
 $ cp pilgo.yml .
 $ plg init --> FAIL

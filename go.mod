@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/andybalholm/crlf v0.0.0-20171020200849-670099aa064f
-	github.com/gbrlsnchs/cli v0.6.0
+	github.com/gbrlsnchs/cli v0.7.1
 	github.com/google/go-cmdtest v0.2.1-0.20200427163723-7ae72be89103
 	github.com/google/go-cmp v0.4.0
 	github.com/google/renameio v0.1.0
