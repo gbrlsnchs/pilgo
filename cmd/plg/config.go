@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"gopkg.in/yaml.v3"
@@ -17,6 +18,7 @@ type configCmd struct {
 	flatten bool
 	scanDir bool
 	read    readMode
+	tags    cliutil.CommaSepOptionList
 }
 
 func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error {
@@ -47,6 +49,7 @@ func (cmd *configCmd) register(getcfg func() appConfig) func(cli.Program) error 
 			Link:    cmd.link,
 			Flatten: cmd.flatten,
 			UseHome: cmd.useHome.addr,
+			Tags:    cmd.tags,
 		}
 		c.Set(cmd.file, cc)
 		if b, err = marshalYAML(c); err != nil {

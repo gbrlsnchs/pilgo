@@ -143,6 +143,13 @@ func run() int {
 						},
 						Recipient: &root.config.read.hidden,
 					},
+					"tags": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of tags to be set for the target.",
+							Short: 't',
+						},
+						Recipient: &root.config.tags,
+					},
 				},
 				Arg: cli.StringArg{
 					Label:     "TARGET",

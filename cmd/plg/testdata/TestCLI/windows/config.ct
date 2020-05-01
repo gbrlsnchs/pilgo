@@ -13,6 +13,7 @@ OPTIONS:
     -l, -link <NAME>                        Set the target's link name.
     -s, -scandir                            Scan the target and set its files as its own targets.
     -S, -scanhidden                         Include hidden files when scanning the target.
+    -t, -tags                               Comma-separated list of tags to be set for the target.
     -H, -usehome                            Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
 $ plg config -h
@@ -30,6 +31,7 @@ OPTIONS:
     -l, -link <NAME>                        Set the target's link name.
     -s, -scandir                            Scan the target and set its files as its own targets.
     -S, -scanhidden                         Include hidden files when scanning the target.
+    -t, -tags                               Comma-separated list of tags to be set for the target.
     -H, -usehome                            Use home directory as the target's base directory and recursively for all nested targets, unless overridden.
 
 $ mkdir targets
@@ -151,3 +153,36 @@ options:
   testdir:
     targets:
     - test_2
+
+$ plg -config pilgo_tags.yml config -tags foo,bar test
+$ cat pilgo_tags.yml
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    tags:
+    - foo
+    - bar
+
+$ plg -config pilgo_tags.yml config -tags foo test
+$ cat pilgo_tags.yml
+baseDir: links
+targets:
+- bar
+- foo
+- test
+options:
+  bar:
+    tags:
+    - bar
+    - test
+  test:
+    tags:
+    - foo

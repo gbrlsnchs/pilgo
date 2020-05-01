@@ -77,6 +77,7 @@ func TestConfig(t *testing.T) {
 				file:    "foo",
 				baseDir: "test_foo",
 				link:    "f00",
+				tags:    cliutil.CommaSepOptionList{"test", "tag"},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -117,6 +118,7 @@ func TestConfig(t *testing.T) {
 													BaseDir: "test_foo",
 													Link:    "f00",
 													Targets: nil,
+													Tags:    []string{"test", "tag"},
 												},
 											},
 										}),
