@@ -21,7 +21,6 @@ func TestLink(t *testing.T) {
 		name string
 		drv  fstest.InMemoryDriver
 		cmd  linkCmd
-		tags cliutil.CommaSepOptionSet
 		want fstest.InMemoryDriver
 		err  error
 	}{
@@ -309,8 +308,7 @@ func TestLink(t *testing.T) {
 					},
 				},
 			},
-			cmd:  linkCmd{},
-			tags: nil,
+			cmd: linkCmd{tags: nil},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -428,9 +426,10 @@ func TestLink(t *testing.T) {
 					},
 				},
 			},
-			cmd: linkCmd{},
-			tags: cliutil.CommaSepOptionSet{
-				"test": struct{}{},
+			cmd: linkCmd{
+				tags: cliutil.CommaSepOptionSet{
+					"test": struct{}{},
+				},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -510,7 +509,6 @@ func TestLink(t *testing.T) {
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
 					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
-					tags:          tc.tags,
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("link")

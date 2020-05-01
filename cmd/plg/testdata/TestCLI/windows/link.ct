@@ -6,6 +6,7 @@ USAGE:
 
 OPTIONS:
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be linked.
 
 $ plg link -h
 Link your dotfiles as set in the configuration file.
@@ -15,6 +16,7 @@ USAGE:
 
 OPTIONS:
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be linked.
 
 $ plg link --> FAIL
 plg: open pilgo.yml: The system cannot find the file specified.
@@ -31,11 +33,11 @@ $ fecho test
 $ plg link
 
 $ cp pilgo_tags.yml .
-$ plg -config pilgo_tags.yml -tags bar,test link --> FAIL
+$ plg -config pilgo_tags.yml link  -tags bar,test --> FAIL
 plg: linker: there are 2 conflicts
 plg: linker: ${ROOTDIR}\targets\bar: target doesn't exist
 plg: linker: ${ROOTDIR}\targets\foo: target doesn't exist
 
 $ fecho bar
 $ fecho foo
-$ plg -c pilgo_tags.yml -t bar,test link
+$ plg -c pilgo_tags.yml link -t bar,test

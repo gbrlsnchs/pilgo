@@ -6,6 +6,7 @@ USAGE:
 
 OPTIONS:
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be shown.
 
 $ plg show -h
 Show your dotfiles in a tree view.
@@ -15,6 +16,7 @@ USAGE:
 
 OPTIONS:
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be shown.
 
 $ plg show --> FAIL
 plg: open pilgo.yml: The system cannot find the file specified.
@@ -32,12 +34,12 @@ $ plg -config pilgo_tags.yml show
 .
 └── foo <- links\foo
 
-$ plg -c pilgo_tags.yml -tags bar show
+$ plg -c pilgo_tags.yml show -tags bar
 .
 ├── bar <- links\bar
 └── foo <- links\foo
 
-$ plg -c pilgo_tags.yml -t bar,test show
+$ plg -c pilgo_tags.yml show -t bar,test
 .
 ├── bar  <- links\bar
 ├── foo  <- links\foo

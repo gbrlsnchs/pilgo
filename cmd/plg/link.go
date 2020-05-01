@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"github.com/gbrlsnchs/pilgo/linker"
@@ -12,9 +13,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type linkCmd struct{}
+type linkCmd struct{
+	tags cliutil.CommaSepOptionSet
+}
 
-func (*linkCmd) register(getcfg func() appConfig) func(cli.Program) error {
+func (cmd *linkCmd) register(getcfg func() appConfig) func(cli.Program) error {
 	return func(prg cli.Program) error {
 		appcfg := getcfg()
 		exe := prg.Name()
@@ -47,7 +50,7 @@ func (*linkCmd) register(getcfg func() appConfig) func(cli.Program) error {
 			}),
 			parser.Cwd(cwd),
 			parser.Envsubst,
-			parser.Tags(appcfg.tags))
+			parser.Tags(cmd.tags))
 		if err != nil {
 			return err
 		}

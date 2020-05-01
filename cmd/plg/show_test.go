@@ -22,7 +22,6 @@ func TestShow(t *testing.T) {
 		drv  fstest.InMemoryDriver
 		want fstest.InMemoryDriver
 		cmd  showCmd
-		tags cliutil.CommaSepOptionSet
 		err  error
 	}{
 		{
@@ -273,9 +272,8 @@ func TestShow(t *testing.T) {
 					},
 				},
 			},
-			cmd:  showCmd{},
-			tags: nil,
-			err:  nil,
+			cmd: showCmd{tags: nil},
+			err: nil,
 		},
 		{
 			name: "tags include multi",
@@ -369,9 +367,10 @@ func TestShow(t *testing.T) {
 					},
 				},
 			},
-			cmd: showCmd{},
-			tags: cliutil.CommaSepOptionSet{
-				"test": struct{}{},
+			cmd: showCmd{
+				tags: cliutil.CommaSepOptionSet{
+					"test": struct{}{},
+				},
 			},
 			err: nil,
 		},
@@ -467,9 +466,10 @@ func TestShow(t *testing.T) {
 					},
 				},
 			},
-			cmd: showCmd{},
-			tags: cliutil.CommaSepOptionSet{
-				"foo": struct{}{},
+			cmd: showCmd{
+				tags: cliutil.CommaSepOptionSet{
+					"foo": struct{}{},
+				},
 			},
 			err: nil,
 		},
@@ -483,7 +483,6 @@ func TestShow(t *testing.T) {
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
 					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
-					tags:          tc.tags,
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("show")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"github.com/gbrlsnchs/pilgo/linker"
@@ -14,6 +15,7 @@ import (
 
 type checkCmd struct {
 	fail bool
+	tags cliutil.CommaSepOptionSet
 }
 
 func (cmd *checkCmd) register(getcfg func() appConfig) cli.ExecFunc {
@@ -48,7 +50,7 @@ func (cmd *checkCmd) register(getcfg func() appConfig) cli.ExecFunc {
 			}),
 			parser.Cwd(cwd),
 			parser.Envsubst,
-			parser.Tags(appcfg.tags))
+			parser.Tags(cmd.tags))
 		if err != nil {
 			return err
 		}

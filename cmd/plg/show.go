@@ -4,15 +4,18 @@ import (
 	"fmt"
 
 	"github.com/gbrlsnchs/cli"
+	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
 	"github.com/gbrlsnchs/pilgo/parser"
 	"gopkg.in/yaml.v3"
 )
 
-type showCmd struct{}
+type showCmd struct{
+	tags cliutil.CommaSepOptionSet
+}
 
-func (*showCmd) register(getcfg func() appConfig) func(cli.Program) error {
+func (cmd *showCmd) register(getcfg func() appConfig) func(cli.Program) error {
 	return func(prg cli.Program) error {
 		appcfg := getcfg()
 		fs := fs.New(appcfg.fs)
@@ -44,7 +47,7 @@ func (*showCmd) register(getcfg func() appConfig) func(cli.Program) error {
 			}),
 			parser.Cwd(cwd),
 			parser.Envsubst,
-			parser.Tags(appcfg.tags))
+			parser.Tags(cmd.tags))
 		if err != nil {
 			return err
 		}

@@ -7,6 +7,7 @@ USAGE:
 OPTIONS:
     -f, -fail    Return an error if there are any conflicts.
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be checked.
 
 $ plg check -h
 Check the status of your dotfiles.
@@ -17,6 +18,7 @@ USAGE:
 OPTIONS:
     -f, -fail    Return an error if there are any conflicts.
     -h, -help    Print this help message.
+    -t, -tags    Comma-separated list of tags. Targets with these tags will also be checked.
 
 $ plg check --> FAIL
 plg: open pilgo.yml: no such file or directory
@@ -56,23 +58,23 @@ plg: linker: ${ROOTDIR}/targets/foo: target doesn't exist
 $ fecho foo
 $ plg -config pilgo_tags.yml check -f
 
-$ plg -c pilgo_tags.yml -tags bar check -f --> FAIL
+$ plg -c pilgo_tags.yml check -f -tags bar --> FAIL
 plg: linker: there is 1 conflict
 plg: linker: ${ROOTDIR}/targets/bar: target doesn't exist
 
 $ fecho bar
-$ plg -c pilgo_tags.yml -t bar check -f
+$ plg -c pilgo_tags.yml check -f -t bar
 
 $ plg -c pilgo_tags.yml check
 .
 └── foo <- links/foo (READY)
 
-$ plg -c pilgo_tags.yml -t bar check
+$ plg -c pilgo_tags.yml check -t bar
 .
 ├── bar <- links/bar (READY)
 └── foo <- links/foo (READY)
 
-$ plg -c pilgo_tags.yml -t bar,test check
+$ plg -c pilgo_tags.yml check -t bar,test
 .
 ├── bar  <- links/bar  (READY)
 ├── foo  <- links/foo  (READY)

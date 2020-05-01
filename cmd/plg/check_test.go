@@ -22,7 +22,6 @@ func TestCheck(t *testing.T) {
 		name      string
 		drv       fstest.InMemoryDriver
 		cmd       checkCmd
-		tags      cliutil.CommaSepOptionSet
 		want      fstest.InMemoryDriver
 		conflicts bool
 		err       error
@@ -465,9 +464,8 @@ func TestCheck(t *testing.T) {
 					},
 				},
 			},
-			cmd:  checkCmd{},
-			tags: nil,
-			err:  nil,
+			cmd: checkCmd{tags: nil},
+			err: nil,
 		},
 		{
 			name: "tags include multi",
@@ -597,9 +595,10 @@ func TestCheck(t *testing.T) {
 					},
 				},
 			},
-			cmd: checkCmd{},
-			tags: cliutil.CommaSepOptionSet{
-				"test": struct{}{},
+			cmd: checkCmd{
+				tags: cliutil.CommaSepOptionSet{
+					"test": struct{}{},
+				},
 			},
 			err: nil,
 		},
@@ -731,9 +730,10 @@ func TestCheck(t *testing.T) {
 					},
 				},
 			},
-			cmd: checkCmd{},
-			tags: cliutil.CommaSepOptionSet{
-				"foo": struct{}{},
+			cmd: checkCmd{
+				tags: cliutil.CommaSepOptionSet{
+					"foo": struct{}{},
+				},
 			},
 			err: nil,
 		},
@@ -793,9 +793,11 @@ func TestCheck(t *testing.T) {
 					},
 				},
 			},
-			cmd: checkCmd{fail: true},
-			tags: cliutil.CommaSepOptionSet{
-				"test": struct{}{},
+			cmd: checkCmd{
+				fail: true,
+				tags: cliutil.CommaSepOptionSet{
+					"test": struct{}{},
+				},
 			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
@@ -910,8 +912,10 @@ func TestCheck(t *testing.T) {
 					},
 				},
 			},
-			cmd:  checkCmd{fail: true},
-			tags: nil,
+			cmd: checkCmd{
+				fail: true,
+				tags: nil,
+			},
 			want: fstest.InMemoryDriver{
 				CurrentDir: "home/dotfiles",
 				Files: map[string]fstest.File{
@@ -979,7 +983,6 @@ func TestCheck(t *testing.T) {
 					getwd:         func() (string, error) { return fstest.AbsPath("home", "dotfiles"), nil },
 					userConfigDir: func() (string, error) { return fstest.AbsPath("home", "config"), nil },
 					userHomeDir:   func() (string, error) { return fstest.AbsPath("home"), nil },
-					tags:          tc.tags,
 				}
 				exec = tc.cmd.register(appcfg.copy)
 				prg  = clitest.NewProgram("check")

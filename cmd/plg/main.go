@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/gbrlsnchs/cli"
-	"github.com/gbrlsnchs/cli/cliutil"
 	"github.com/gbrlsnchs/pilgo/cmd/internal"
 	"github.com/gbrlsnchs/pilgo/config"
 	"github.com/gbrlsnchs/pilgo/fs"
@@ -19,7 +18,6 @@ type appConfig struct {
 	userConfigDir func() (string, error)
 	userHomeDir   func() (string, error)
 	version       string
-	tags          cliutil.CommaSepOptionSet
 }
 
 func (cfg *appConfig) copy() appConfig { return *cfg }
@@ -60,13 +58,6 @@ func run() int {
 				DefValue:  config.DefaultName,
 				Recipient: &appcfg.conf,
 			},
-			"tags": cli.VarOption{
-				OptionDetails: cli.OptionDetails{
-					Description: "Parse targets using specific tags.",
-					Short:       't',
-				},
-				Recipient: &appcfg.tags,
-			},
 		},
 		Subcommands: map[string]*cli.Command{
 			"check": {
@@ -79,6 +70,13 @@ func run() int {
 						},
 						DefValue:  false,
 						Recipient: &root.check.fail,
+					},
+					"tags": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of tags. Targets with these tags will also be checked.",
+							Short:       't',
+						},
+						Recipient: &root.check.tags,
 					},
 				},
 				Exec: root.check.register(appcfg.copy),
@@ -191,10 +189,28 @@ func run() int {
 			"link": {
 				Description: "Link your dotfiles as set in the configuration file.",
 				Exec:        root.link.register(appcfg.copy),
+				Options: map[string]cli.Option{
+					"tags": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of tags. Targets with these tags will also be linked.",
+							Short:       't',
+						},
+						Recipient: &root.link.tags,
+					},
+				},
 			},
 			"show": {
 				Description: "Show your dotfiles in a tree view.",
 				Exec:        root.show.register(appcfg.copy),
+				Options: map[string]cli.Option{
+					"tags": cli.VarOption{
+						OptionDetails: cli.OptionDetails{
+							Description: "Comma-separated list of tags. Targets with these tags will also be shown.",
+							Short:       't',
+						},
+						Recipient: &root.show.tags,
+					},
+				},
 			},
 			"version": {
 				Description: "Print version.",
