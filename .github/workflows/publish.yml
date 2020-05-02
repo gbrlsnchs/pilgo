@@ -1,0 +1,24 @@
+on:
+  release:
+    types: [published]
+jobs:
+  arch-linux-aur:
+    name: Sync new release on AUR
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Sync "pilgo" on AUR'
+      uses: maniaciachao/aur-sync-action@v1.2
+      with:
+        package_name: pilgo
+        github_repo: ${{ github.repository }}
+        commit_username: ${{ github.repository_owner }}
+        commit_email: ${{ secrets.AUR_COMMIT_EMAIL }}
+        ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+    - name: 'Sync "pilgo-bin" on AUR'
+      uses: maniaciachao/aur-sync-action@v1.2
+      with:
+        package_name: pilgo-bin
+        github_repo: ${{ github.repository }}
+        commit_username: ${{ github.repository_owner }}
+        commit_email: ${{ secrets.AUR_COMMIT_EMAIL }}
+        ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}

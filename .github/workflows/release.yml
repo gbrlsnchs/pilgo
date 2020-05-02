@@ -26,21 +26,3 @@ jobs:
           windows.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  arch-linux-aur:
-    name: Publish new version to AUR
-    runs-on: ubuntu-latest
-    steps:
-    - name: 'Publish "pilgo" to AUR'
-      uses: guumaster/aur-publish-docker-action@v1
-      with:
-        package_name: pilgo
-        commit_username: gbrlsnchs
-        commit_email: gabriel@gsr.dev
-        ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
-    - name: 'Publish "pilgo-bin" to AUR'
-      uses: guumaster/aur-publish-docker-action@v1
-      with:
-        package_name: pilgo-bin
-        commit_username: gbrlsnchs
-        commit_email: gabriel@gsr.dev
-        ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
