@@ -18,7 +18,7 @@
     2. [Solution](#solution)
         1. [`init`](#init)
         2. [`show`](#show)
-        3. [`config`](#config)
+        3. [`config` and `scan`](#config-and-scan)
         4. [`check`](#check)
         5. [`link`](#link)
 
@@ -131,19 +131,21 @@ $ plg show
 └── zsh       <- /home/me/.config/zsh
 ```
 
-#### `config`
+#### `config` and `scan`
 If you have ever used Zsh, you'll notice that the configuration is not quite right. That happens because Pilgo creates the configuration file following sane defaults, that is:
 - It uses `~/.config` (or the equivalent for other OSes) as the base directory for symlinks
 - It assumes symlinks have the same name as their targets
 
 The nice part is you don't need to change your directory layout because of that. You simply fine-tune your Pilgo configuration using the proper command:
 ```console
+$ plg scan zsh
 $ plg config -home -flatten zsh
 ```
 
-With the `config` command, we set two things for the `zsh` directory:
+With the `scan` command, Pilgo scans `zsh` to add its files as its targets.
+With the `config` command, we set two properties for the `zsh` directory:
 - `-home` sets it to use the home directory as the base directory (instead of `~/.config` or equivalent)
-- `-flatten` skips symlinking the `zsh` directory itself and sets its children to be symlinked individually instead
+- `-flatten` skips adding the `zsh` to the symlink path, skipping directly to its children
 
 Note that `config` modifies `pilgo.yml` for you. Here's how it is after the modification:
 ```console
@@ -157,7 +159,7 @@ targets:
 - zsh
 options:
   zsh:
-    link: ''
+    flatten: true
     useHome: true
     targets:
     - zprofile
