@@ -139,12 +139,12 @@ If you have ever used Zsh, you'll notice that the configuration is not quite rig
 The nice part is you don't need to change your directory layout because of that. You simply fine-tune your Pilgo configuration using the proper command:
 ```console
 $ plg scan zsh
-$ plg config -home -flatten zsh
+$ plg config -usehome -flatten zsh
 ```
 
 With the `scan` command, Pilgo scans `zsh` to add its files as its targets.
 With the `config` command, we set two properties for the `zsh` directory:
-- `-home` sets it to use the home directory as the base directory (instead of `~/.config` or equivalent)
+- `-usehome` sets it to use the home directory as the base directory (instead of `~/.config` or equivalent)
 - `-flatten` skips adding the `zsh` to the symlink path, skipping directly to its children
 
 Note that `config` modifies `pilgo.yml` for you. Here's how it is after the modification:
