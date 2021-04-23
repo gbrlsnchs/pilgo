@@ -18,7 +18,7 @@ pub enum Node {
 }
 
 impl Node {
-	pub fn insert<'a>(&mut self, path: PathBuf, config: NodeConfig<'a>) {
+	pub fn insert<'a>(&mut self, path: PathBuf, mut config: NodeConfig<'a>) {
 		if let Self::Branch(children) = self {
 			let segments: Vec<&OsStr> = path.iter().collect();
 
@@ -31,13 +31,14 @@ impl Node {
 					children.insert(
 						key.into(),
 						Node::Leaf {
-							target: Path::new(src_dir).join(key),
-							link: Path::new(dest_dir).join(key),
+							target: Path::new(src_dir).join(&config.parent_path).join(key),
+							link: Path::new(dest_dir).join(&config.parent_path).join(key),
 						},
 					);
 				} else {
 					let mut new_node = Node::Branch(Children::new());
 					let path = rest.iter().collect();
+					config.parent_path = Path::new(key).join(config.parent_path);
 
 					new_node.insert(path, config);
 					children.insert(key.into(), new_node);
@@ -54,4 +55,5 @@ impl Node {
 pub struct NodeConfig<'a> {
 	pub target_config: TargetConfig,
 	pub defaults: (&'a Path, &'a Path),
+	pub parent_path: PathBuf,
 }
