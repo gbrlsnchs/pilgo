@@ -4,7 +4,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use crate::config::TargetConfig;
+use crate::config::{base_dir::BaseDir, TargetConfig};
 
 pub type Children = BTreeMap<PathBuf, Node>;
 
@@ -14,11 +14,39 @@ pub type Children = BTreeMap<PathBuf, Node>;
 #[derive(Debug, PartialEq)]
 pub enum Node {
 	Branch(Children),
-	Leaf { target: PathBuf, link: PathBuf },
+	Leaf {
+		target: PathBuf,
+		link: (BaseDir, PathBuf),
+	},
 }
 
 impl Node {
-	pub fn insert<'a>(&mut self, path: PathBuf, mut config: NodeConfig<'a>) {
+	fn new_branch(path: PathBuf, config: NodeConfig) -> Self {
+		let mut node = Node::Branch(Children::new());
+
+		node.insert(path, config);
+
+		node
+	}
+
+	fn new_leaf<T, L>(
+		src_dir: &Path,
+		dest_dir: BaseDir,
+		parent_path: PathBuf,
+		target: T,
+		link: L,
+	) -> Self
+	where
+		T: AsRef<Path>,
+		L: AsRef<Path>,
+	{
+		Node::Leaf {
+			target: Path::new(src_dir).join(&parent_path).join(target),
+			link: (dest_dir, Path::new(&parent_path).join(link)),
+		}
+	}
+
+	pub fn insert(&mut self, path: PathBuf, mut config: NodeConfig) {
 		if let Self::Branch(children) = self {
 			let segments: Vec<&OsStr> = path.iter().collect();
 
@@ -27,21 +55,25 @@ impl Node {
 
 				if rest.is_empty() {
 					let (src_dir, dest_dir) = config.defaults;
+					let NodeConfig {
+						target_config,
+						parent_path,
+						..
+					} = config;
 
-					children.insert(
-						key.into(),
-						Node::Leaf {
-							target: Path::new(src_dir).join(&config.parent_path).join(key),
-							link: Path::new(dest_dir).join(&config.parent_path).join(key),
-						},
-					);
+					let dest_dir = target_config.base_dir.unwrap_or(dest_dir);
+
+					let link = target_config.link.unwrap_or_else(|| key.into());
+
+					let leaf = Node::new_leaf(src_dir, dest_dir, parent_path, key, link);
+					children.insert(key.into(), leaf);
 				} else {
-					let mut new_node = Node::Branch(Children::new());
 					let path = rest.iter().collect();
+
 					config.parent_path = Path::new(key).join(config.parent_path);
 
-					new_node.insert(path, config);
-					children.insert(key.into(), new_node);
+					let branch = Node::new_branch(path, config);
+					children.insert(key.into(), branch);
 				}
 			}
 		} else {
@@ -54,6 +86,8 @@ impl Node {
 
 pub struct NodeConfig<'a> {
 	pub target_config: TargetConfig,
-	pub defaults: (&'a Path, &'a Path),
+	pub defaults: NodeDefaults<'a>,
 	pub parent_path: PathBuf,
 }
+
+pub type NodeDefaults<'a> = (&'a Path, BaseDir);

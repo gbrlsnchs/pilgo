@@ -1,5 +1,9 @@
 use std::{collections::BTreeMap, path::PathBuf};
 
+use self::base_dir::BaseDir;
+
+pub mod base_dir;
+
 /// The configuration is the source of truth for Pilgo. It has information about targets and their
 /// individual settings.
 pub struct Config {
@@ -12,6 +16,8 @@ pub struct Config {
 /// Optional, individual target configuration.
 #[derive(Default)]
 pub struct TargetConfig {
-	/// This is an optional property that renames the link name for the target.
+	/// Custom link name.
 	pub link: Option<PathBuf>,
+	/// Custom base directory for the link.
+	pub base_dir: Option<BaseDir>,
 }
