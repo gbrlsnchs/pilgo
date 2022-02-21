@@ -1,3 +1,12 @@
+# Disclaimer
+
+I am no longer maintaining Pilgo. It was a fun experiment _but_ its UX was flawed, and due to its design, it was also unfixable.
+
+Taking that frustration into account, I developed a spiritual successor for Pilgo: [Park](https://github.com/gbrlsnchs/park).
+I consider it to be a lot simpler, easier to use, more unixy and a lot easier to maintain. If you were using or intented to use Pilgo, give Park a go!
+
+That said, this repository is now archived, so if you like Pilgo, feel free to fork it! :-)
+
 # Pilgo
 [![Linux, macOS and Windows](https://github.com/gbrlsnchs/pilgo/workflows/Linux,%20macOS%20and%20Windows/badge.svg)](https://github.com/gbrlsnchs/pilgo/actions)
 [![Latest release](https://img.shields.io/github/v/release/gbrlsnchs/pilgo?include_prereleases)](https://github.com/gbrlsnchs/pilgo/releases/latest)
